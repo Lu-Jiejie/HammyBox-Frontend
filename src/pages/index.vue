@@ -1,5 +1,6 @@
 <script setup lang="ts" generic="T extends any, O extends any">
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import TheInput from '~/components/TheInput.vue'
 
@@ -10,6 +11,7 @@ defineOptions({
 const name = ref('')
 
 const router = useRouter()
+const { t } = useI18n()
 function go() {
   if (name.value)
     router.push(`/hi/${encodeURIComponent(name.value)}`)
@@ -43,7 +45,7 @@ function go() {
         :disabled="!name"
         @click="go"
       >
-        Go
+        {{ t('button.go') }}
       </button>
     </div>
   </div>

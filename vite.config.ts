@@ -28,4 +28,8 @@ export default defineConfig({
     // see uno.config.ts for config
     UnoCSS(),
   ],
+  server: {
+    port: 3000,
+
+  },
 })
