@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import { toggleDark } from '~/composables'
-import { locale, toggleLocale } from '~/modules/i18n'
+import { toggleDark } from '@/composables'
+import { locale, toggleLocale } from '@/modules/i18n'
 
 const localeIcon = computed(() => {
   switch (locale.value) {

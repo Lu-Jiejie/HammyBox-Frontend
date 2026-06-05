@@ -1,8 +1,10 @@
 allowBuilds:
   esbuild: true
   simple-git-hooks: true
+  vue-demi: true
 minimumReleaseAgeExclude:
   - '@iconify-json/carbon@1.2.23'
   - '@types/node@25.9.1'
 shellEmulator: true
-trustPolicy: no-downgrade
+# eslint-disable-next-line pnpm/yaml-enforce-settings
+trustPolicy: off

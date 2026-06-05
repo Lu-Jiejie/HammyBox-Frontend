@@ -2,7 +2,8 @@
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
-import TheInput from '~/components/TheInput.vue'
+import { Button } from '@/components/shadcn/button'
+import { Input } from '@/components/shadcn/input'
 
 defineOptions({
   name: 'IndexPage',
@@ -32,21 +33,16 @@ function go() {
 
     <div py-4 />
 
-    <TheInput
-      v-model="name"
-      placeholder="What's your name?"
-      autocomplete="false"
-      @keydown.enter="go"
-    />
-
-    <div>
-      <button
-        class="text-sm btn m-3"
-        :disabled="!name"
-        @click="go"
-      >
-        {{ t('button.go') }}
-      </button>
+    <div p-10>
+      <Input
+        v-model="name"
+        placeholder="What's your name?"
+        autocomplete="false"
+        @keydown.enter="go"
+      />
     </div>
+    <Button @click="go">
+      {{ t('button.go') }}
+    </Button>
   </div>
 </template>

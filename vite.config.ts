@@ -9,7 +9,7 @@ import VueRouter from 'vue-router/vite'
 export default defineConfig({
   resolve: {
     alias: {
-      '~/': `${path.resolve(__dirname, 'src')}/`,
+      '@/': `${path.resolve(__dirname, 'src')}/`,
     },
   },
   plugins: [
