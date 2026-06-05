@@ -7,20 +7,17 @@ body,
 }
 
 :root {
-  --c-bg: #fff;
   --c-scrollbar: #eee;
 }
 
 html.dark {
-  --c-bg: #121212;
   --c-scrollbar: #222;
   color-scheme: dark;
 }
 
 html {
-  background-color: var(--c-bg);
   overflow-x: hidden;
-  overflow-y: scroll;
+  /* overflow-y: scroll; */
   /* scrollbar-gutter: stable; */
 }
 

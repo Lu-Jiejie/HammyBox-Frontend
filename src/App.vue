@@ -1,10 +1,8 @@
 <script setup lang="ts">
-import TheFooter from '@/components/TheFooter.vue'
 </script>
 
 <template>
-  <main font-sans p="x-4 y-10" text="center gray-700 dark:gray-200">
+  <main font-sans class="transition-colors duration-500 ease-in-out">
     <RouterView />
-    <TheFooter />
   </main>
 </template>

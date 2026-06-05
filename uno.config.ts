@@ -12,6 +12,7 @@ import { presetShadcn } from 'unocss-preset-shadcn'
 
 export default defineConfig({
   shortcuts: [
+    ['header-sperator', 'mx-1 bg-border shrink-0 h-4 w-[1px]'],
   ],
   presets: [
     presetWind4(),
