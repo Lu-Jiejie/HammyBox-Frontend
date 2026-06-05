@@ -13,9 +13,11 @@ import {
   Settings2,
   SquareTerminal,
 } from '@lucide/vue'
-import NavMain from '@/components/NavMain.vue'
-import NavProjects from '@/components/NavProjects.vue'
-import NavUser from '@/components/NavUser.vue'
+import NavMain from '@/components/nav/NavMain.vue'
+import NavProjects from '@/components/nav/NavProjects.vue'
+import NavUser from '@/components/nav/NavUser.vue'
+import TeamSwitcher from '@/components/nav/TeamSwitcher.vue'
+
 import {
   Sidebar,
   SidebarContent,
@@ -23,8 +25,6 @@ import {
   SidebarHeader,
   SidebarRail,
 } from '@/components/shadcn/sidebar'
-
-import TeamSwitcher from '@/components/TeamSwitcher.vue'
 
 const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',

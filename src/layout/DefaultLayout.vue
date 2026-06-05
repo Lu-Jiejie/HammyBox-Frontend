@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import HeaderActions from '@/components/HeaderActions.vue'
+import HeaderActions from '@/components/header/HeaderActions.vue'
 import {
   Breadcrumb,
   BreadcrumbItem,

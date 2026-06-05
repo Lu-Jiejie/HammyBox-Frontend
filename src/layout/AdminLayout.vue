@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import AppSidebar from '@/components/AppSidebar.vue'
-import HeaderActions from '@/components/HeaderActions.vue'
+import HeaderActions from '@/components/header/HeaderActions.vue'
 // 引入你的右上角组件
 import {
   Breadcrumb,
@@ -24,7 +24,7 @@ import {
     <SidebarInset>
       <header class="group-has-data-[collapsible=icon]/sidebar-wrapper:h-12 border-b flex shrink-0 gap-2 h-14 transition-[width,height] ease-linear items-center">
         <div class="px-4 flex w-full items-center justify-between">
-          <div class="flex gap-2 items-center">
+          <div class="flex gap-1 items-center">
             <SidebarTrigger class="cursor-pointer -ml-1" />
             <div class="mx-2 bg-border shrink-0 h-4 w-[1px]" />
             <Breadcrumb>

@@ -1,5 +1,8 @@
 {
-  "button": {
-    "go": "Go"
+  "header": {
+    "tooltip": {
+      "toggleLanguage": "Toggle Language",
+      "toggleTheme": "Toggle Theme"
+    }
   }
 }

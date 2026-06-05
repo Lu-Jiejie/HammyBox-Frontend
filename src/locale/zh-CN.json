@@ -1,5 +1,8 @@
 {
-  "button": {
-    "go": "出发"
+  "header": {
+    "tooltip": {
+      "toggleLanguage": "切换语言",
+      "toggleTheme": "切换主题"
+    }
   }
 }
