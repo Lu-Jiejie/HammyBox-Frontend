@@ -1,78 +1,147 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { LocalStorageKey } from '@/types'
-import axios from '@/utils/axios'
+import axiosInstance from '@/utils/axios'
 
-interface FileItem {
+export interface FileItem {
   name: string
+  metadata?: {
+    channel?: string
+    timeStamp?: string
+    fileMime?: string
+    fileSize?: string
+    [key: string]: any
+  }
   [key: string]: any
 }
 
-interface FileList {
+export interface FileListState {
   files: FileItem[]
   folders: string[]
-  isIndexedResponse?: boolean
+  totalCount: number
+  returnedCount: number
+  indexLastUpdated: string
+  isIndexedResponse: boolean
 }
 
-function toQueryString(filters: Record<string, any[]>): string {
-  let params = ''
-  const keys = ['accessStatus', 'listType', 'label', 'fileType', 'channel', 'channelName']
+/**
+ * 数据传输对象转化器 (DTO Transformer)
+ * 隔离后端原始响应结构，统一转换为符合前端规范的 FileListState 格式
+ */
+function transformFileList(backendData: any): FileListState {
+  const res = backendData?.data || backendData
 
-  keys.forEach((key) => {
-    if (filters[key] && filters[key].length > 0) {
-      params += `&${key}=${encodeURIComponent(filters[key].join(','))}`
-    }
-  })
-  return params
+  const cleanFiles: FileItem[] = (res?.files || []).map((file: any) => ({
+    name: file.name,
+    metadata: file.metadata
+      ? {
+          channel: file.metadata.Channel || '',
+          timeStamp: file.metadata.TimeStamp || '',
+          fileMime: file.metadata['File-Mime'] || '',
+          fileSize: file.metadata['File-Size'] || '',
+        }
+      : undefined,
+    ...file,
+  }))
+
+  return {
+    files: cleanFiles,
+    folders: res?.directories || res?.folders || [],
+    totalCount: Number(res?.totalCount ?? 0),
+    returnedCount: Number(res?.returnedCount ?? 0),
+    indexLastUpdated: String(res?.indexLastUpdated || ''),
+    isIndexedResponse: Boolean(res?.isIndexedResponse ?? true),
+  }
+}
+
+/**
+ * 将筛选对象转化为 URL 查询参数
+ */
+function toQueryString(filters: Record<string, any[]>): string {
+  const allowedKeys = ['accessStatus', 'listType', 'label', 'fileType', 'channel', 'channelName']
+  return Object.entries(filters)
+    .filter(([key, val]) => allowedKeys.includes(key) && Array.isArray(val) && val.length > 0)
+    .map(([key, val]) => `&${key}=${encodeURIComponent(val.join(','))}`)
+    .join('')
 }
 
 export const useFileStore = defineStore('file', () => {
-  // state
-  const fileList = ref<FileList>({
+  // 核心状态声明
+  const fileList = ref<FileListState>({
     files: [],
     folders: [],
+    totalCount: 0,
+    returnedCount: 0,
+    indexLastUpdated: '',
+    isIndexedResponse: true,
   })
 
-  // actions: 增删改查
+  /* ==========================================
+   * 1. 本地同步数据维护 (Actions)
+   * ========================================== */
+
   function addFile(newFile: FileItem) {
     fileList.value.files.push(newFile)
+    fileList.value.totalCount++
+    fileList.value.returnedCount++
   }
 
-  function addFolder(newFolder: string): boolean {
-    if (!fileList.value.folders.includes(newFolder)) {
-      fileList.value.folders.push(newFolder)
+  function addFolder(folderName: string): boolean {
+    const cleanFolder = folderName.trim().replace(/\/$/, '')
+    if (cleanFolder && !fileList.value.folders.includes(cleanFolder)) {
+      fileList.value.folders.push(cleanFolder)
       return true
     }
     return false
   }
 
   function removeFile(fileName: string) {
+    const originalLength = fileList.value.files.length
     fileList.value.files = fileList.value.files.filter(file => file.name !== fileName)
+
+    const removedCount = originalLength - fileList.value.files.length
+    fileList.value.totalCount = Math.max(0, fileList.value.totalCount - removedCount)
+    fileList.value.returnedCount = Math.max(0, fileList.value.returnedCount - removedCount)
   }
 
-  function removeFolder(folders: string) {
-    fileList.value.files = fileList.value.files.filter(file => file.name.startsWith(`${folders}/`))
-    fileList.value.folders = fileList.value.folders.filter(folder => !folders.includes(folder))
+  function removeFolder(folderPath: string) {
+    const originalLength = fileList.value.files.length
+
+    // 递归剔除归属于该目录下的所有文件与子文件夹
+    fileList.value.files = fileList.value.files.filter(file => !file.name.startsWith(`${folderPath}/`))
+    fileList.value.folders = fileList.value.folders.filter(
+      folder => folder !== folderPath && !folder.startsWith(`${folderPath}/`),
+    )
+
+    const removedCount = originalLength - fileList.value.files.length
+    fileList.value.totalCount = Math.max(0, fileList.value.totalCount - removedCount)
+    fileList.value.returnedCount = Math.max(0, fileList.value.returnedCount - removedCount)
   }
 
-  function moveFile(oldPath: string, newPath: string, isFolder = false, currentPath = '') {
+  function moveFile(oldPath: string, newPath: string, isFolder = false, currentFolderPath = '') {
     if (isFolder) {
       const oldFolderIndex = fileList.value.folders.indexOf(oldPath)
-      if (oldFolderIndex !== -1) {
+      if (oldFolderIndex !== -1)
         fileList.value.folders.splice(oldFolderIndex, 1)
-      }
+
+      // 同步更新子文件的路径前缀
+      fileList.value.files.forEach((file) => {
+        if (file.name.startsWith(`${oldPath}/`)) {
+          file.name = file.name.replace(`${oldPath}/`, `${newPath}/`)
+        }
+      })
     }
     else {
       const fileIndex = fileList.value.files.findIndex(file => file.name === oldPath)
-      if (fileIndex !== -1) {
+      if (fileIndex !== -1)
         fileList.value.files.splice(fileIndex, 1)
-      }
     }
 
-    if (newPath.startsWith(currentPath)) {
-      const pathArr = newPath.substring(currentPath.length).split('/')
+    // 推导并补充直接子目录至当前视图
+    if (newPath.startsWith(currentFolderPath)) {
+      const pathArr = newPath.substring(currentFolderPath.length).split('/')
       if (pathArr.length > 1) {
-        const newFolder = currentPath + pathArr[0]
+        const newFolder = currentFolderPath + pathArr[0]
         if (!fileList.value.folders.includes(newFolder)) {
           fileList.value.folders.push(newFolder)
         }
@@ -80,36 +149,34 @@ export const useFileStore = defineStore('file', () => {
     }
   }
 
-  function getFilesInFolder(folderName: string) {
-    const files = fileList.value.files.filter((file) => {
-      return file.name.startsWith(`${folderName}/`)
-    })
-    const subFolders = fileList.value.folders.filter((folder) => {
-      return folder.startsWith(`${folderName}/`)
-    })
-    return { files, follders: subFolders }
+  function getFilesInFolder(folderPath: string) {
+    const files = fileList.value.files.filter(file => file.name.startsWith(`${folderPath}/`))
+    const subFolders = fileList.value.folders.filter(folder => folder.startsWith(`${folderPath}/`))
+    return { files, folders: subFolders }
   }
 
-  // actions: 网络请求
-  async function refreshFileList(dir: string, search = '', includeTags = '', excludeTags = '', filters = {}) {
+  /* ==========================================
+   * 2. 异步网络流请求 (Actions)
+   * ========================================== */
+
+  async function refreshFileList(targetDir: string, search = '', includeTags = '', excludeTags = '', filters = {}) {
     const cleanSearch = search.trim()
     try {
-      let url = `/manage/list?count=60&dir=${dir}&search=${encodeURIComponent(cleanSearch)}`
+      let url = `/manage/list?count=60&dir=${targetDir}&search=${encodeURIComponent(cleanSearch)}`
       if (includeTags)
         url += `&includeTags=${encodeURIComponent(includeTags)}`
       if (excludeTags)
         url += `&excludeTags=${encodeURIComponent(excludeTags)}`
       url += toQueryString(filters)
 
-      // 使用你重构的 Axios，不需要写前缀 /api，拦截器已经配好了
-      const response = await axios.get(url, { silentAuth: true })
-      const data = response.data
+      const response = await axiosInstance.get(url, { silentAuth: true })
 
-      if (!data.isIndexedResponse) {
-        ElMessage.warning(i18n.global.t('dashboard.indexingWarning'))
+      if (!response.data.isIndexedResponse) {
+        // ElMessage.warning(i18n.global.t('dashboard.indexingWarning'))
       }
 
-      fileList.value = data
+      // 全量数据通过 DTO 转化器覆写状态
+      fileList.value = transformFileList(response.data)
       return true
     }
     catch (error) {
@@ -118,22 +185,37 @@ export const useFileStore = defineStore('file', () => {
     }
   }
 
-  async function loadMoreFiles(dir: string, search = '', includeTags = '', excludeTags = '', count = 60, filters = {}) {
+  async function loadMoreFiles(targetDir: string, search = '', includeTags = '', excludeTags = '', count = 60, filters = {}) {
     const cleanSearch = search.trim()
     try {
       const start = fileList.value.files.length
-      let url = `/manage/list?dir=${dir}&start=${start}&count=${count}&search=${encodeURIComponent(cleanSearch)}`
+      let url = `/manage/list?dir=${targetDir}&start=${start}&count=${count}&search=${encodeURIComponent(cleanSearch)}`
       if (includeTags)
         url += `&includeTags=${encodeURIComponent(includeTags)}`
       if (excludeTags)
         url += `&excludeTags=${encodeURIComponent(excludeTags)}`
       url += toQueryString(filters)
 
-      const response = await axios.get(url)
-      const data = response.data
+      const response = await axiosInstance.get(url)
+      const incomingState = transformFileList(response.data)
 
-      // 增量追加
-      fileList.value.files.push(...(data.files || []))
+      // 增量合并文件
+      if (incomingState.files.length > 0) {
+        fileList.value.files.push(...incomingState.files)
+      }
+
+      // 增量合并目录并去重
+      incomingState.folders.forEach((dir) => {
+        if (!fileList.value.folders.includes(dir)) {
+          fileList.value.folders.push(dir)
+        }
+      })
+
+      // 覆盖更新元数据计数器
+      fileList.value.totalCount = incomingState.totalCount
+      fileList.value.returnedCount = incomingState.returnedCount
+      fileList.value.indexLastUpdated = incomingState.indexLastUpdated
+
       return true
     }
     catch (error) {
@@ -153,7 +235,9 @@ export const useFileStore = defineStore('file', () => {
     refreshFileList,
     loadMoreFiles,
   }
-}, { persist: {
-  key: LocalStorageKey.FILE_STORE,
-  pick: ['fileList'],
-} })
+}, {
+  persist: {
+    key: LocalStorageKey.FILE_STORE,
+    pick: ['fileList'],
+  },
+})

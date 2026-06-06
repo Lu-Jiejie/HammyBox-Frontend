@@ -1,15 +1,14 @@
 <script setup lang="ts">
 import AppSidebar from '@/components/AppSidebar.vue'
 import HeaderActions from '@/components/header/HeaderActions.vue'
-// 引入你的右上角组件
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/shadcn/breadcrumb'
+// import {
+//   Breadcrumb,
+//   BreadcrumbItem,
+//   BreadcrumbLink,
+//   BreadcrumbList,
+//   BreadcrumbPage,
+//   BreadcrumbSeparator,
+// } from '@/components/shadcn/breadcrumb'
 import {
   SidebarInset,
   SidebarProvider,
@@ -26,7 +25,7 @@ import {
         <div class="px-4 flex w-full items-center justify-between">
           <div class="flex gap-1 items-center">
             <SidebarTrigger class="cursor-pointer -ml-1" />
-            <div class="mx-2 bg-border shrink-0 h-4 w-[1px]" />
+            <!-- <div header-sperator />
             <Breadcrumb>
               <BreadcrumbList>
                 <BreadcrumbItem class="hidden md:block">
@@ -39,7 +38,7 @@ import {
                   <BreadcrumbPage>当前工作区</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
-            </Breadcrumb>
+            </Breadcrumb> -->
           </div>
 
           <HeaderActions />

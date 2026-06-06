@@ -1,5 +1,9 @@
-<script setup lang="ts" generic="T extends any, O extends any">
-
+<script setup lang="ts">
+definePage({
+  meta: {
+    title: '图片上传',
+  },
+})
 </script>
 
 <template>

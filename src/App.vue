@@ -20,8 +20,8 @@ const currentLayout = computed(() => {
 </script>
 
 <template>
+  <Toaster position="top-center" />
   <component :is="currentLayout">
     <router-view />
   </component>
-  <Toaster />
 </template>

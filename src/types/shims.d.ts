@@ -14,3 +14,9 @@ declare module 'axios' {
     silentAuth?: boolean
   }
 }
+
+declare module 'vue-router' {
+  interface RouteMeta {
+    title?: string
+  }
+}

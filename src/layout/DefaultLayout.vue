@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import HeaderActions from '@/components/header/HeaderActions.vue'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from '@/components/shadcn/breadcrumb'
+// import {
+//   Breadcrumb,
+//   BreadcrumbItem,
+//   BreadcrumbLink,
+//   BreadcrumbList,
+//   BreadcrumbPage,
+//   BreadcrumbSeparator,
+// } from '@/components/shadcn/breadcrumb'
 </script>
 
 <template>
@@ -15,7 +15,7 @@ import {
     <header class="border-b flex shrink-0 gap-2 h-16 transition-[height] ease-linear items-center">
       <div class="px-4 flex w-full items-center justify-between">
         <div class="flex gap-2 items-center">
-          <Breadcrumb>
+          <!-- <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem class="hidden md:block">
                 <BreadcrumbLink href="/">
@@ -27,7 +27,7 @@ import {
                 <BreadcrumbPage>当前视图</BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
-          </Breadcrumb>
+          </Breadcrumb> -->
         </div>
 
         <HeaderActions />

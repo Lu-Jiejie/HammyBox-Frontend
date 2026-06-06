@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, reactive, ref } from 'vue'
 import { LocalStorageKey } from '@/types'
-import axios from '@/utils/axios'
+import axiosInstance from '@/utils/axios'
 
 export const useAppStore = defineStore('app', () => {
   /* ─── 1. State (响应式状态) ─── */
@@ -96,7 +96,7 @@ export const useAppStore = defineStore('app', () => {
   /* ─── 4. Actions (异步数据请求) ─── */
   async function fetchUserConfig() {
     try {
-      const response = await axios.get('/api/userConfig')
+      const response = await axiosInstance.get('/api/userConfig')
       userConfig.value = response.data
     }
     catch (error) {
@@ -106,7 +106,7 @@ export const useAppStore = defineStore('app', () => {
 
   async function fetchBingWallPapers() {
     try {
-      const response = await axios.get('/api/bing/wallpaper')
+      const response = await axiosInstance.get('/api/bing/wallpaper')
       const wallpapers = response.data.data
       const processedPapers = wallpapers.map((wallpaper: any) => ({
         url: `https://www.bing.com${wallpaper.url}`,

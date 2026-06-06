@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { toast } from 'vue-sonner'
 import ThemeSwitch from '@/components/header/ThemeSwitch.vue' // 引入刚刚做好的主题切换
 import { Button } from '@/components/shadcn/button'
 import Hint from '../Hint.vue'
@@ -21,7 +22,7 @@ const { t } = useI18n()
 
     <div class="header-sperator" />
     <Hint :content="t('header.tooltip.toggleLanguage')">
-      <LocaleSwitch />
+      <LocaleSwitch @click="() => toast.success('1111')" />
     </Hint>
     <Hint :content="t('header.tooltip.toggleTheme')">
       <ThemeSwitch />
