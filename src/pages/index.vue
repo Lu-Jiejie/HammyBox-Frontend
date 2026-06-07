@@ -2,6 +2,7 @@
 definePage({
   meta: {
     title: '图片上传',
+    auth: 'user',
   },
 })
 </script>

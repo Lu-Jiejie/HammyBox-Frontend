@@ -37,12 +37,14 @@
 ## 路由与布局
 
 - 页面（路由源）：`src/pages/**`
-  - `index.vue` → `/`（前台，`definePage` 标题“图片上传”）
-  - `admin/index.vue` → `/admin`
-  - `admin/[...all].vue` → `/admin/:all(.*)`（后台 catch-all）
-  - `login/index.vue` → `/login`，登录表单在 `login/components/LoginForm.vue`
+  - `index.vue` → `/`（前台上传，`definePage` 标题"图片上传"，`meta.auth: 'user'`）
+  - `admin/index.vue` → `/admin`（`meta.auth: 'admin'`）
+  - `admin/[...all].vue` → `/admin/:all(.*)`（后台 catch-all，`meta.auth: 'admin'`）
+  - `admin/login.vue` → `/admin/login`（管理员登录，公开，表单在 `admin/components/AdminLoginForm.vue`）
+  - `login/index.vue` → `/login`（上传登录，公开，表单在 `login/components/LoginForm.vue`）
 - 路由装配：`src/modules/router.ts`（`createWebHistory` + `vue-router/auto-routes`）
-- 页面元信息：在页面内用 `definePage({ meta: {...} })`（不要手写路由表）
+  - **鉴权守卫**：`beforeEach` 按 `to.meta.auth`（`'user'` / `'admin'`）校验 app store 登录态，未登录跳对应登录页并带 `redirect` query
+- 页面元信息：在页面内用 `definePage({ meta: {...} })`（不要手写路由表）；受保护页加 `meta.auth`
 - 布局：`src/layout/AdminLayout.vue`、`src/layout/DefaultLayout.vue`
   - **布局选择逻辑在 `App.vue`**：`route.path` 以 `/admin` 开头且非 `/admin/login` → `AdminLayout`，否则 `DefaultLayout`。这是手动判断，不是 layout 插件，也不读 `meta.layout`。
 
@@ -51,14 +53,20 @@
 - `src/stores/app.ts`：用户配置、Bing 壁纸、登录态标记、上传/压缩/自定义 URL 设置、暗色模式偏好；`fetchUserConfig` / `fetchBingWallPapers` 等异步 action。
 - `src/stores/file.ts`：文件列表状态 + DTO 转换器（`transformFileList` 隔离后端原始结构），本地增删改 + `refreshFileList` / `loadMoreFiles`（走 `/manage/list`）。
 - 持久化：`defineStore(..., { persist: { key, pick: [...] } })`，key 来自 `src/types/index.ts` 的 `LocalStorageKey` 枚举。
-- 安全约定：`adminLoggedIn` / `userLoggedIn` **不入持久化白名单**，避免刷新时伪造登录态泄露。
+- 安全约定：`adminLoggedIn` / `userLoggedIn` **不入持久化白名单**，避免刷新时伪造登录态泄露——代价是刷新后需重新登录（路由守卫会跳对应登录页）。登录态读写统一经 `useAuth()`。
 
 ## 数据请求 / API
 
 - axios 实例：`src/utils/axios.ts`
   - `baseURL`：生产 `/`，开发 `/dev-api`（由 vite 代理）
   - `withCredentials: true`（基于 HttpOnly Cookie 鉴权）
-  - 响应拦截器：401 时置 `adminLoggedIn = false`；若请求带 `silentAuth` 则跳转 `/admin/login`
+  - 响应拦截器：401 时置 `adminLoggedIn = false`；若请求带 `silentAuth` 则跳转 `/admin/login`。**注意拦截器对错误不 re-throw**，失败时 promise 以 `undefined` resolve，调用方需检查返回值（如 `res?.status === 200`）而非 try/catch
+- 登录鉴权：`src/composables/useAuth.ts`
+  - 复用 app store 的 `userLoggedIn` / `adminLoggedIn`
+  - `loginUser(authCode)` → `POST /api/auth/login`（upload 页）
+  - `loginAdmin(username, password)` → `POST /api/auth/adminLogin`（管理页）
+  - `logout(authType?)` → `POST /api/auth/logout`，body 带 `authType`（`'user'`/`'admin'` 分别登出，**不传则全部登出**）
+  - `userLoading` / `adminLoading`：模块级单例加载态；登录带最小加载时长 + `vue-sonner` toast 提示
 - 业务服务（封装好的领域逻辑，优先复用）：
   - `src/utils/batchDataService.ts`：批量操作，`BatchDataService` 类 + `BatchOperationError`（按状态码的错误处理表）
   - `src/utils/backupGeneratorService.ts`：备份生成（fetching/building/downloading 阶段 + 进度回调）
@@ -93,7 +101,7 @@
 - shadcn-vue 基础 UI：`src/components/shadcn/**`（CLI 管理，**ESLint 已忽略，勿手改格式**）
 - shadcn blocks：`src/components/new-york-v4/blocks/**`
 - 业务组件：`src/components/`（`header/`、`nav/`、`AppSidebar.vue`、`Hint.vue` 等）
-- 组合式函数：`src/composables/`（`useBackground.ts` 等；`index.ts` 目前为空）
+- 组合式函数：`src/composables/`（`useBackground.ts` 壁纸、`useAuth.ts` 登录鉴权；`index.ts` 目前为空）
 
 ## 关键约定
 
@@ -111,6 +119,7 @@
 - 加插件：`src/modules/<plugin>.ts` 导出 `install`，自动注册。
 - 加 store：`src/stores/*.ts`（setup-store + persist），并在 `index.ts` 导出。
 - 对接接口：用 `@/utils/axios` 实例；批量/备份/恢复/索引类逻辑复用 `src/utils/*Service.ts`。
+- 登录/登出/鉴权：用 `useAuth()`（`loginUser` / `loginAdmin` / `logout(authType?)`）；受保护页加 `definePage({ meta: { auth: 'user' | 'admin' } })`，守卫自动拦截。
 - 加文案：同步改 `src/locale/zh-CN.json` 与 `en-US.json`。
 
 ## 常见坑

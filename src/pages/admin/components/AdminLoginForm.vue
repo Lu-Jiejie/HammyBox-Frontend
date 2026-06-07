@@ -26,18 +26,19 @@ const props = defineProps<{
 
 const router = useRouter()
 const route = useRoute()
-const { loginUser, userLoading } = useAuth()
+const { loginAdmin, adminLoading } = useAuth()
 
-const authCode = ref('')
+const username = ref('')
+const password = ref('')
 
 async function onSubmit() {
-  if (userLoading.value || !authCode.value)
+  if (adminLoading.value || !username.value || !password.value)
     return
 
-  const ok = await loginUser(authCode.value)
+  const ok = await loginAdmin(username.value, password.value)
   if (ok) {
     const redirect = route.query.redirect as string | undefined
-    router.replace(redirect || '/')
+    router.replace(redirect || '/admin')
   }
 }
 </script>
@@ -47,31 +48,46 @@ async function onSubmit() {
     <Card>
       <CardHeader>
         <CardTitle class="text-2xl">
-          {{ $t('auth.uploadLogin.title', { name: 'File Hub' }) }}
+          {{ $t('auth.adminLogin.title') }}
         </CardTitle>
         <CardDescription>
-          {{ $t('auth.uploadLogin.subTitle') }}
+          {{ $t('auth.adminLogin.subTitle') }}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form @submit.prevent="onSubmit">
           <FieldGroup>
             <Field>
-              <FieldLabel for="authCode">
-                {{ $t('fileds.authCode') }}
+              <FieldLabel for="adminUsername">
+                {{ $t('auth.adminLogin.username') }}
               </FieldLabel>
               <Input
-                id="authCode"
-                v-model="authCode"
-                type="password"
-                placeholder="******"
+                id="adminUsername"
+                v-model="username"
+                type="text"
+                :placeholder="$t('auth.adminLogin.usernamePlaceholder')"
+                autocomplete="username"
                 required
-                :disabled="userLoading"
+                :disabled="adminLoading"
               />
             </Field>
             <Field>
-              <Button type="submit" :disabled="userLoading">
-                <div v-if="userLoading" class="i-lucide-loader-circle mr-2 size-4 animate-spin" />
+              <FieldLabel for="adminPassword">
+                {{ $t('auth.adminLogin.password') }}
+              </FieldLabel>
+              <Input
+                id="adminPassword"
+                v-model="password"
+                type="password"
+                :placeholder="$t('auth.adminLogin.passwordPlaceholder')"
+                autocomplete="current-password"
+                required
+                :disabled="adminLoading"
+              />
+            </Field>
+            <Field>
+              <Button type="submit" :disabled="adminLoading">
+                <div v-if="adminLoading" class="i-lucide-loader-circle mr-2 size-4 animate-spin" />
                 {{ $t('actions.login') }}
               </Button>
             </Field>
@@ -80,9 +96,9 @@ async function onSubmit() {
               <Button
                 variant="outline"
                 type="button"
-                @click="router.push('/admin/login')"
+                @click="router.push('/login')"
               >
-                {{ $t('actions.toAdminPage') }}
+                {{ $t('actions.toUploadPage') }}
               </Button>
             </Field>
           </FieldGroup>

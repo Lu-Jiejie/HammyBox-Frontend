@@ -2,14 +2,32 @@
   "auth": {
     "uploadLogin": {
       "title": "Sign in to {name}",
-      "subTitle": "Enter your verification code to sign in."
+      "subTitle": "Enter your verification code to sign in.",
+      "success": "Signed in successfully",
+      "failed": "Wrong access code, sign-in failed"
+    },
+    "adminLogin": {
+      "title": "Sign in to Admin Panel",
+      "subTitle": "Enter your admin username and password to sign in.",
+      "username": "Username",
+      "usernamePlaceholder": "Enter your username",
+      "password": "Password",
+      "passwordPlaceholder": "Enter your password",
+      "success": "Signed in successfully",
+      "failed": "Wrong username or password"
+    },
+    "logout": {
+      "success": "Signed out"
     }
   },
   "actions": {
     "toggleLanguage": "Toggle Language",
     "toggleTheme": "Toggle Theme",
+    "toggleBackground": "Toggle Background",
     "toAdminPage": "Go to Admin Panel",
-    "login": "Login"
+    "toUploadPage": "Back to Upload",
+    "login": "Login",
+    "logout": "Logout"
   },
   "fileds": {
     "authCode": "Access Code"
@@ -17,6 +35,8 @@
   "background": {
     "prev": "Previous wallpaper",
     "next": "Next wallpaper",
-    "refresh": "Refresh wallpaper"
+    "refresh": "Refresh wallpaper",
+    "enable": "Enable wallpaper",
+    "disable": "Disable wallpaper"
   }
 }

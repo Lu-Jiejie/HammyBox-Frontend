@@ -30,7 +30,9 @@ const currentLayout = computed(() => {
       },
     }"
   />
-  <component :is="currentLayout">
-    <router-view />
-  </component>
+  <div>
+    <component :is="currentLayout">
+      <router-view />
+    </component>
+  </div>
 </template>

@@ -21,10 +21,6 @@ html {
   /* scrollbar-gutter: stable; */
 }
 
-* {
-  scrollbar-color: var(--c-scrollbar) transparent;
-}
-
 /* Transitions */
 .fade-enter-active,
 .fade-leave-active {
@@ -35,3 +31,30 @@ html {
 .fade-leave-to {
   opacity: 0;
 }
+
+/* 主题亮暗切换：用 View Transitions 给整页一次柔和的 crossfade（小平滑）。
+   shadcn 主题色走 CSS 变量（--background 等），变量变化不会触发普通 transition，
+   因此用整页快照淡入淡出来实现平滑；触发逻辑见 ToggleTheme.vue 的 setTheme。 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+  animation-timing-function: ease;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* 为按钮和菜单项添加指针光标 */
+/* @layer base {
+  button:not(:disabled),
+  [role="button"]:not(:disabled),
+  [role="menuitem"]:not(:disabled) {
+    cursor: pointer !important;
+  }
+} */
+
+

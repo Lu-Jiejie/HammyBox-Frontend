@@ -21,7 +21,7 @@ const { toggleSidebar } = useSidebar()
     @click="toggleSidebar"
   >
     <!-- <PanelLeft /> -->
-    <div class="i-lucide-panel-left text-muted-foreground size-[1.2rem] block transition-colors hover:text-foreground" />
+    <div class="i-lucide-panel-left  size-5 block transition-colors hover:text-foreground" />
     <span class="sr-only">Toggle Sidebar</span>
   </Button>
 </template>

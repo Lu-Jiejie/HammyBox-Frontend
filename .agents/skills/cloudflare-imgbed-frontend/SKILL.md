@@ -25,7 +25,7 @@ metadata:
   - `src/components/shadcn/**`：shadcn-vue UI 基础组件（由 CLI 管理，ESLint 已忽略，勿手改格式）
   - `src/components/header/`、`src/components/nav/`：业务组件
 - 状态：`src/stores/`（`app.ts` / `file.ts`，setup-store 写法 + 持久化）
-- 组合式函数：`src/composables/`（如 `useBackground.ts`）
+- 组合式函数：`src/composables/`（如 `useBackground.ts` 壁纸、`useAuth.ts` 登录鉴权）
 - 工具与服务：`src/utils/`（`axios.ts` 及备份/批处理/恢复/索引重建服务）
 - 类型：`src/types/`（含 `LocalStorageKey` 枚举）
 - 国际化文案：`src/locale/`（`zh-CN.json` / `en-US.json`）
@@ -59,8 +59,11 @@ metadata:
 - 一律使用 Vue 3 Composition API + `<script setup lang="ts">`；项目开启了 `propsDestructure`，可直接解构 `defineProps`。
 - 路由是**文件路由**：在 `src/pages/**` 增删改文件即生成路由，不要手写路由表。页面元信息用 `definePage({ meta: { ... } })` 宏声明。
 - 布局切换在 `App.vue` 里按 `route.path` 手动判断（非 layout 插件）：`/admin` 开头且非 `/admin/login` 用 `AdminLayout`，其余用 `DefaultLayout`。新增需要管理布局的页面时，确认其路径落在该判断分支内。
-- Pinia 用 setup-store 写法，并通过 `persist: { key, pick: [...] }` 做持久化白名单；`LocalStorageKey` 统一放在 `src/types/index.ts`。**登录态（`adminLoggedIn` 等）刻意不持久化**，以防刷新页面时伪造登录态。
-- 所有 HTTP 请求走 `src/utils/axios.ts` 的实例（`withCredentials`，401 自动跳 `/admin/login`，支持自定义 `silentAuth` 配置）。鉴权基于 HttpOnly Cookie，前端只存会话标记。
+- Pinia 用 setup-store 写法，并通过 `persist: { key, pick: [...] }` 做持久化白名单；`LocalStorageKey` 统一放在 `src/types/index.ts`。**登录态（`userLoggedIn` / `adminLoggedIn`）刻意不持久化**，以防刷新页面时伪造登录态——代价是刷新后需重新登录（路由守卫会跳对应登录页）。
+- 登录鉴权统一走 `src/composables/useAuth.ts`：复用 app store 的 `userLoggedIn` / `adminLoggedIn`，提供 `loginUser(authCode)`（upload 页，`/api/auth/login`）、`loginAdmin(username, password)`（管理页，`/api/auth/adminLogin`）、`logout(authType?)`（`/api/auth/logout`，`authType` 传 `user`/`admin` 分别登出，**不传则全部登出**）。`userLoading` / `adminLoading` 是模块级单例加载态，登录请求带最小加载时长并用 `vue-sonner` 的 `toast` 提示。注意 `axios.ts` 拦截器对错误**不会 re-throw**，故登录成败靠检查返回值（`res?.status === 200`）判断，而非 try/catch。
+- 路由守卫在 `src/modules/router.ts` 的 `beforeEach`：按目标路由 `meta.auth`（`'user'` / `'admin'`）校验登录态，未登录跳对应登录页并带 `redirect` query；公开页（登录页）不设 `meta.auth`。新增受保护页时用 `definePage({ meta: { auth: 'user' | 'admin' } })` 声明。
+- 两个独立登录页：upload 页 `src/pages/login/index.vue`（只输认证码），管理页 `src/pages/admin/login.vue`（用户名+密码）；表单组件分别在各自的 `components/` 下。
+- 所有 HTTP 请求走 `src/utils/axios.ts` 的实例（`withCredentials`，401 自动置 `adminLoggedIn=false`，带 `silentAuth` 时跳 `/admin/login`）。鉴权基于 HttpOnly Cookie，前端只存会话标记。
 - 样式优先 UnoCSS 原子类与 `uno.config.ts` 中的 shortcuts（如 `place-center`、`header-sperator`），图标用 `i-lucide-*` / `i-carbon-*`。
 - i18n 通过 `useI18n()` 的 `t()` 取文案，新增文案需同时更新 `zh-CN.json` 与 `en-US.json`；切换语言用 `src/modules/i18n.ts` 导出的 `changeLocale` / `toggleLocale`。
 - 主题/暗色模式用 VueUse 的 `useColorMode`（light/dark/auto 循环，见 `ThemeSwitch.vue`）。
@@ -91,9 +94,16 @@ metadata:
 2. 需持久化时在 `persist.pick` 中列出白名单字段，并把 key 加进 `LocalStorageKey` 枚举；敏感/登录态字段不要进白名单。
 3. 在 `src/stores/index.ts` 中导出。
 
+### 登录 / 登出 / 鉴权
+
+1. 登录、登出统一用 `useAuth()`，不要在组件里直接发认证请求：`loginUser(authCode)` 用于 upload 页，`loginAdmin(username, password)` 用于管理页，`logout(authType?)` 登出（`'user'`/`'admin'`/不传=全登出）。
+2. 接登出按钮时只需调用 `logout('admin')` 之类即可；本地会话标记由 `useAuth` 内部清理，无需自己改 store。
+3. 新增需要鉴权的页面：用 `definePage({ meta: { auth: 'user' | 'admin' } })` 标注，守卫会自动拦截未登录访问并带 `redirect` 跳登录页。登录页本身不要设 `meta.auth`。
+4. 判断登录请求成败看返回值（`res?.status === 200`），别依赖 try/catch——`axios.ts` 拦截器吞掉错误、不 re-throw。
+
 ### 对接后端接口
 
-1. 从 `@/utils/axios` 导入实例发请求；需要 401 静默跳登录的场景传 `{ silentAuth: true }`。
+1. 从 `@/utils/axios` 导入实例发请求；需要 401 静默跳登录的场景传 `{ silentAuth: true }`。注意响应错误拦截器**不 re-throw**，失败时 promise 以 `undefined` resolve，调用方需检查返回值而非 try/catch。
 2. 复杂业务（备份/批量操作/恢复/重建索引）已封装在 `src/utils/*Service.ts` 与 `indexRebuilder.ts`，优先复用其类与错误类型（`BatchOperationError`）。
 
 ### 更新主题/样式

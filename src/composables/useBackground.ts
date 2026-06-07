@@ -20,7 +20,29 @@ interface BackgroundCache {
 }
 
 const STORAGE_KEY = 'background-cache-v1'
+const ENABLED_KEY = 'background-enabled-v1'
 const MAX_IMAGES = 8
+
+// ── 模块级单例状态 ──
+// useBackground 会被多个组件调用（BackgroundImage 负责渲染、ToggleBackground 负责开关与版权展示）。
+// 若把状态放在函数内部，各组件会各持一份 currentIndex/loading，导致显示的壁纸与版权对不上。
+// 因此把共享状态提升到模块作用域，保证全局唯一。
+const loading = ref(false)
+const currentIndex = ref(0)
+
+const enabled = useLocalStorage<boolean>(ENABLED_KEY, true)
+
+const cache = useLocalStorage<BackgroundCache>(
+  STORAGE_KEY,
+  {
+    date: '',
+    images: [],
+  },
+)
+
+const images = computed(() => cache.value.images)
+
+const currentImage = computed(() => images.value[currentIndex.value])
 
 function getToday() {
   return new Date().toISOString().slice(0, 10)
@@ -50,24 +72,6 @@ async function fetchImage(index: number): Promise<BackgroundItem> {
 }
 
 export function useBackground() {
-  const loading = ref(false)
-
-  const cache = useLocalStorage<BackgroundCache>(
-    STORAGE_KEY,
-    {
-      date: '',
-      images: [],
-    },
-  )
-
-  const currentIndex = ref(0)
-
-  const images = computed(() => cache.value.images)
-
-  const currentImage = computed(() => {
-    return images.value[currentIndex.value]
-  })
-
   async function initialize() {
     if (loading.value)
       return
@@ -134,12 +138,17 @@ export function useBackground() {
         % images.value.length
   }
 
+  function toggle() {
+    enabled.value = !enabled.value
+  }
+
   tryOnMounted(() => {
     void initialize()
   })
 
   return {
     loading,
+    enabled,
 
     images,
     currentImage,
@@ -147,6 +156,7 @@ export function useBackground() {
 
     next,
     prev,
+    toggle,
 
     refresh,
   }

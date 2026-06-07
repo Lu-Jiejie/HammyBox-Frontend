@@ -15,10 +15,13 @@ const { t } = useI18n()
 const {
   images,
   currentImage,
+  enabled,
   next,
 } = useBackground()
 
-const hasImages = computed(() => images.value.length > 0)
+// 壁纸禁用时只保留兜底背景，不渲染壁纸图 / 蒙版 / 版权卡片。
+const hasImages = computed(() => enabled.value && images.value.length > 0)
+const activeImage = computed(() => (enabled.value ? currentImage.value : undefined))
 
 // 当前壁纸是否“亮”。true → 亮图，用浅色蒙版；false → 暗图（含 CORS 采样失败兜底），用深色蒙版。
 const photoLight = ref(false)
@@ -85,9 +88,9 @@ watch(() => currentImage.value?.url, (url) => {
 
     <!-- 当前背景 -->
     <img
-      v-if="currentImage"
-      :key="currentImage.url"
-      :src="currentImage.url"
+      v-if="activeImage"
+      :key="activeImage.url"
+      :src="activeImage.url"
       alt=""
       decoding="async"
       class="h-full w-full transition-opacity duration-700 inset-0 absolute object-cover"
@@ -97,21 +100,21 @@ watch(() => currentImage.value?.url, (url) => {
 
     <!-- 自适应蒙版：随壁纸亮度动态切换深/浅色调（纯 rgba，与主题无关） -->
     <div
-      v-if="currentImage"
+      v-if="activeImage"
       class="bg-scrim inset-0 absolute"
       :class="photoLight ? 'is-light' : 'is-dark'"
     />
 
     <!-- 左下角版权信息 -->
     <div
-      v-if="showCopyright && currentImage?.copyright"
+      v-if="showCopyright && activeImage?.copyright"
       class="max-w-md pointer-events-auto bottom-4 left-4 absolute"
     >
       <div class="text-card-foreground p-3.5 border border-border rounded-lg bg-card/85 shadow-sm backdrop-blur-md">
         <div class="flex gap-2 items-start">
           <span class="i-lucide-image text-muted-foreground mt-0.5 shrink-0 size-3.5" />
           <span class="text-xs text-muted-foreground leading-relaxed">
-            {{ currentImage.copyright }}
+            {{ activeImage.copyright }}
           </span>
         </div>
 
