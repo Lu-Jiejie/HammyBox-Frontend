@@ -25,29 +25,15 @@ import {
         <div class="px-4 flex w-full items-center justify-between">
           <div class="flex gap-1 items-center">
             <SidebarTrigger class="cursor-pointer -ml-1" />
-            <!-- <div header-sperator />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem class="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    后台管理
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator class="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>当前工作区</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb> -->
           </div>
 
           <HeaderActions />
         </div>
       </header>
 
-      <main class="p-4 pt-4 flex flex-1 flex-col gap-4 overflow-y-scroll">
+      <div class="p-4 grow">
         <slot />
-      </main>
+      </div>
     </SidebarInset>
   </SidebarProvider>
 </template>

@@ -1,8 +1,22 @@
 {
-  "header": {
-    "tooltip": {
-      "toggleLanguage": "Toggle Language",
-      "toggleTheme": "Toggle Theme"
+  "auth": {
+    "uploadLogin": {
+      "title": "Sign in to {name}",
+      "subTitle": "Enter your verification code to sign in."
     }
+  },
+  "actions": {
+    "toggleLanguage": "Toggle Language",
+    "toggleTheme": "Toggle Theme",
+    "toAdminPage": "Go to Admin Panel",
+    "login": "Login"
+  },
+  "fileds": {
+    "authCode": "Access Code"
+  },
+  "background": {
+    "prev": "Previous wallpaper",
+    "next": "Next wallpaper",
+    "refresh": "Refresh wallpaper"
   }
 }

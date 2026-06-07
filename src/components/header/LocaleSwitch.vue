@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue'
+import { computed } from 'vue'
 import { Button } from '@/components/shadcn/button'
 import { locale, toggleLocale } from '@/modules/i18n'
 
@@ -18,6 +18,6 @@ const currentIcon = computed(() => {
     aria-label="Toggle locale"
     @click="toggleLocale"
   >
-    <span class="size-[1.2rem] block" :class="[currentIcon]" />
+    <div class="size-6 block scale-95" :class="[currentIcon]" />
   </Button>
 </template>

@@ -46,9 +46,6 @@ export const useAppStore = defineStore('app', () => {
   const cusDarkMode = ref(false)
 
   /* ─── 2. Getters (计算属性) ─── */
-  // 保持原有别名，确保项目中现有的 fetchWithAuth.js 或老业务代码直接无缝运行
-  // const storeUploadMethod = computed(() => uploadMethod.value)
-  // const storeAutoReUpload = computed(() => autoReUpload.value)
   const credentials = computed(() => adminLoggedIn.value ? '__session__' : null)
 
   // 兼容针对 uploadFolder 的原有 localStorage 兜底降级逻辑
@@ -56,36 +53,10 @@ export const useAppStore = defineStore('app', () => {
   //   return uploadFolder.value || localStorage.getItem('uploadFolder') || ''
   // })
 
-  /* ─── 3. Actions (同步赋值方法，平替旧的 Mutations) ─── */
-  // function setUserConfig(val: any) { userConfig.value = val }
-  // function setBingWallPapers(val: any[]) { bingWallPapers.value = val }
-  // function setAdminLoggedIn(loggedIn: boolean) { adminLoggedIn.value = loggedIn }
-  // function setUserLoggedIn(loggedIn: boolean) { userLoggedIn.value = loggedIn }
-  // function setUploadMethod(method: string) { uploadMethod.value = method }
-  // function setUploadCopyUrlForm(form: string) { uploadCopyUrlForm.value = form }
-  // function setStoreUploadChannel(channel: string) { storeUploadChannel.value = channel }
-  // function setStoreChannelName(name: string | null) { storeChannelName.value = name }
-  // function setStoreUploadNameType(type: string) { storeUploadNameType.value = type }
-  // function setStoreAutoRetry(retry: boolean) { storeAutoRetry.value = retry }
-  // function setUseDarkMode(mode: boolean | null) { useDarkMode.value = mode }
-  // function setCusDarkMode(dark: boolean) { cusDarkMode.value = dark }
-  // function setStoreAutoReUpload(retry: boolean) { autoReUpload.value = retry }
-
   // 兼容旧代码：setCredentials 映射到 adminLoggedIn
   function setCredentials(credentials: any) {
     adminLoggedIn.value = credentials !== null && credentials !== undefined
   }
-
-  // // 针对 reactive 对象的子属性精确更新
-  // function setCompressConfig({ key, value }: { key: string, value: any }) {
-  //   (compressConfig as any)[key] = value
-  // }
-  // function setCustomUrlSettings({ key, value }: { key: string, value: any }) {
-  //   (customUrlSettings as any)[key] = value
-  // }
-  // function setAdminUrlSettings({ key, value }: { key: string, value: any }) {
-  //   (adminUrlSettings as any)[key] = value
-  // }
 
   // 包含附加副作用的特殊修改方法
   function setStoreUploadFolder(folder: string) {

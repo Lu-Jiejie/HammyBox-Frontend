@@ -1,10 +1,7 @@
 import type { AxiosError } from 'axios'
 import axios from 'axios'
-import { useRouter } from 'vue-router'
+import { router } from '@/modules/router'
 import { useAppStore } from '@/stores'
-
-const store = useAppStore()
-const router = useRouter()
 
 const instance = axios.create({
   baseURL: import.meta.env.PROD ? '/' : '/dev-api',
@@ -19,6 +16,7 @@ instance.interceptors.response.use(
     const { response, config } = error
 
     if (response?.status === 401) {
+      const store = useAppStore()
       store.adminLoggedIn = false
 
       if (config?.silentAuth && !isRedirectingToLogin) {

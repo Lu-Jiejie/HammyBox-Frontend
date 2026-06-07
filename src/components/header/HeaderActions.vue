@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { toast } from 'vue-sonner'
 import ThemeSwitch from '@/components/header/ThemeSwitch.vue' // 引入刚刚做好的主题切换
 import { Button } from '@/components/shadcn/button'
 import Hint from '../Hint.vue'
@@ -14,17 +13,17 @@ const { t } = useI18n()
     <Hint content="GitHub">
       <Button variant="ghost" size="icon" as-child class="size-8">
         <a href="https://github.com/你的用户名/你的项目" target="_blank" rel="noreferrer" class="flex items-center justify-center">
-          <span class="i-carbon-logo-github text-muted-foreground size-[1.2rem] block transition-colors hover:text-foreground" />
+          <div class="i-carbon-logo-github text-muted-foreground size-5 block transition-colors hover:text-foreground" />
           <span class="sr-only">GitHub</span>
         </a>
       </Button>
     </Hint>
 
     <div class="header-sperator" />
-    <Hint :content="t('header.tooltip.toggleLanguage')">
-      <LocaleSwitch @click="() => toast.success('1111')" />
+    <Hint :content="t('actions.toggleLanguage')">
+      <LocaleSwitch />
     </Hint>
-    <Hint :content="t('header.tooltip.toggleTheme')">
+    <Hint :content="t('actions.toggleTheme')">
       <ThemeSwitch />
     </Hint>
   </div>

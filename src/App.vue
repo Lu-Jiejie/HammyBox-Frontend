@@ -20,7 +20,16 @@ const currentLayout = computed(() => {
 </script>
 
 <template>
-  <Toaster position="top-center" />
+  <Toaster
+    position="top-center"
+    :toast-options="{
+      classes: {
+        success: '!border-emerald-600/50 !text-emerald-600 dark:(!border-emerald-400/50 !text-emerald-400)',
+        error: '!border-red-400/50 !text-red-400',
+        warning: '!border-amber-600/50  !text-amber-600 dark:(!border-amber-400/50 !text-amber-400)',
+      },
+    }"
+  />
   <component :is="currentLayout">
     <router-view />
   </component>

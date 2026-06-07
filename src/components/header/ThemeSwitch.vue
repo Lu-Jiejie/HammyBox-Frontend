@@ -36,6 +36,6 @@ function toggleTheme() {
     aria-label="Toggle theme"
     @click="toggleTheme"
   >
-    <span class="size-[1.2rem] block" :class="[currentIcon]" />
+    <span class="size-5 block" :class="[currentIcon]" />
   </Button>
 </template>

@@ -21,6 +21,7 @@ export default defineConfig({
 
     // https://github.com/vuejs/router/pull/2603
     VueRouter({
+      exclude: ['**/components/**', '**/layout/**'],
       dts: 'src/typed-router.d.ts',
     }),
 
