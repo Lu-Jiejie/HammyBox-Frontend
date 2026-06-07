@@ -14,7 +14,6 @@ import {
   Field,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from '@/components/shadcn/field'
 import { Input } from '@/components/shadcn/input'
 import { useAuth } from '@/composables/useAuth'
@@ -26,15 +25,15 @@ const props = defineProps<{
 
 const router = useRouter()
 const route = useRoute()
-const { loginUser, userLoading } = useAuth()
+const { login, loading } = useAuth()
 
-const authCode = ref('')
+const password = ref('')
 
 async function onSubmit() {
-  if (userLoading.value || !authCode.value)
+  if (loading.value || !password.value)
     return
 
-  const ok = await loginUser(authCode.value)
+  const ok = await login(password.value)
   if (ok) {
     const redirect = route.query.redirect as string | undefined
     router.replace(redirect || '/')
@@ -47,42 +46,33 @@ async function onSubmit() {
     <Card>
       <CardHeader>
         <CardTitle class="text-2xl">
-          {{ $t('auth.uploadLogin.title', { name: 'File Hub' }) }}
+          {{ $t('auth.login.title') }}
         </CardTitle>
         <CardDescription>
-          {{ $t('auth.uploadLogin.subTitle') }}
+          {{ $t('auth.login.subTitle') }}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <form @submit.prevent="onSubmit">
           <FieldGroup>
             <Field>
-              <FieldLabel for="authCode">
-                {{ $t('fileds.authCode') }}
+              <FieldLabel for="password">
+                {{ $t('auth.login.password') }}
               </FieldLabel>
               <Input
-                id="authCode"
-                v-model="authCode"
+                id="password"
+                v-model="password"
                 type="password"
-                placeholder="******"
+                :placeholder="$t('auth.login.passwordPlaceholder')"
+                autocomplete="current-password"
                 required
-                :disabled="userLoading"
+                :disabled="loading"
               />
             </Field>
             <Field>
-              <Button type="submit" :disabled="userLoading">
-                <div v-if="userLoading" class="i-lucide-loader-circle mr-2 size-4 animate-spin" />
+              <Button type="submit" :disabled="loading" class="w-full">
+                <div v-if="loading" class="i-lucide-loader-circle mr-2 size-4 animate-spin" />
                 {{ $t('actions.login') }}
-              </Button>
-            </Field>
-            <FieldSeparator />
-            <Field>
-              <Button
-                variant="outline"
-                type="button"
-                @click="router.push('/admin/login')"
-              >
-                {{ $t('actions.toAdminPage') }}
               </Button>
             </Field>
           </FieldGroup>

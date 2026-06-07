@@ -17,11 +17,11 @@ instance.interceptors.response.use(
 
     if (response?.status === 401) {
       const store = useAppStore()
-      store.adminLoggedIn = false
+      store.loggedIn = false
 
       if (config?.silentAuth && !isRedirectingToLogin) {
         isRedirectingToLogin = true
-        router.push('/admin/login').finally(() => {
+        router.push('/login').finally(() => {
           isRedirectingToLogin = false
         })
       }

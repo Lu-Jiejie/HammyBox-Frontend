@@ -9,8 +9,7 @@ export const useAppStore = defineStore('app', () => {
   const bingWallPapers = ref<Array<{ url: string }>>([])
 
   // 会话状态标记（不存储密码，实际认证通过 HttpOnly Cookie，且不参与本地持久化）
-  const adminLoggedIn = ref(false)
-  const userLoggedIn = ref(false)
+  const loggedIn = ref(false)
 
   const uploadMethod = ref('default')
   const uploadCopyUrlForm = ref('')
@@ -46,17 +45,7 @@ export const useAppStore = defineStore('app', () => {
   const cusDarkMode = ref(false)
 
   /* ─── 2. Getters (计算属性) ─── */
-  const credentials = computed(() => adminLoggedIn.value ? '__session__' : null)
-
-  // 兼容针对 uploadFolder 的原有 localStorage 兜底降级逻辑
-  // const storeUploadFolder = computed(() => {
-  //   return uploadFolder.value || localStorage.getItem('uploadFolder') || ''
-  // })
-
-  // 兼容旧代码：setCredentials 映射到 adminLoggedIn
-  function setCredentials(credentials: any) {
-    adminLoggedIn.value = credentials !== null && credentials !== undefined
-  }
+  const credentials = computed(() => loggedIn.value ? '__session__' : null)
 
   // 包含附加副作用的特殊修改方法
   function setStoreUploadFolder(folder: string) {
@@ -104,8 +93,7 @@ export const useAppStore = defineStore('app', () => {
     // 导出状态与 Getters
     userConfig,
     bingWallPapers,
-    adminLoggedIn,
-    userLoggedIn,
+    loggedIn,
     uploadMethod,
     uploadCopyUrlForm,
     compressConfig,
@@ -119,30 +107,10 @@ export const useAppStore = defineStore('app', () => {
     autoReUpload,
     useDarkMode,
     cusDarkMode,
-    // storeUploadMethod,
-    // storeAutoReUpload,
     credentials,
-    // storeUploadFolder,
 
     // 导出操作方法
-    // setUserConfig,
-    // setBingWallPapers,
-    setCredentials,
-    // setAdminLoggedIn,
-    // setUserLoggedIn,
-    // setUploadMethod,
-    // setUploadCopyUrlForm,
-    // setCompressConfig,
-    // setStoreUploadChannel,
-    // setStoreChannelName,
-    // setStoreUploadNameType,
-    // setCustomUrlSettings,
-    // setStoreAutoRetry,
-    // setAdminUrlSettings,
-    // setUseDarkMode,
-    // setCusDarkMode,
     setStoreUploadFolder,
-    // setStoreAutoReUpload,
     fetchUserConfig,
     fetchBingWallPapers,
   }

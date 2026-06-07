@@ -1,20 +1,12 @@
 {
   "auth": {
-    "uploadLogin": {
+    "login": {
       "title": "Sign in to {name}",
-      "subTitle": "Enter your verification code to sign in.",
-      "success": "Signed in successfully",
-      "failed": "Wrong access code, sign-in failed"
-    },
-    "adminLogin": {
-      "title": "Sign in to Admin Panel",
-      "subTitle": "Enter your admin username and password to sign in.",
-      "username": "Username",
-      "usernamePlaceholder": "Enter your username",
+      "subTitle": "Enter your password to sign in.",
       "password": "Password",
       "passwordPlaceholder": "Enter your password",
       "success": "Signed in successfully",
-      "failed": "Wrong username or password"
+      "failed": "Wrong password, sign-in failed"
     },
     "logout": {
       "success": "Signed out"
@@ -24,8 +16,6 @@
     "toggleLanguage": "Toggle Language",
     "toggleTheme": "Toggle Theme",
     "toggleBackground": "Toggle Background",
-    "toAdminPage": "Go to Admin Panel",
-    "toUploadPage": "Back to Upload",
     "login": "Login",
     "logout": "Logout"
   },
