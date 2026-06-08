@@ -24,3 +24,15 @@ declare module 'vue-router' {
     auth?: boolean
   }
 }
+
+declare module 'ky' {
+  export interface Options {
+    /**
+     * 是否在发生 401 错误时开启静默认证流程
+     */
+    silentAuth?: boolean
+  }
+  export interface NormalizedOptions {
+    silentAuth?: boolean
+  }
+}

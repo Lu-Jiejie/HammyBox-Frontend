@@ -22,11 +22,86 @@
   "fileds": {
     "authCode": "认证码"
   },
-  "background": {
-    "prev": "上一张",
-    "next": "下一张",
-    "refresh": "刷新壁纸",
-    "enable": "启用壁纸",
-    "disable": "禁用壁纸"
+  "upload": {
+    "title": "文件上传",
+    "dragUploadText": "点击或拖拽文件到此处上传",
+    "selectFiles": "选择文件",
+    "uploading": "上传中...",
+    "uploadSuccess": "上传成功",
+    "uploadFailed": "上传失败",
+    "copyUrlSuccess": "复制链接成功",
+    "copyAllSuccess": "复制全部链接成功",
+    "preferences": "上传偏好",
+    "actions": {
+      "copyAll": "复制全部",
+      "retryFailed": "重试失败",
+      "clearSuccess": "清空成功",
+      "clearAll": "清空全部",
+      "clearList": "清空列表"
+    },
+    "status": {
+      "pending": "等待上传",
+      "uploading": "上传中",
+      "success": "上传成功",
+      "error": "上传失败"
+    },
+    "stats": {
+      "total": "总计",
+      "success": "成功",
+      "failed": "失败",
+      "uploading": "上传中"
+    },
+    "copyFormats": {
+      "url": "复制链接",
+      "markdown": "复制 Markdown",
+      "html": "复制 HTML",
+      "bbcode": "复制 BBCode"
+    }
+  },
+  "uploadPreferences": {
+    "title": "上传偏好",
+    "subtitle": "个性化上传体验，仅在当前浏览器生效",
+    "channel": {
+      "sectionTitle": "渠道配置",
+      "type": "渠道类型",
+      "name": "渠道名称",
+      "nameTooltip": "指定具体配置名称，留空则自动选择",
+      "autoSelect": "自动选择",
+      "directory": "上传目录",
+      "directoryPlaceholder": "如 /images/2024"
+    },
+    "path": {
+      "sectionTitle": "上传路径"
+    },
+    "naming": {
+      "sectionTitle": "文件命名",
+      "title": "命名规则",
+      "default": "默认命名",
+      "index": "索引命名",
+      "origin": "原始文件名",
+      "short": "短链接"
+    },
+    "preprocessing": {
+      "sectionTitle": "客户端预处理",
+      "convertToWebp": "转换为 WebP",
+      "convertToWebpTooltip": "上传前将图片转换为 WebP 格式以获得更好的压缩率",
+      "clientCompress": "启用压缩",
+      "compressThreshold": "压缩阈值",
+      "compressThresholdTooltip": "大于此大小的文件将在上传前被压缩",
+      "expectedSize": "目标大小",
+      "expectedSizeTooltip": "压缩后的期望文件大小"
+    },
+    "serverCompress": {
+      "sectionTitle": "服务端压缩",
+      "enable": "启用服务端压缩",
+      "tooltip": "让 Telegram 服务器压缩图片（仅限 Telegram 渠道）"
+    }
+  },
+  "common": {
+    "cancel": "取消",
+    "confirm": "确定",
+    "save": "保存",
+    "delete": "删除",
+    "copy": "复制"
   }
 }

@@ -1,18 +1,11 @@
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { Toaster } from '@/components/shadcn/sonner'
-import { useAuth } from '@/composables/useAuth'
 import AppShell from '@/layout/AppShell.vue'
 import Header from '@/layout/Header.vue'
 
 const route = useRoute()
-const { checkSession } = useAuth()
-
-// 应用启动时检查会话状态，如果后端 Cookie 有效则自动恢复登录态
-onMounted(() => {
-  checkSession()
-})
 
 const currentLayout = computed(() => {
   // 登录页只显示 header，其他页面使用完整应用外壳（header + sidebar）

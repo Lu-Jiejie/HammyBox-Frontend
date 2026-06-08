@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { computed, reactive, ref } from 'vue'
 import { LocalStorageKey } from '@/types'
-import axiosInstance from '@/utils/axios'
+import axios from '@/utils/axios'
 
 export const useAppStore = defineStore('app', () => {
   /* ─── 1. State (响应式状态) ─── */
@@ -15,18 +15,18 @@ export const useAppStore = defineStore('app', () => {
   const uploadCopyUrlForm = ref('')
 
   const compressConfig = reactive({
-    customerCompress: undefined,
-    compressQuality: undefined,
-    compressBar: undefined,
-    serverCompress: undefined,
-    convertToWebp: undefined,
+    customerCompress: false,
+    compressQuality: 4, // MB - target size after compression
+    compressBar: 5, // MB - threshold to trigger compression
+    serverCompress: true, // Telegram server-side compression
+    convertToWebp: false,
   })
 
-  const storeUploadChannel = ref('')
-  const storeChannelName = ref<string | null>(null) // null表示从未选择，''表示用户主动清空
-  const storeAutoRetry = ref(true)
-  const storeUploadNameType = ref('')
+  // 上传配置
+  const uploadChannel = ref('telegram')
+  const uploadChannelName = ref<string>('')
   const uploadFolder = ref('')
+  const uploadNameType = ref('default')
 
   const customUrlSettings = reactive({
     useCustomUrl: 'false',
@@ -37,8 +37,6 @@ export const useAppStore = defineStore('app', () => {
     useCustomUrl: 'false',
     customUrlPrefix: '',
   })
-
-  const autoReUpload = ref(true)
 
   // 深色模式状态
   const useDarkMode = ref<boolean | null>(null)
@@ -56,36 +54,11 @@ export const useAppStore = defineStore('app', () => {
   /* ─── 4. Actions (异步数据请求) ─── */
   async function fetchUserConfig() {
     try {
-      const response = await axiosInstance.get('/api/userConfig')
+      const response = await axios.get('/api/userConfig')
       userConfig.value = response.data
     }
     catch (error) {
       console.error('获取用户配置失败:', error)
-    }
-  }
-
-  async function fetchBingWallPapers() {
-    try {
-      const response = await axiosInstance.get('/api/bing/wallpaper')
-      const wallpapers = response.data.data
-      const processedPapers = wallpapers.map((wallpaper: any) => ({
-        url: `https://www.bing.com${wallpaper.url}`,
-      }))
-
-      // 预加载图片流，阻塞直到图片全部缓存完成，避免前台壁纸闪烁
-      await Promise.all(processedPapers.map((wallpaper: any) => {
-        return new Promise((resolve, reject) => {
-          const img = new Image()
-          img.onload = resolve
-          img.onerror = reject
-          img.src = wallpaper.url
-        })
-      }))
-
-      bingWallPapers.value = processedPapers
-    }
-    catch (error) {
-      console.error('预加载 Bing 壁纸失败:', error)
     }
   }
 
@@ -97,14 +70,12 @@ export const useAppStore = defineStore('app', () => {
     uploadMethod,
     uploadCopyUrlForm,
     compressConfig,
-    storeUploadChannel,
-    storeChannelName,
-    storeAutoRetry,
-    storeUploadNameType,
+    uploadChannel,
+    uploadChannelName,
     uploadFolder,
+    uploadNameType,
     customUrlSettings,
     adminUrlSettings,
-    autoReUpload,
     useDarkMode,
     cusDarkMode,
     credentials,
@@ -112,7 +83,6 @@ export const useAppStore = defineStore('app', () => {
     // 导出操作方法
     setStoreUploadFolder,
     fetchUserConfig,
-    fetchBingWallPapers,
   }
 }, {
   /* ─── 5. 高级持久化白名单配置 ─── */
@@ -124,14 +94,12 @@ export const useAppStore = defineStore('app', () => {
       'uploadMethod',
       'uploadCopyUrlForm',
       'compressConfig',
-      'storeUploadChannel',
-      'storeChannelName',
-      'storeAutoRetry',
-      'storeUploadNameType',
+      'uploadChannel',
+      'uploadChannelName',
       'uploadFolder',
+      'uploadNameType',
       'customUrlSettings',
       'adminUrlSettings',
-      'autoReUpload',
       'useDarkMode',
       'cusDarkMode',
     ],

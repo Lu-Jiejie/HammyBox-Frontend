@@ -14,11 +14,14 @@ html.dark {
   --c-scrollbar: #222;
   color-scheme: dark;
 }
+* {
+  scrollbar-color: var(--c-scrollbar) transparent;
+}
+
 
 html {
   overflow-x: hidden;
-  /* overflow-y: scroll; */
-  /* scrollbar-gutter: stable; */
+  scrollbar-gutter: stable;
 }
 
 /* Transitions */

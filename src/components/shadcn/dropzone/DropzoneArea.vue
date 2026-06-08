@@ -22,7 +22,7 @@ const rootProps = computed(() => context.getRootProps())
     :class="cn(
       'flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
       context.isDragActive.value && 'animate-pulse bg-black/5',
-      context.isInvalid.value && 'border-destructive',
+      // context.isInvalid.value && 'border-destructive',
       props.class,
     )"
     aria-label="dropzone"

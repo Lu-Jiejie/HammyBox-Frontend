@@ -26,6 +26,9 @@ instance.interceptors.response.use(
         })
       }
     }
+
+    // 必须返回 rejected promise，否则错误对象会变成 undefined
+    return Promise.reject(error)
   },
 )
 

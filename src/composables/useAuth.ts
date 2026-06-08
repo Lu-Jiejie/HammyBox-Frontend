@@ -2,10 +2,8 @@
 
 import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
-import { useI18n } from 'vue-i18n'
-import { toast } from 'vue-sonner'
 import { useAppStore } from '@/stores'
-import instance from '@/utils/axios'
+import axios from '@/utils/axios'
 
 // ── 模块级单例的加载态 ──
 // 登录/登出可能由多个组件触发（登录页、侧边栏登出按钮等），
@@ -18,16 +16,20 @@ function withMinDelay<T>(promise: Promise<T>, ms: number): Promise<T> {
   return Promise.all([promise, delay]).then(([result]) => result)
 }
 
+export interface AuthResult {
+  success: boolean
+  error?: string
+}
+
 export function useAuth() {
-  const { t } = useI18n()
   const store = useAppStore()
   const { loggedIn } = storeToRefs(store)
 
   // 会话检查：应用启动时调用，从后端同步真实会话状态
   async function checkSession(): Promise<boolean> {
     try {
-      const res = await instance.get('/api/auth/sessionCheck')
-      if (res?.status === 200 && res.data?.valid) {
+      const response = await axios.get<{ valid: boolean }>('/api/auth/sessionCheck')
+      if (response.data?.valid) {
         loggedIn.value = true
         return true
       }
@@ -41,24 +43,19 @@ export function useAuth() {
   }
 
   // 单一登录：仅凭密码。会话 Token 由后端通过 HttpOnly Cookie 下发。
-  async function login(password: string): Promise<boolean> {
+  async function login(password: string): Promise<AuthResult> {
     loading.value = true
     try {
-      const res = await withMinDelay(
-        // 不传 silentAuth：登录失败的 401 不应触发拦截器跳转，由这里自行提示。
-        instance.post('/api/auth/login', { password }),
+      await withMinDelay(
+        axios.post('/api/auth/login', { password }),
         500,
       )
 
-      // 拦截器对错误不会 re-throw，失败时 res 为 undefined。
-      if (res?.status === 200) {
-        loggedIn.value = true
-        toast.success(t('auth.login.success'))
-        return true
-      }
-
-      toast.error(t('auth.login.failed'))
-      return false
+      loggedIn.value = true
+      return { success: true }
+    }
+    catch {
+      return { success: false, error: 'auth.login.failed' }
     }
     finally {
       loading.value = false
@@ -66,13 +63,18 @@ export function useAuth() {
   }
 
   // 登出：单用户模型，无需参数。
-  async function logout(): Promise<void> {
-    await instance.post('/api/auth/logout')
+  async function logout(): Promise<AuthResult> {
+    try {
+      await axios.post('/api/auth/logout')
+    }
+    catch {
+      // 忽略登出错误
+    }
 
     // 不论后端结果如何都清掉本地会话标记，保证前端状态与意图一致。
     loggedIn.value = false
 
-    toast.success(t('auth.logout.success'))
+    return { success: true }
   }
 
   return {

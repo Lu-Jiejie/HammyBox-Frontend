@@ -22,11 +22,86 @@
   "fileds": {
     "authCode": "Access Code"
   },
-  "background": {
-    "prev": "Previous wallpaper",
-    "next": "Next wallpaper",
-    "refresh": "Refresh wallpaper",
-    "enable": "Enable wallpaper",
-    "disable": "Disable wallpaper"
+  "upload": {
+    "title": "File Upload",
+    "dragUploadText": "Click or drag files here to upload",
+    "selectFiles": "Select files",
+    "uploading": "Uploading...",
+    "uploadSuccess": "Upload successful",
+    "uploadFailed": "Upload failed",
+    "copyUrlSuccess": "Link copied",
+    "copyAllSuccess": "All links copied",
+    "preferences": "Upload Preferences",
+    "actions": {
+      "copyAll": "Copy All",
+      "retryFailed": "Retry Failed",
+      "clearSuccess": "Clear Success",
+      "clearAll": "Clear All",
+      "clearList": "Clear List"
+    },
+    "status": {
+      "pending": "Pending",
+      "uploading": "Uploading",
+      "success": "Success",
+      "error": "Failed"
+    },
+    "stats": {
+      "total": "Total",
+      "success": "Success",
+      "failed": "Failed",
+      "uploading": "Uploading"
+    },
+    "copyFormats": {
+      "url": "Copy URL",
+      "markdown": "Copy Markdown",
+      "html": "Copy HTML",
+      "bbcode": "Copy BBCode"
+    }
+  },
+  "uploadPreferences": {
+    "title": "Upload Preferences",
+    "subtitle": "Customize your upload experience, local to this browser only",
+    "channel": {
+      "sectionTitle": "Channel Configuration",
+      "type": "Channel Type",
+      "name": "Channel Name",
+      "nameTooltip": "Specify config name; leave empty to auto-select",
+      "autoSelect": "Auto select",
+      "directory": "Upload Directory",
+      "directoryPlaceholder": "e.g. /images/2024"
+    },
+    "path": {
+      "sectionTitle": "Upload Path"
+    },
+    "naming": {
+      "sectionTitle": "File Naming",
+      "title": "Naming Rule",
+      "default": "Default Name",
+      "index": "Indexed Name",
+      "origin": "Original Filename",
+      "short": "Short Link"
+    },
+    "preprocessing": {
+      "sectionTitle": "Client Preprocessing",
+      "convertToWebp": "Convert to WebP",
+      "convertToWebpTooltip": "Convert images to WebP format before upload for better compression",
+      "clientCompress": "Enable Compression",
+      "compressThreshold": "Compression Threshold",
+      "compressThresholdTooltip": "Files larger than this size will be compressed before upload",
+      "expectedSize": "Target Size",
+      "expectedSizeTooltip": "Expected file size after compression"
+    },
+    "serverCompress": {
+      "sectionTitle": "Server Compression",
+      "enable": "Enable Server Compression",
+      "tooltip": "Let Telegram server compress images (Telegram only)"
+    }
+  },
+  "common": {
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "delete": "Delete",
+    "copy": "Copy"
   }
 }
