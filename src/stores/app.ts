@@ -42,6 +42,9 @@ export const useAppStore = defineStore('app', () => {
   const useDarkMode = ref<boolean | null>(null)
   const cusDarkMode = ref(false)
 
+  // 文件视图模式偏好
+  const fileViewMode = ref<'card' | 'list'>('card')
+
   /* ─── 2. Getters (计算属性) ─── */
   const credentials = computed(() => loggedIn.value ? '__session__' : null)
 
@@ -78,6 +81,7 @@ export const useAppStore = defineStore('app', () => {
     adminUrlSettings,
     useDarkMode,
     cusDarkMode,
+    fileViewMode,
     credentials,
 
     // 导出操作方法
@@ -102,6 +106,7 @@ export const useAppStore = defineStore('app', () => {
       'adminUrlSettings',
       'useDarkMode',
       'cusDarkMode',
+      'fileViewMode',
     ],
   },
 })

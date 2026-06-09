@@ -28,7 +28,7 @@ export function useAuth() {
   // 会话检查：应用启动时调用，从后端同步真实会话状态
   async function checkSession(): Promise<boolean> {
     try {
-      const response = await axios.get<{ valid: boolean }>('/api/auth/sessionCheck')
+      const response = await axios.get<{ valid: boolean }>('/auth/sessionCheck')
       if (response.data?.valid) {
         loggedIn.value = true
         return true
@@ -47,7 +47,7 @@ export function useAuth() {
     loading.value = true
     try {
       await withMinDelay(
-        axios.post('/api/auth/login', { password }),
+        axios.post('/auth/login', { password }),
         500,
       )
 
@@ -65,7 +65,7 @@ export function useAuth() {
   // 登出：单用户模型，无需参数。
   async function logout(): Promise<AuthResult> {
     try {
-      await axios.post('/api/auth/logout')
+      await axios.post('/auth/logout')
     }
     catch {
       // 忽略登出错误

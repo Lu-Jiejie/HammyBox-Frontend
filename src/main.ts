@@ -1,6 +1,7 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import { registerModules } from './modules'
+import './utils/preventLayoutShift'
 
 import 'uno.css'
 import './styles/main.css'

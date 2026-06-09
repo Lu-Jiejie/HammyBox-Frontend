@@ -21,7 +21,26 @@ html.dark {
 
 html {
   overflow-x: hidden;
-  scrollbar-gutter: stable;
+}
+
+/* 强制页面始终显示滚动条，避免弹出层导致的宽度变化 */
+html {
+  overflow-y: scroll;
+}
+
+/* 防止弹出层打开时页面偏移 */
+body {
+  /* 使用 !important 强制覆盖 JS 添加的内联样式 */
+  padding-right: 0 !important;
+  margin-right: 0 !important;
+  width: 100% !important;
+}
+
+/* 额外保护：防止任何方式添加的样式 */
+body[style] {
+  padding-right: 0 !important;
+  margin-right: 0 !important;
+  width: 100% !important;
 }
 
 /* Transitions */

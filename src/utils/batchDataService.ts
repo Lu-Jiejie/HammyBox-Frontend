@@ -125,7 +125,7 @@ class BatchDataService {
     params.set('limit', String(this.batchSize))
 
     try {
-      const response = await axiosInstance.get(`/api/manage/batch/list?${params}`, {
+      const response = await axiosInstance.get(`/manage/batch/list?${params}`, {
         cancelToken: this.cancelTokenSource?.token,
       })
 

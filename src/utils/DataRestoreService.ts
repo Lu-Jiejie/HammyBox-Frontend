@@ -212,7 +212,7 @@ class DataRestoreService {
    */
   private async uploadChunk(type: 'files' | 'settings', data: Record<string, any>): Promise<ChunkResponse> {
     try {
-      const response = await axiosInstance.post('/api/manage/batch/restore/chunk', { type, data })
+      const response = await axiosInstance.post('/manage/batch/restore/chunk', { type, data })
       const result = response.data as ChunkResponse
 
       if (!result || !result.success) {

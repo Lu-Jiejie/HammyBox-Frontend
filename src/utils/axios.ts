@@ -4,7 +4,7 @@ import { router } from '@/modules/router'
 import { useAppStore } from '@/stores'
 
 const instance = axios.create({
-  baseURL: import.meta.env.PROD ? '/' : '/dev-api',
+  baseURL: '/api',
   withCredentials: true,
 })
 

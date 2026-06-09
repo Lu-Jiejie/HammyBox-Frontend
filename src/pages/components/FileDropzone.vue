@@ -4,6 +4,7 @@ import { storeToRefs } from 'pinia'
 import { computed, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
+import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import Hint from '@/components/Hint.vue'
 import InfoPopover from '@/components/InfoPopover.vue'
 import { Button } from '@/components/shadcn/button'
@@ -65,7 +66,9 @@ function getFilePreviewUrl(file: File): string {
 // 构建完整的文件 URL
 function buildFileUrl(src: string): string {
   const cleanSrc = src.startsWith('/file/') ? src.replace('/file/', '') : src
-  return `${window.location.protocol}//${window.location.host}/file/${cleanSrc}`
+  // 对文件名进行 URL 编码，但保留路径分隔符 /
+  const encodedSrc = cleanSrc.split('/').map(part => encodeURIComponent(part)).join('/')
+  return `${window.location.protocol}//${window.location.host}/api/file/${encodedSrc}`
 }
 
 // 复制不同格式的链接
@@ -381,7 +384,7 @@ onBeforeUnmount(() => {
         </div>
       </div>
 
-      <DropzoneFileList class="space-y-4">
+      <DropzoneFileList v-auto-animate class="space-y-4">
         <DropzoneFileListItem
           v-for="file in dropzone.fileStatuses.value"
           :key="file.id"

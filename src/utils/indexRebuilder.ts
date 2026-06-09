@@ -65,7 +65,7 @@ class IndexRebuilder {
   async fetchConfig(): Promise<{ chunkSize: number, databaseType: string }> {
     try {
       // 使用 Axios 替代 fetchWithAuth，并开启 silentAuth 静默认证拦截
-      const response = await axiosInstance.get<ConfigResponse>('/api/manage/batch/index/config', {
+      const response = await axiosInstance.get<ConfigResponse>('/manage/batch/index/config', {
         silentAuth: true,
       })
 
@@ -265,7 +265,7 @@ class IndexRebuilder {
     const checksum = await this.calculateChecksum(chunk)
 
     try {
-      const response = await axiosInstance.post<BaseApiResponse>('/api/manage/batch/index/chunk', {
+      const response = await axiosInstance.post<BaseApiResponse>('/manage/batch/index/chunk', {
         chunkId: String(chunkId),
         sessionId: this.sessionId,
         data: chunk,
@@ -320,7 +320,7 @@ class IndexRebuilder {
    */
   private async finalize(totalChunks: number, totalFiles: number): Promise<BaseApiResponse> {
     try {
-      const response = await axiosInstance.post<BaseApiResponse>('/api/manage/batch/index/finalize', {
+      const response = await axiosInstance.post<BaseApiResponse>('/manage/batch/index/finalize', {
         sessionId: this.sessionId,
         totalChunks,
         totalFiles,

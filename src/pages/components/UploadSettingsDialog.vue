@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { computed, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import FolderSelector from '@/components/FolderSelector.vue'
 import InfoPopover from '@/components/InfoPopover.vue'
 import {
   Dialog,
@@ -77,10 +78,10 @@ const namingTypes = [
   { value: 'short', label: t('uploadPreferences.naming.short'), description: '8位随机短链' },
 ]
 
-// uploadFolder 的特殊处理：自动添加前导斜杠
+// uploadFolder 的特殊处理：移除前导斜杠（后端使用空字符串表示根目录）
 watch(uploadFolder, (newValue) => {
-  if (newValue && !newValue.startsWith('/')) {
-    uploadFolder.value = `/${newValue}`
+  if (newValue && newValue.startsWith('/')) {
+    uploadFolder.value = newValue.slice(1)
   }
 })
 </script>
@@ -138,11 +139,10 @@ watch(uploadFolder, (newValue) => {
         <!-- 上传路径组 -->
         <div class="space-y-2">
           <Label for="uploadFolder">{{ t('uploadPreferences.channel.directory') }}</Label>
-          <Input
-            id="uploadFolder"
-            v-model="uploadFolder"
-            :placeholder="t('uploadPreferences.channel.directoryPlaceholder')"
-          />
+          <FolderSelector v-model="uploadFolder" :open="open" />
+          <p class="text-xs text-muted-foreground">
+            {{ t('uploadPreferences.channel.directoryPlaceholder') }}
+          </p>
         </div>
 
         <!-- 分隔线 -->

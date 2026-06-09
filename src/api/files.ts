@@ -1,0 +1,169 @@
+import type { AxiosProgressEvent } from 'axios'
+import axios from '@/utils/axios'
+
+export interface FileItem {
+  name: string
+  metadata?: {
+    FileName?: string
+    FileType?: string
+    FileSize?: number
+    UploadTime?: string
+    LastModified?: string
+    MimeType?: string
+    Channel?: string
+    ChannelName?: string
+    TelegramFileId?: string
+    S3Location?: string
+    Labels?: string[]
+    Tags?: string[]
+    AccessStatus?: 'public' | 'private' | 'blocked'
+  }
+}
+
+export interface DirectoryItem {
+  name: string
+  fileCount?: number
+}
+
+export interface FileListParams {
+  start?: number
+  count?: number
+  folder?: string
+  search?: string
+  recursive?: boolean
+  channel?: string
+  channelName?: string
+  listType?: string
+  accessStatus?: string
+  label?: string
+  fileType?: string
+  includeTags?: string
+  excludeTags?: string
+}
+
+export interface FileListResponse {
+  files: FileItem[]
+  directories: DirectoryItem[]
+  totalCount: number
+  directFileCount: number
+  directFolderCount: number
+  returnedCount: number
+}
+
+export interface QuotaStats {
+  quotaStats: Record<string, { sizeMB: number, count: number }>
+  totalSizeMB: number
+  totalCount: number
+  lastUpdated?: string
+}
+
+// 获取文件列表
+export function getFileList(params: FileListParams = {}) {
+  return axios.get<FileListResponse>('/manage/list', { params })
+}
+
+// 获取容量统计
+export function getQuotaStats() {
+  return axios.get<QuotaStats>('/manage/quota')
+}
+
+// 删除文件
+export function deleteFile(fileId: string, isFolder = false) {
+  const path = fileId.replace(/\//g, ',')
+  return axios.post(`/manage/delete/${path}`, null, {
+    params: { folder: isFolder },
+  })
+}
+
+// 批量删除
+export async function batchDelete(fileIds: string[]) {
+  const results = await Promise.allSettled(
+    fileIds.map(id => deleteFile(id)),
+  )
+  return results
+}
+
+// 移动文件
+export function moveFile(fileId: string, targetDir: string, isFolder = false) {
+  const path = fileId.replace(/\//g, ',')
+  return axios.post(`/manage/move/${path}`, null, {
+    params: { dist: targetDir, folder: isFolder },
+  })
+}
+
+// 批量移动
+export async function batchMove(fileIds: string[], targetDir: string) {
+  const results = await Promise.allSettled(
+    fileIds.map(id => moveFile(id, targetDir)),
+  )
+  return results
+}
+
+// 重命名文件
+export function renameFile(fileId: string, newName: string) {
+  const path = fileId.replace(/\//g, ',')
+  return axios.post(`/manage/rename/${path}`, { newName })
+}
+
+// 修改文件元数据
+export function updateFileMetadata(fileId: string, metadata: { FileName?: string, FileType?: string }) {
+  const path = fileId.replace(/\//g, ',')
+  return axios.patch(`/manage/metadata/${path}`, metadata)
+}
+
+// 获取文件标签
+export function getFileTags(fileId: string) {
+  const path = fileId.replace(/\//g, ',')
+  return axios.get<{ tags: string[] }>(`/manage/tags/${path}`)
+}
+
+// 更新文件标签
+export function updateFileTags(fileId: string, tags: string[]) {
+  const path = fileId.replace(/\//g, ',')
+  return axios.post(`/manage/tags/${path}`, { tags })
+}
+
+// 批量标签操作
+export function batchTagOperation(fileIds: string[], action: 'set' | 'add' | 'remove', tags: string[]) {
+  return axios.post('/manage/tags/batch', {
+    fileIds,
+    action,
+    tags,
+  })
+}
+
+// 标签自动补全
+export function getTagSuggestions(prefix: string, limit = 20) {
+  return axios.get<{ tags: string[] }>('/manage/tags/autocomplete', {
+    params: { prefix, limit },
+  })
+}
+
+// 下载文件
+export function downloadFile(fileId: string, onProgress?: (progress: AxiosProgressEvent) => void) {
+  const cleanFileId = fileId.startsWith('/file/') ? fileId.replace('/file/', '') : fileId
+  return axios.get(`/file/${cleanFileId}`, {
+    responseType: 'blob',
+    onDownloadProgress: onProgress,
+  })
+}
+
+// 创建文件夹
+export function createFolder(path: string, createParents = false) {
+  return axios.post('/manage/folders', { path, createParents })
+}
+
+// 删除文件夹
+export function deleteFolder(path: string, recursive = false) {
+  return axios.delete('/manage/folders', { data: { path, recursive } })
+}
+
+// 获取文件夹树
+export function getFolderTree(format: 'tree' | 'flat' = 'tree') {
+  return axios.get('/manage/folders/tree', { params: { format } })
+}
+
+// 列出文件夹内容
+export function listFolder(folder = '', start = 0, count = 50) {
+  return axios.get('/manage/folders/list', { params: { folder, start, count } })
+}

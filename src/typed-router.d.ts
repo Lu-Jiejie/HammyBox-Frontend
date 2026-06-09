@@ -38,9 +38,65 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/api-tokens/': RouteRecordInfo<
+      '/api-tokens/',
+      '/api-tokens',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/files/': RouteRecordInfo<
+      '/files/',
+      '/files',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
     '/login/': RouteRecordInfo<
       '/login/',
       '/login',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/settings/': RouteRecordInfo<
+      '/settings/',
+      '/settings',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/settings/others': RouteRecordInfo<
+      '/settings/others',
+      '/settings/others',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/settings/page': RouteRecordInfo<
+      '/settings/page',
+      '/settings/page',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/settings/security': RouteRecordInfo<
+      '/settings/security',
+      '/settings/security',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/settings/upload': RouteRecordInfo<
+      '/settings/upload',
+      '/settings/upload',
+      Record<never, never>,
+      Record<never, never>,
+      | never
+    >,
+    '/tags/': RouteRecordInfo<
+      '/tags/',
+      '/tags',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -73,9 +129,73 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
+    'src/pages/api-tokens/index.vue': {
+      routes:
+        | '/api-tokens/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/files/index.vue': {
+      routes:
+        | '/files/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
     'src/pages/login/index.vue': {
       routes:
         | '/login/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/settings/index.vue': {
+      routes:
+        | '/settings/'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/settings/others.vue': {
+      routes:
+        | '/settings/others'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/settings/page.vue': {
+      routes:
+        | '/settings/page'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/settings/security.vue': {
+      routes:
+        | '/settings/security'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/settings/upload.vue': {
+      routes:
+        | '/settings/upload'
+      views:
+        | never
+      pathParamNames:
+        | never
+    }
+    'src/pages/tags/index.vue': {
+      routes:
+        | '/tags/'
       views:
         | never
       pathParamNames:

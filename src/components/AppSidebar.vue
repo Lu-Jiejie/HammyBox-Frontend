@@ -1,23 +1,17 @@
 <script setup lang="ts">
 import type { SidebarProps } from '@/components/shadcn/sidebar'
-
 import {
-  AudioWaveform,
-  BookOpen,
-  Bot,
-  Command,
-  Frame,
-  GalleryVerticalEnd,
-  Map,
-  PieChart,
-  Settings2,
-  SquareTerminal,
+  CloudUpload,
+  FileText,
+  FolderOpen,
+  Key,
+  Settings,
+  Tags,
 } from '@lucide/vue'
+import { computed } from 'vue'
+import { useRoute } from 'vue-router'
 import NavMain from '@/components/nav/NavMain.vue'
-import NavProjects from '@/components/nav/NavProjects.vue'
 import NavUser from '@/components/nav/NavUser.vue'
-import TeamSwitcher from '@/components/nav/TeamSwitcher.vue'
-
 import {
   Sidebar,
   SidebarContent,
@@ -30,148 +24,81 @@ const props = withDefaults(defineProps<SidebarProps>(), {
   collapsible: 'icon',
 })
 
-// This is sample data.
-const data = {
-  user: {
-    name: 'shadcn',
-    email: 'm@example.com',
-    avatar: '/avatars/shadcn.jpg',
-  },
-  teams: [
-    {
-      name: 'Acme Inc',
-      logo: GalleryVerticalEnd,
-      plan: 'Enterprise',
-    },
-    {
-      name: 'Acme Corp.',
-      logo: AudioWaveform,
-      plan: 'Startup',
-    },
-    {
-      name: 'Evil Corp.',
-      logo: Command,
-      plan: 'Free',
-    },
-  ],
+const route = useRoute()
+
+// 侧边栏导航数据 - 使用 computed 使其响应路由变化
+const data = computed(() => ({
   navMain: [
     {
-      title: 'Playground',
-      url: '#',
-      icon: SquareTerminal,
-      isActive: true,
-      items: [
-        {
-          title: 'History',
-          url: '#',
-        },
-        {
-          title: 'Starred',
-          url: '#',
-        },
-        {
-          title: 'Settings',
-          url: '#',
-        },
-      ],
+      title: '上传',
+      url: '/upload',
+      icon: CloudUpload,
+      isActive: route.path === '/upload',
     },
     {
-      title: 'Models',
-      url: '#',
-      icon: Bot,
-      items: [
-        {
-          title: 'Genesis',
-          url: '#',
-        },
-        {
-          title: 'Explorer',
-          url: '#',
-        },
-        {
-          title: 'Quantum',
-          url: '#',
-        },
-      ],
+      title: '文件管理',
+      url: '/files',
+      icon: FolderOpen,
+      isActive: route.path.startsWith('/files'),
     },
     {
-      title: 'Documentation',
-      url: '#',
-      icon: BookOpen,
-      items: [
-        {
-          title: 'Introduction',
-          url: '#',
-        },
-        {
-          title: 'Get Started',
-          url: '#',
-        },
-        {
-          title: 'Tutorials',
-          url: '#',
-        },
-        {
-          title: 'Changelog',
-          url: '#',
-        },
-      ],
+      title: '标签管理',
+      url: '/tags',
+      icon: Tags,
+      isActive: route.path === '/tags',
     },
     {
-      title: 'Settings',
-      url: '#',
-      icon: Settings2,
+      title: 'API Tokens',
+      url: '/api-tokens',
+      icon: Key,
+      isActive: route.path === '/api-tokens',
+    },
+    {
+      title: '系统设置',
+      url: '/settings',
+      icon: Settings,
+      isActive: route.path.startsWith('/settings'),
       items: [
         {
-          title: 'General',
-          url: '#',
+          title: '安全设置',
+          url: '/settings/security',
         },
         {
-          title: 'Team',
-          url: '#',
+          title: '上传渠道',
+          url: '/settings/upload',
         },
         {
-          title: 'Billing',
-          url: '#',
+          title: '页面配置',
+          url: '/settings/page',
         },
         {
-          title: 'Limits',
-          url: '#',
+          title: '其他设置',
+          url: '/settings/others',
         },
       ],
     },
   ],
-  projects: [
-    {
-      name: 'Design Engineering',
-      url: '#',
-      icon: Frame,
-    },
-    {
-      name: 'Sales & Marketing',
-      url: '#',
-      icon: PieChart,
-    },
-    {
-      name: 'Travel',
-      url: '#',
-      icon: Map,
-    },
-  ],
-}
+}))
 </script>
 
 <template>
   <Sidebar v-bind="props">
     <SidebarHeader>
-      <TeamSwitcher :teams="data.teams" />
+      <div class="text-sidebar-accent-foreground px-3 py-2 flex gap-2 items-center group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:justify-center">
+        <div class="text-sidebar-primary-foreground rounded-lg bg-sidebar-primary flex size-8 aspect-square items-center justify-center shrink-0">
+          <FileText class="size-4" />
+        </div>
+        <div class="text-sm leading-tight text-left flex-1 grid min-w-0 overflow-hidden group-data-[collapsible=icon]:hidden group-data-[collapsible=icon]:w-0">
+          <span class="font-semibold truncate">Hammy Box</span>
+          <span class="text-xs truncate">文件存储管理</span>
+        </div>
+      </div>
     </SidebarHeader>
     <SidebarContent>
       <NavMain :items="data.navMain" />
-      <NavProjects :projects="data.projects" />
     </SidebarContent>
     <SidebarFooter>
-      <NavUser :user="data.user" />
+      <NavUser />
     </SidebarFooter>
     <SidebarRail />
   </Sidebar>

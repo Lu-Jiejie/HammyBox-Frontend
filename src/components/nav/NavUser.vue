@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import {
-  BadgeCheck,
-  Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Sparkles,
+  User,
 } from '@lucide/vue'
+import { useI18n } from 'vue-i18n'
+import { useRouter } from 'vue-router'
+import { toast } from 'vue-sonner'
 
 import {
   Avatar,
@@ -16,7 +16,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -28,16 +27,32 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from '@/components/shadcn/sidebar'
+import { useAuth } from '@/composables/useAuth'
+import { useAppStore } from '@/stores'
 
-const { user } = defineProps<{
-  user: {
-    name: string
-    email: string
-    avatar: string
-  }
-}>()
-
+const { t } = useI18n()
+const router = useRouter()
+const store = useAppStore()
+const { logout } = useAuth()
 const { isMobile } = useSidebar()
+
+// 用户信息 - 单用户系统
+const user = {
+  name: 'Admin',
+  email: 'admin@hammybox.local',
+  avatar: '', // 无头像，使用 fallback
+}
+
+async function handleLogout() {
+  try {
+    await logout()
+    toast.success(t('auth.logout.success'))
+    router.push('/login')
+  }
+  catch (error) {
+    toast.error('Logout failed')
+  }
+}
 </script>
 
 <template>
@@ -52,12 +67,12 @@ const { isMobile } = useSidebar()
             <Avatar class="rounded-lg h-8 w-8">
               <AvatarImage :src="user.avatar" :alt="user.name" />
               <AvatarFallback class="rounded-lg">
-                CN
+                <User class="size-4" />
               </AvatarFallback>
             </Avatar>
             <div class="text-sm leading-tight text-left flex-1 grid">
               <span class="font-medium truncate">{{ user.name }}</span>
-              <span class="text-xs truncate">{{ user.email }}</span>
+              <span class="text-xs text-muted-foreground truncate">{{ user.email }}</span>
             </div>
             <ChevronsUpDown class="ml-auto size-4" />
           </SidebarMenuButton>
@@ -73,41 +88,19 @@ const { isMobile } = useSidebar()
               <Avatar class="rounded-lg h-8 w-8">
                 <AvatarImage :src="user.avatar" :alt="user.name" />
                 <AvatarFallback class="rounded-lg">
-                  CN
+                  <User class="size-4" />
                 </AvatarFallback>
               </Avatar>
               <div class="text-sm leading-tight text-left flex-1 grid">
                 <span class="font-semibold truncate">{{ user.name }}</span>
-                <span class="text-xs truncate">{{ user.email }}</span>
+                <span class="text-xs text-muted-foreground truncate">{{ user.email }}</span>
               </div>
             </div>
           </DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <Sparkles />
-              Upgrade to Pro
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuGroup>
-            <DropdownMenuItem>
-              <BadgeCheck />
-              Account
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <CreditCard />
-              Billing
-            </DropdownMenuItem>
-            <DropdownMenuItem>
-              <Bell />
-              Notifications
-            </DropdownMenuItem>
-          </DropdownMenuGroup>
-          <DropdownMenuSeparator />
-          <DropdownMenuItem>
+          <DropdownMenuItem @click="handleLogout">
             <LogOut />
-            Log out
+            {{ t('actions.logout') }}
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
