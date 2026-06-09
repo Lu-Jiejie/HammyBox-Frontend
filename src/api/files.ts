@@ -12,18 +12,13 @@ export interface FileItem {
     MimeType?: string
     Channel?: string
     ChannelName?: string
-    TelegramFileId?: string
-    S3Location?: string
-    Labels?: string[]
+    TimeStamp?: number
     Tags?: string[]
-    AccessStatus?: 'public' | 'private' | 'blocked'
+    FileSizeBytes?: number
   }
 }
 
-export interface DirectoryItem {
-  name: string
-  fileCount?: number
-}
+export type FolderItem = string
 
 export interface FileListParams {
   start?: number
@@ -43,11 +38,20 @@ export interface FileListParams {
 
 export interface FileListResponse {
   files: FileItem[]
-  directories: DirectoryItem[]
+  folders: FolderItem[]
   totalCount: number
   directFileCount: number
   directFolderCount: number
   returnedCount: number
+}
+
+export interface FolderListResponse {
+  success: boolean
+  currentFolder: string
+  folders: FolderItem[]
+  files: FileItem[]
+  totalFolders: number
+  totalFiles: number
 }
 
 export interface QuotaStats {
@@ -57,9 +61,16 @@ export interface QuotaStats {
   lastUpdated?: string
 }
 
-// 获取文件列表
+// 获取文件列表（旧接口，管理后台使用）
 export function getFileList(params: FileListParams = {}) {
   return axios.get<FileListResponse>('/manage/list', { params })
+}
+
+// 列出文件夹内容（新接口，文件管理器使用）
+export function listFolderContents(folder = '', start = 0, count = 50) {
+  return axios.get<FolderListResponse>('/manage/folders/list', {
+    params: { folder, start, count },
+  })
 }
 
 // 获取容量统计

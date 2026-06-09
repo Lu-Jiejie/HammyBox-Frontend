@@ -5,7 +5,7 @@ import '@/styles/nprogress.css'
 
 export function registerModules() {
   nprogress.configure({
-    showSpinner: true,
+    showSpinner: false,
     speed: 500,
     trickleSpeed: 200,
   })

@@ -47,7 +47,7 @@ defineProps<{
             <SidebarMenuButton :tooltip="item.title" as-child>
               <router-link :to="item.url">
                 <component :is="item.icon" v-if="item.icon" />
-                <span>{{ item.title }}</span>
+                <span class="whitespace-nowrap overflow-hidden transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0 !text-clip">{{ item.title }}</span>
                 <ChevronRight v-if="item.items" class="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
               </router-link>
             </SidebarMenuButton>
@@ -57,7 +57,7 @@ defineProps<{
               <SidebarMenuSubItem v-for="subItem in item.items" :key="subItem.title">
                 <SidebarMenuSubButton as-child>
                   <router-link :to="subItem.url">
-                    <span>{{ subItem.title }}</span>
+                    <span class="whitespace-nowrap overflow-hidden transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0 !text-clip">{{ subItem.title }}</span>
                   </router-link>
                 </SidebarMenuSubButton>
               </SidebarMenuSubItem>

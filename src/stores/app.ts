@@ -27,6 +27,48 @@ export const useAppStore = defineStore('app', () => {
   const uploadChannelName = ref<string>('')
   const uploadFolder = ref('')
   const uploadNameType = ref('default')
+  const uploadTags = ref<string[]>([])
+
+  // 用户自定义的标签列表（持久化）
+  const userTags = ref<string[]>([])
+
+  // 根据字符串生成唯一颜色
+  function getTagColor(tagName: string): string {
+    // 内置标签的颜色
+    const builtInColors: Record<string, string> = {
+      'blocked': 'red',
+      'whitelist': 'green',
+      'nsfw': 'orange',
+      'shared': 'purple',
+    }
+
+    if (builtInColors[tagName]) {
+      return builtInColors[tagName]
+    }
+
+    // 可用颜色列表（排除内置标签已用的）
+    const colors = ['blue', 'pink', 'yellow', 'indigo', 'cyan', 'teal']
+
+    // 使用简单的哈希算法生成颜色索引
+    let hash = 0
+    for (let i = 0; i < tagName.length; i++) {
+      hash = tagName.charCodeAt(i) + ((hash << 5) - hash)
+    }
+    const index = Math.abs(hash) % colors.length
+    return colors[index]
+  }
+
+  // 获取标签显示名称
+  function getTagDisplayName(tagName: string, locale: string): string {
+    const displayNames: Record<string, Record<string, string>> = {
+      'blocked': { 'zh-CN': '黑名单', 'en-US': 'BLOCKED' },
+      'whitelist': { 'zh-CN': '白名单', 'en-US': 'WHITELIST' },
+      'nsfw': { 'zh-CN': '敏感内容', 'en-US': 'NSFW' },
+      'shared': { 'zh-CN': '共享', 'en-US': 'SHARED' },
+    }
+
+    return displayNames[tagName]?.[locale] || tagName
+  }
 
   const customUrlSettings = reactive({
     useCustomUrl: 'false',
@@ -77,6 +119,8 @@ export const useAppStore = defineStore('app', () => {
     uploadChannelName,
     uploadFolder,
     uploadNameType,
+    uploadTags,
+    userTags,
     customUrlSettings,
     adminUrlSettings,
     useDarkMode,
@@ -87,6 +131,8 @@ export const useAppStore = defineStore('app', () => {
     // 导出操作方法
     setStoreUploadFolder,
     fetchUserConfig,
+    getTagColor,
+    getTagDisplayName,
   }
 }, {
   /* ─── 5. 高级持久化白名单配置 ─── */
@@ -102,6 +148,8 @@ export const useAppStore = defineStore('app', () => {
       'uploadChannelName',
       'uploadFolder',
       'uploadNameType',
+      'uploadTags',
+      'userTags',
       'customUrlSettings',
       'adminUrlSettings',
       'useDarkMode',

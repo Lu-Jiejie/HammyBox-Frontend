@@ -9,7 +9,9 @@
       "failed": "Wrong password, sign-in failed"
     },
     "logout": {
-      "success": "Signed out"
+      "success": "Signed out",
+      "confirm": "Sign out",
+      "description": "Are you sure you want to sign out?"
     }
   },
   "actions": {
@@ -32,6 +34,11 @@
     "copyUrlSuccess": "Link copied",
     "copyAllSuccess": "All links copied",
     "preferences": "Upload Preferences",
+    "currentConfiguration": "Current Configuration",
+    "showConfiguration": "Show Configuration",
+    "hideConfiguration": "Hide Configuration",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
     "actions": {
       "copyAll": "Copy All",
       "retryFailed": "Retry Failed",
@@ -66,6 +73,7 @@
       "type": "Channel Type",
       "name": "Channel Name",
       "nameTooltip": "Specify config name; leave empty to auto-select",
+      "channelNameHint": "Auto select",
       "autoSelect": "Auto select",
       "directory": "Upload Directory",
       "directoryPlaceholder": "e.g. /images/2024"
@@ -95,6 +103,17 @@
       "sectionTitle": "Server Compression",
       "enable": "Enable Server Compression",
       "tooltip": "Let Telegram server compress images (Telegram only)"
+    },
+    "tags": {
+      "title": "Tags",
+      "description": "Add tags to uploaded files for easier management and filtering",
+      "available": "Available Tags",
+      "availableTags": "Available Tags",
+      "noSelectedTags": "No tags selected",
+      "selectTags": "Select Tags",
+      "addCustom": "Add Custom Tag",
+      "inputPlaceholder": "Add new tag",
+      "customTags": "Custom Tags"
     }
   },
   "common": {
@@ -127,6 +146,7 @@
     "sortByName": "Sort by Name",
     "totalFiles": "{count} items",
     "selectedCount": "{count} selected",
+    "selected": "selected",
     "clearSelection": "Clear",
     "noFiles": "No files yet",
     "noMatchingFiles": "No matching files",

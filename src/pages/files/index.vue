@@ -50,6 +50,10 @@ const pageSize = ref(50)
 // Directory navigation
 const currentDir = ref('')
 
+// Sort
+const sortBy = ref<'date' | 'name'>('date')
+const sortOrder = ref<'asc' | 'desc'>('desc')
+
 // Search and filters
 const searchQuery = ref('')
 const filters = ref<{
@@ -59,38 +63,24 @@ const filters = ref<{
   accessStatus?: string
 }>({})
 
-// Sort
-const sortBy = ref<'date' | 'name'>('date')
-const sortOrder = ref<'asc' | 'desc'>('desc')
-
 // Selection
 const selectedFiles = ref<string[]>([])
 const isSelectAllPage = ref(false)
 
-// Computed query params
-const queryParams = computed<FileListParams>(() => {
-  const params: FileListParams = {
-    folder: currentDir.value,
-    start: (currentPage.value - 1) * pageSize.value,
-    count: pageSize.value,
-  }
+// Image load mode
+const imageLoadMode = ref<'none' | 'lite' | 'full'>('full')
 
-  if (searchQuery.value) {
-    params.search = searchQuery.value
-    params.recursive = true
-  }
-
-  if (filters.value.channel)
-    params.channel = filters.value.channel
-  if (filters.value.channelName)
-    params.channelName = filters.value.channelName
-  if (filters.value.fileType)
-    params.fileType = filters.value.fileType
-  if (filters.value.accessStatus)
-    params.accessStatus = filters.value.accessStatus
-
-  return params
-})
+// Build query params
+const queryParams = computed(() => ({
+  folder: currentDir.value,
+  start: (currentPage.value - 1) * pageSize.value,
+  count: pageSize.value,
+  search: searchQuery.value || undefined,
+  channel: filters.value.channel || undefined,
+  channelName: filters.value.channelName || undefined,
+  fileType: filters.value.fileType || undefined,
+  accessStatus: filters.value.accessStatus || undefined,
+}))
 
 // Fetch file list
 const { data: fileListData, isLoading, isFetching, refetch } = useQuery({
@@ -102,7 +92,25 @@ const { data: fileListData, isLoading, isFetching, refetch } = useQuery({
 })
 
 // Computed data
-const directories = computed(() => fileListData.value?.directories || [])
+const directories = computed(() => {
+  console.log(fileListData.value)
+  const folders = fileListData.value?.folders || []
+  // 后端返回的是完整路径字符串数组，如 "test/" 或 "parent/child/"
+  // 需要提取最后一个文件夹名称作为显示名称
+  return folders.map((folderPath) => {
+    // 移除尾部斜杠
+    const cleanPath = folderPath.endsWith('/') ? folderPath.slice(0, -1) : folderPath
+    // 提取最后一段作为文件夹名称
+    const parts = cleanPath.split('/')
+    const displayName = parts[parts.length - 1]
+
+    return {
+      name: cleanPath, // 保存完整路径（不含尾部斜杠）用于导航
+      displayName, // 显示名称（仅最后一段）
+      fileCount: 0,
+    }
+  })
+})
 const files = computed(() => fileListData.value?.files || [])
 const totalCount = computed(() => fileListData.value?.totalCount || 0)
 const totalPages = computed(() => Math.ceil(totalCount.value / pageSize.value))
@@ -153,9 +161,10 @@ function toggleSelectAll() {
     isSelectAllPage.value = false
   }
   else {
-    selectedFiles.value = allItems.value
+    const newSelection = allItems.value
       .filter(item => !item.isFolder)
       .map(item => item.name)
+    selectedFiles.value = [...newSelection]
     isSelectAllPage.value = true
   }
 }
@@ -183,7 +192,8 @@ watch(allItems, () => {
 
 // Directory navigation
 function navigateToFolder(folderName: string) {
-  currentDir.value = currentDir.value ? `${currentDir.value}/${folderName}` : folderName
+  // folderName 现在是完整路径（不含尾部斜杠），直接使用
+  currentDir.value = folderName
   currentPage.value = 1
   selectedFiles.value = []
 }
@@ -273,9 +283,11 @@ async function copyUrl(fileName: string) {
 }
 
 function formatFileSize(bytes?: number): string {
-  if (!bytes || typeof bytes !== 'number')
+  if (!bytes || bytes === 0)
     return '0 B'
-  const units = ['B', 'KB', 'MB', 'GB']
+  if (typeof bytes !== 'number')
+    return '0 B'
+  const units = ['B', 'KB', 'MB', 'GB', 'TB']
   let size = bytes
   let unitIndex = 0
   while (size >= 1024 && unitIndex < units.length - 1) {
@@ -292,13 +304,13 @@ function formatDate(dateString?: string): string {
   return date.toLocaleString()
 }
 
-async function handleCreateFolder() {
-  showCreateFolderDialog.value = true
-}
-
 // Create folder dialog
 const showCreateFolderDialog = ref(false)
 const newFolderName = ref('')
+
+async function handleCreateFolder() {
+  showCreateFolderDialog.value = true
+}
 
 async function confirmCreateFolder() {
   if (!newFolderName.value || !newFolderName.value.trim()) {
@@ -327,6 +339,7 @@ async function confirmCreateFolder() {
 // Type definition for combined items
 interface CombinedItem {
   name: string
+  displayName?: string
   isFolder: boolean
   metadata?: FileItem['metadata']
   fileCount?: number
@@ -334,137 +347,174 @@ interface CombinedItem {
 </script>
 
 <template>
-  <div class="flex flex-col h-full">
+  <div class="mx-auto p-6 flex flex-col h-full max-w-7xl">
     <!-- Header -->
-    <div class="pb-4 border-b flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-      <div>
-        <h1 class="text-2xl font-semibold">
-          {{ t('files.title') }}
-        </h1>
-        <p class="text-sm text-muted-foreground">
-          {{ t('files.description') }}
-        </p>
-      </div>
-
-      <div class="flex gap-2">
-        <Button variant="outline" size="sm" @click="handleCreateFolder">
-          <div class="i-lucide-folder-plus mr-2" style="width: 14px; height: 14px;" />
-          {{ t('files.newFolder') }}
-        </Button>
-        <Button variant="outline" size="sm" :disabled="isFetching" @click="handleRefresh">
-          <div class="i-lucide-refresh-cw mr-2" :class="{ 'animate-spin': isFetching }" style="width: 14px; height: 14px;" />
-          {{ t('files.refresh') }}
-        </Button>
-        <Button variant="outline" size="sm" @click="viewMode = viewMode === 'card' ? 'list' : 'card'">
-          <div v-if="viewMode === 'card'" class="i-lucide-list mr-2" style="width: 14px; height: 14px;" />
-          <div v-else class="i-lucide-grid-2x2 mr-2" style="width: 14px; height: 14px;" />
-          {{ viewMode === 'card' ? t('files.listView') : t('files.cardView') }}
-        </Button>
-      </div>
+    <div class="mb-6">
+      <h1 class="text-3xl font-bold mb-2">
+        {{ t('files.title') }}
+      </h1>
+      <p class="text-muted-foreground">
+        {{ t('files.description') }}
+      </p>
     </div>
 
-    <!-- Breadcrumb Navigation -->
-    <div class="text-sm py-3 flex gap-2 items-center">
-      <button class="hover:underline" @click="navigateToPath('')">
-        <div class="i-lucide-home" style="width: 16px; height: 16px;" />
-      </button>
-      <template v-for="(crumb, index) in breadcrumbs" :key="index">
-        <div class="i-lucide-chevron-right text-muted-foreground" style="width: 14px; height: 14px;" />
+    <!-- Navigation & Search Section -->
+    <div class="mb-4 border rounded-lg bg-card/50 overflow-hidden backdrop-blur-sm">
+      <!-- Breadcrumb Navigation -->
+      <div class="px-4 py-3 border-b bg-muted/10 flex gap-2 items-center">
         <button
-          class="hover:underline"
-          @click="navigateToPath(breadcrumbs.slice(0, index + 1).join('/'))"
+          class="px-2 py-1 rounded-md flex gap-1.5 transition-colors items-center hover:bg-accent/50"
+          @click="navigateToPath('')"
         >
-          {{ crumb }}
+          <div class="i-lucide-home text-muted-foreground" style="width: 15px; height: 15px;" />
         </button>
-      </template>
-      <div v-if="totalCount > 0" class="text-xs text-muted-foreground ml-auto">
-        {{ t('files.totalFiles', { count: totalCount }) }}
-      </div>
-    </div>
-
-    <!-- Search and Filters -->
-    <div class="py-4 flex flex-col gap-3 sm:flex-row">
-      <div class="flex-1 relative">
-        <Input
-          v-model="searchQuery"
-          :placeholder="t('files.searchPlaceholder')"
-          class="pr-8"
-          @keyup.enter="handleSearch"
-        />
-        <button
-          v-if="searchQuery"
-          class="right-2 top-1/2 absolute -translate-y-1/2"
-          @click="clearSearch"
-        >
-          <div class="i-lucide-x text-muted-foreground" style="width: 16px; height: 16px;" />
-        </button>
+        <template v-for="(crumb, index) in breadcrumbs" :key="index">
+          <div class="i-lucide-chevron-right text-muted-foreground/40" style="width: 13px; height: 13px;" />
+          <button
+            class="text-sm font-medium px-2 py-1 rounded-md transition-colors hover:bg-accent/50"
+            @click="navigateToPath(breadcrumbs.slice(0, index + 1).join('/'))"
+          >
+            {{ crumb }}
+          </button>
+        </template>
+        <div v-if="totalCount > 0" class="text-xs text-muted-foreground/70 ml-auto">
+          共 <span class="text-foreground font-semibold">{{ totalCount }}</span> 项
+        </div>
       </div>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button variant="outline" size="default">
-            <div class="i-lucide-filter mr-2" style="width: 14px; height: 14px;" />
-            {{ t('files.filter') }}
-            <div v-if="hasSearchOrFilter" class="ml-2 rounded-full bg-primary h-2 w-2" />
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end" class="w-56">
-          <div class="p-2">
-            <div class="text-xs text-muted-foreground font-medium mb-2">
-              {{ t('files.filterOptions') }}
+      <!-- Search and Controls -->
+      <div class="p-4 flex gap-2 items-center">
+        <div class="flex-1 relative">
+          <div class="i-lucide-search text-muted-foreground/60 left-3 top-1/2 absolute -translate-y-1/2" style="width: 15px; height: 15px;" />
+          <Input
+            v-model="searchQuery"
+            :placeholder="t('files.searchPlaceholder')"
+            class="pl-9 pr-9 border-muted-foreground/20 bg-background/50 focus-visible:border-muted-foreground/40"
+            @keyup.enter="handleSearch"
+          />
+          <button
+            v-if="searchQuery"
+            class="text-muted-foreground/60 transition-colors right-3 top-1/2 absolute hover:text-foreground -translate-y-1/2"
+            @click="clearSearch"
+          >
+            <div class="i-lucide-x" style="width: 15px; height: 15px;" />
+          </button>
+        </div>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="ghost" size="default" class="relative hover:bg-accent/50">
+              <div class="i-lucide-filter" style="width: 15px; height: 15px;" />
+              <span class="ml-2 hidden sm:inline">{{ t('files.filter') }}</span>
+              <div v-if="hasSearchOrFilter" class="ml-2 rounded-full bg-primary h-1.5 w-1.5" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" class="w-56">
+            <div class="p-2">
+              <div class="text-xs text-muted-foreground font-medium mb-2">
+                {{ t('files.filterOptions') }}
+              </div>
+              <Button v-if="hasSearchOrFilter" variant="ghost" size="sm" class="w-full" @click="clearFilters">
+                {{ t('files.clearFilters') }}
+              </Button>
             </div>
-            <Button v-if="hasSearchOrFilter" variant="ghost" size="sm" class="w-full" @click="clearFilters">
-              {{ t('files.clearFilters') }}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="ghost" size="default" class="hover:bg-accent/50">
+              <div class="i-lucide-arrow-up-down" style="width: 15px; height: 15px;" />
+              <span class="ml-2 hidden sm:inline">{{ t('files.sort') }}</span>
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem @click="toggleSort('date')">
+              <div class="i-lucide-calendar mr-2" style="width: 14px; height: 14px;" />
+              {{ t('files.sortByDate') }}
+              <div v-if="sortBy === 'date'" class="i-lucide-check ml-auto" style="width: 14px; height: 14px;" />
+            </DropdownMenuItem>
+            <DropdownMenuItem @click="toggleSort('name')">
+              <div class="i-lucide-text mr-2" style="width: 14px; height: 14px;" />
+              {{ t('files.sortByName') }}
+              <div v-if="sortBy === 'name'" class="i-lucide-check ml-auto" style="width: 14px; height: 14px;" />
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </div>
+
+    <!-- Toolbar -->
+    <div class="mb-4 border rounded-lg bg-card/50 overflow-hidden backdrop-blur-sm">
+      <div class="px-4 py-3 flex gap-3 min-h-[52px] items-center">
+        <!-- Left side - Selection info -->
+        <template v-if="selectedCount > 0">
+          <div class="flex gap-2 items-center">
+            <span class="text-sm">
+              已选择 <span class="text-destructive font-semibold">{{ selectedCount }}</span> 项
+            </span>
+            <Button variant="ghost" size="sm" class="p-0 h-7 w-7 hover:bg-accent/50" @click="selectedFiles = []">
+              <div class="i-lucide-x" style="width: 15px; height: 15px;" />
+            </Button>
+            <Button variant="ghost" size="sm" class="text-destructive px-3 h-7 hover:text-destructive hover:bg-destructive/10" @click="handleBatchDelete">
+              <div class="i-lucide-trash-2 mr-1.5" style="width: 14px; height: 14px;" />
+              删除
             </Button>
           </div>
-        </DropdownMenuContent>
-      </DropdownMenu>
+        </template>
 
-      <DropdownMenu>
-        <DropdownMenuTrigger as-child>
-          <Button variant="outline" size="default">
-            <div class="i-lucide-arrow-up-down mr-2" style="width: 14px; height: 14px;" />
-            {{ t('files.sort') }}
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
-          <DropdownMenuItem @click="toggleSort('date')">
-            <div class="i-lucide-calendar mr-2" style="width: 14px; height: 14px;" />
-            {{ t('files.sortByDate') }}
-            <div v-if="sortBy === 'date'" class="i-lucide-check ml-auto" style="width: 14px; height: 14px;" />
-          </DropdownMenuItem>
-          <DropdownMenuItem @click="toggleSort('name')">
-            <div class="i-lucide-text mr-2" style="width: 14px; height: 14px;" />
-            {{ t('files.sortByName') }}
-            <div v-if="sortBy === 'name'" class="i-lucide-check ml-auto" style="width: 14px; height: 14px;" />
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
-    </div>
-
-    <!-- Toolbar - Always visible to prevent layout shift -->
-    <div class="py-3 border-b flex gap-3 items-center h-[60px]">
-      <!-- Selection info and actions - only show when files are selected -->
-      <template v-if="selectedCount > 0">
-        <span class="text-sm font-medium">{{ t('files.selectedCount', { count: selectedCount }) }}</span>
-        <Button variant="ghost" size="sm" @click="selectedFiles = []">
-          {{ t('files.clearSelection') }}
-        </Button>
+        <!-- Right side - Action buttons -->
         <div class="ml-auto flex gap-2">
-          <Button variant="destructive" size="sm" @click="handleBatchDelete">
-            <div class="i-lucide-trash-2 mr-2" style="width: 14px; height: 14px;" />
-            {{ t('files.delete') }}
+          <DropdownMenu>
+            <DropdownMenuTrigger as-child>
+              <Button variant="ghost" size="sm" class="gap-1.5 h-8 hover:bg-accent/50">
+                <div class="i-lucide-image" style="width: 15px; height: 15px;" />
+                <span class="hidden sm:inline">
+                  {{ imageLoadMode === 'none' ? '无图' : imageLoadMode === 'lite' ? '省流' : '全量' }}
+                </span>
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem @click="imageLoadMode = 'none'">
+                <div class="i-lucide-image-off mr-2" style="width: 14px; height: 14px;" />
+                无图模式
+                <div v-if="imageLoadMode === 'none'" class="i-lucide-check ml-auto" style="width: 14px; height: 14px;" />
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="imageLoadMode = 'lite'">
+                <div class="i-lucide-gauge mr-2" style="width: 14px; height: 14px;" />
+                省流模式
+                <div v-if="imageLoadMode === 'lite'" class="i-lucide-check ml-auto" style="width: 14px; height: 14px;" />
+              </DropdownMenuItem>
+              <DropdownMenuItem @click="imageLoadMode = 'full'">
+                <div class="i-lucide-images mr-2" style="width: 14px; height: 14px;" />
+                全量加载
+                <div v-if="imageLoadMode === 'full'" class="i-lucide-check ml-auto" style="width: 14px; height: 14px;" />
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button variant="ghost" size="sm" class="gap-1.5 h-8 hover:bg-accent/50" @click="toggleSelectAll">
+            <div class="i-lucide-check-square" style="width: 15px; height: 15px;" />
+            <span class="hidden sm:inline">{{ isSelectAllPage ? '取消全选' : '全选' }}</span>
+          </Button>
+          <Button variant="ghost" size="sm" class="gap-1.5 h-8 hover:bg-accent/50" @click="handleCreateFolder">
+            <div class="i-lucide-folder-plus" style="width: 15px; height: 15px;" />
+            <span class="hidden sm:inline">{{ t('files.newFolder') }}</span>
+          </Button>
+          <Button variant="ghost" size="sm" class="gap-1.5 h-8 hover:bg-accent/50" :disabled="isFetching" @click="handleRefresh">
+            <div class="i-lucide-refresh-cw" :class="{ 'animate-spin': isFetching }" style="width: 15px; height: 15px;" />
+            <span class="hidden sm:inline">{{ t('files.refresh') }}</span>
+          </Button>
+          <Button variant="ghost" size="sm" class="gap-1.5 h-8 hover:bg-accent/50" @click="viewMode = viewMode === 'card' ? 'list' : 'card'">
+            <div v-if="viewMode === 'card'" class="i-lucide-list" style="width: 15px; height: 15px;" />
+            <div v-else class="i-lucide-grid-2x2" style="width: 15px; height: 15px;" />
+            <span class="hidden sm:inline">{{ viewMode === 'card' ? t('files.listView') : t('files.cardView') }}</span>
           </Button>
         </div>
-      </template>
-      <!-- Placeholder when nothing selected - can add other tools here -->
-      <div v-else class="text-sm text-muted-foreground">
-        {{ t('files.selectFilesToPerformActions') }}
       </div>
     </div>
 
     <!-- File List -->
-    <div class="flex-1 overflow-auto relative">
+    <div class="border rounded-lg bg-card/50 flex-1 relative overflow-auto backdrop-blur-sm">
       <!-- Loading State -->
       <div v-if="isLoading" class="py-12 flex items-center justify-center">
         <div class="i-lucide-loader-circle text-muted-foreground animate-spin" style="width: 32px; height: 32px;" />
@@ -472,11 +522,11 @@ interface CombinedItem {
 
       <!-- Empty State -->
       <div v-else-if="allItems.length === 0" class="py-12 text-center flex flex-col items-center justify-center">
-        <div class="i-lucide-folder-open text-muted-foreground mb-4" style="width: 48px; height: 48px;" />
-        <p class="text-lg font-medium">
+        <div class="i-lucide-folder-open text-muted-foreground/40 mb-4" style="width: 48px; height: 48px;" />
+        <p class="text-lg font-semibold">
           {{ hasSearchOrFilter ? t('files.noMatchingFiles') : t('files.noFiles') }}
         </p>
-        <p class="text-sm text-muted-foreground mt-2">
+        <p class="text-sm text-muted-foreground/70 mt-2">
           {{ hasSearchOrFilter ? t('files.adjustSearchHint') : t('files.uploadHint') }}
         </p>
       </div>
@@ -499,39 +549,42 @@ interface CombinedItem {
         v-else
         :items="allItems"
         :selected-files="selectedFiles"
-        :is-select-all-page="isSelectAllPage"
         :build-file-url="buildFileUrl"
         :format-file-size="formatFileSize"
         :format-date="formatDate"
+        :image-load-mode="imageLoadMode"
         @navigate-folder="navigateToFolder"
         @toggle-selection="toggleFileSelection"
-        @toggle-select-all="toggleSelectAll"
         @copy-url="copyUrl"
         @delete="handleDelete"
       />
     </div>
 
     <!-- Pagination -->
-    <div v-if="totalPages > 1" class="pt-4 border-t flex gap-2 items-center justify-center">
-      <Button
-        variant="outline"
-        size="sm"
-        :disabled="currentPage === 1"
-        @click="currentPage--"
-      >
-        <div class="i-lucide-chevron-left" style="width: 16px; height: 16px;" />
-      </Button>
-      <span class="text-sm">
-        {{ t('files.pageInfo', { current: currentPage, total: totalPages }) }}
-      </span>
-      <Button
-        variant="outline"
-        size="sm"
-        :disabled="currentPage >= totalPages"
-        @click="currentPage++"
-      >
-        <div class="i-lucide-chevron-right" style="width: 16px; height: 16px;" />
-      </Button>
+    <div v-if="totalPages > 1" class="mt-4 border rounded-lg bg-card/50 backdrop-blur-sm">
+      <div class="px-4 py-3 flex gap-2 items-center justify-center">
+        <Button
+          variant="ghost"
+          size="sm"
+          class="p-0 h-8 w-8 hover:bg-accent/50"
+          :disabled="currentPage === 1"
+          @click="currentPage--"
+        >
+          <div class="i-lucide-chevron-left" style="width: 15px; height: 15px;" />
+        </Button>
+        <span class="text-sm font-medium">
+          第 <span class="text-foreground">{{ currentPage }}</span> / {{ totalPages }} 页
+        </span>
+        <Button
+          variant="ghost"
+          size="sm"
+          class="p-0 h-8 w-8 hover:bg-accent/50"
+          :disabled="currentPage >= totalPages"
+          @click="currentPage++"
+        >
+          <div class="i-lucide-chevron-right" style="width: 15px; height: 15px;" />
+        </Button>
+      </div>
     </div>
 
     <!-- Create Folder Dialog -->

@@ -15,6 +15,7 @@ import {
 
 interface CombinedItem {
   name: string
+  displayName?: string
   isFolder: boolean
   metadata?: FileItem['metadata']
   fileCount?: number
@@ -28,9 +29,9 @@ interface Props {
 }
 
 interface Emits {
-  (e: 'navigate-folder', folderName: string): void
-  (e: 'toggle-selection', fileName: string): void
-  (e: 'copy-url', fileName: string): void
+  (e: 'navigateFolder', folderName: string): void
+  (e: 'toggleSelection', fileName: string): void
+  (e: 'copyUrl', fileName: string): void
   (e: 'delete', fileName: string, isFolder: boolean): void
 }
 
@@ -40,7 +41,7 @@ const emit = defineEmits<Emits>()
 const { t } = useI18n()
 
 function isImage(file: CombinedItem): boolean {
-  return file.metadata?.MimeType?.startsWith('image/') || false
+  return file.metadata?.MimeType?.startsWith('image/') || file.metadata?.FileType?.startsWith('image/') || false
 }
 
 function getPreviewUrl(file: CombinedItem): string {
@@ -57,13 +58,13 @@ function getPreviewUrl(file: CombinedItem): string {
       v-for="item in items"
       :key="item.name"
       class="group p-3 border rounded-lg flex flex-col gap-2 cursor-pointer transition-shadow relative hover:shadow-md"
-      @click="item.isFolder ? emit('navigate-folder', item.name) : emit('toggle-selection', item.name)"
+      @click="item.isFolder ? emit('navigateFolder', item.name) : emit('toggleSelection', item.name)"
     >
       <!-- Selection checkbox for files -->
       <div v-if="!item.isFolder" class="left-2 top-2 absolute z-10" @click.stop>
         <Checkbox
           :checked="selectedFiles.includes(item.name)"
-          @update:checked="emit('toggle-selection', item.name)"
+          @update:checked="emit('toggleSelection', item.name)"
         />
       </div>
 
@@ -90,10 +91,10 @@ function getPreviewUrl(file: CombinedItem): string {
       <!-- Info -->
       <div class="flex-1 min-w-0">
         <p class="text-sm font-medium truncate">
-          {{ item.isFolder ? item.name : item.metadata?.FileName || item.name }}
+          {{ item.isFolder ? (item.displayName || item.name) : (item.metadata?.FileName || item.name) }}
         </p>
         <p v-if="!item.isFolder" class="text-xs text-muted-foreground">
-          {{ formatFileSize(item.metadata?.FileSize) }}
+          {{ formatFileSize(item.metadata?.FileSizeBytes) }}
         </p>
       </div>
 
@@ -106,7 +107,7 @@ function getPreviewUrl(file: CombinedItem): string {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem @click.prevent="emit('copy-url', item.name)">
+            <DropdownMenuItem @click.prevent="emit('copyUrl', item.name)">
               <div class="i-lucide-copy mr-2" style="width: 14px; height: 14px;" />
               {{ t('files.copyUrl') }}
             </DropdownMenuItem>

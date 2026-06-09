@@ -82,22 +82,21 @@ const data = computed(() => ({
 </script>
 
 <template>
-  <Sidebar v-bind="props">
+  <Sidebar v-bind="props" class="!overflow-x-hidden">
     <SidebarHeader>
-      <div class="text-sidebar-accent-foreground px-3 py-2 flex gap-2 items-center group-data-[collapsible=icon]:px-2 group-data-[collapsible=icon]:justify-center">
-        <div class="text-sidebar-primary-foreground rounded-lg bg-sidebar-primary flex size-8 aspect-square items-center justify-center shrink-0">
-          <FileText class="size-4" />
-        </div>
-        <div class="text-sm leading-tight text-left flex-1 grid min-w-0 overflow-hidden group-data-[collapsible=icon]:hidden group-data-[collapsible=icon]:w-0">
-          <span class="font-semibold truncate">Hammy Box</span>
-          <span class="text-xs truncate">文件存储管理</span>
-        </div>
+      <div class="px-2.5 py-3 select-none relative">
+        <h1 class="font-serif text-2xl font-medium tracking-tight whitespace-nowrap transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0 pointer-events-none">
+          Hammy Box
+        </h1>
+        <span class="font-serif text-2xl font-medium absolute inset-0 px-2.5 py-3 opacity-0 transition-opacity duration-200 group-data-[collapsible=icon]:opacity-100 pointer-events-none">
+          H
+        </span>
       </div>
     </SidebarHeader>
-    <SidebarContent>
+    <SidebarContent class="!overflow-x-hidden">
       <NavMain :items="data.navMain" />
     </SidebarContent>
-    <SidebarFooter>
+    <SidebarFooter class="!overflow-x-hidden">
       <NavUser />
     </SidebarFooter>
     <SidebarRail />

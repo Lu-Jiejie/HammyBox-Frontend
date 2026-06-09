@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
-import { computed, watch } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import FolderSelector from '@/components/FolderSelector.vue'
+import FolderTreeSelector from '@/components/FolderTreeSelector.vue'
 import InfoPopover from '@/components/InfoPopover.vue'
+import { Button } from '@/components/shadcn/button'
 import {
   Dialog,
   DialogContent,
@@ -22,6 +23,7 @@ import {
 } from '@/components/shadcn/select'
 import { Slider } from '@/components/shadcn/slider'
 import { Switch } from '@/components/shadcn/switch'
+import TagBadge from '@/components/TagBadge.vue'
 import { useAppStore } from '@/stores'
 
 interface Props {
@@ -44,7 +46,69 @@ const {
   uploadChannelName,
   uploadFolder,
   uploadNameType,
+  uploadTags,
+  userTags,
 } = storeToRefs(store)
+
+// 内置标签
+const builtInTags = ['blocked', 'whitelist', 'nsfw', 'shared']
+
+// 合并内置标签和用户标签
+const availableTags = computed(() => {
+  return [...builtInTags, ...userTags.value]
+})
+
+// 新标签输入
+const newTagInput = ref('')
+
+function addNewTag() {
+  const tag = newTagInput.value.trim().toLowerCase()
+  if (!tag) {
+    return
+  }
+
+  // 检查是否与内置标签重名
+  if (builtInTags.includes(tag)) {
+    return
+  }
+
+  // 检查是否已存在
+  if (userTags.value.includes(tag)) {
+    return
+  }
+
+  userTags.value.push(tag)
+  newTagInput.value = ''
+}
+
+function removeUserTag(tag: string) {
+  const index = userTags.value.indexOf(tag)
+  if (index > -1) {
+    userTags.value.splice(index, 1)
+  }
+  // 如果该标签已被选中，也从选中列表中移除
+  const selectedIndex = uploadTags.value.indexOf(tag)
+  if (selectedIndex > -1) {
+    uploadTags.value.splice(selectedIndex, 1)
+  }
+}
+
+function toggleTag(tagName: string) {
+  const index = uploadTags.value.indexOf(tagName)
+  if (index > -1) {
+    uploadTags.value.splice(index, 1)
+  }
+  else {
+    uploadTags.value.push(tagName)
+  }
+}
+
+function removeSelectedTag(tagName: string) {
+  const index = uploadTags.value.indexOf(tagName)
+  if (index > -1) {
+    uploadTags.value.splice(index, 1)
+  }
+}
 
 // 压缩配置的响应式引用
 const compressConfig = computed(() => store.compressConfig)
@@ -88,7 +152,7 @@ watch(uploadFolder, (newValue) => {
 
 <template>
   <Dialog :open="open" @update:open="val => emit('update:open', val)">
-    <DialogContent class="bg-secondary max-h-[80vh] max-w-2xl w-[calc(100vw-2rem)] overflow-y-auto sm:w-full">
+    <DialogContent class="max-h-[80vh] max-w-2xl w-[calc(100vw-2rem)] overflow-y-auto sm:w-full">
       <DialogHeader>
         <DialogTitle>{{ t('uploadPreferences.title') }}</DialogTitle>
         <DialogDescription class="text-xs">
@@ -139,7 +203,7 @@ watch(uploadFolder, (newValue) => {
         <!-- 上传路径组 -->
         <div class="space-y-2">
           <Label for="uploadFolder">{{ t('uploadPreferences.channel.directory') }}</Label>
-          <FolderSelector v-model="uploadFolder" :open="open" />
+          <FolderTreeSelector v-model="uploadFolder" />
           <p class="text-xs text-muted-foreground">
             {{ t('uploadPreferences.channel.directoryPlaceholder') }}
           </p>
@@ -174,6 +238,73 @@ watch(uploadFolder, (newValue) => {
               </SelectItem>
             </SelectContent>
           </Select>
+        </div>
+
+        <!-- 分隔线 -->
+        <div class="border-t" />
+
+        <!-- 标签配置组 -->
+        <div class="space-y-4">
+          <div class="space-y-2">
+            <Label>{{ t('uploadPreferences.tags.title') }}</Label>
+            <p class="text-xs text-muted-foreground">
+              {{ t('uploadPreferences.tags.description') }}
+            </p>
+          </div>
+
+          <!-- 已选择的标签 -->
+          <div class="space-y-2">
+            <div v-if="uploadTags.length > 0" class="p-3 border rounded-lg bg-muted/30">
+              <div class="flex flex-wrap gap-2">
+                <TagBadge
+                  v-for="tag in uploadTags"
+                  :key="tag"
+                  :tag="tag"
+                  :color="store.getTagColor(tag)"
+                  show-delete
+                  @delete="removeSelectedTag(tag)"
+                />
+              </div>
+            </div>
+            <div v-else class="p-3 text-center border rounded-lg bg-muted/30">
+              <span class="text-sm text-muted-foreground">{{ t('uploadPreferences.tags.noSelectedTags') }}</span>
+            </div>
+          </div>
+
+          <!-- 添加新标签 -->
+          <div class="space-y-2">
+            <div class="flex gap-2">
+              <Input
+                v-model="newTagInput"
+                :placeholder="t('uploadPreferences.tags.inputPlaceholder')"
+                class="flex-1"
+                @keyup.enter="addNewTag"
+              />
+              <Button variant="outline" size="icon" @click="addNewTag">
+                <div class="i-lucide-plus" />
+              </Button>
+            </div>
+          </div>
+
+          <!-- 备选标签 -->
+          <div class="space-y-2">
+            <Label class="text-xs text-muted-foreground">{{ t('uploadPreferences.tags.availableTags') }}</Label>
+            <div class="p-3 border rounded-lg bg-background min-h-[80px]">
+              <div class="flex flex-wrap gap-2">
+                <TagBadge
+                  v-for="tag in availableTags.filter(t => !uploadTags.includes(t))"
+                  :key="tag"
+                  :tag="tag"
+                  :color="store.getTagColor(tag)"
+                  :show-delete="!builtInTags.includes(tag)"
+                  delete-icon="trash"
+                  clickable
+                  @click="toggleTag(tag)"
+                  @delete="removeUserTag(tag)"
+                />
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- 分隔线 -->

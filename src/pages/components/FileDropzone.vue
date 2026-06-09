@@ -38,6 +38,7 @@ const {
   uploadChannelName,
   uploadFolder,
   uploadNameType,
+  uploadTags,
 } = storeToRefs(store)
 
 interface UploadResponse {
@@ -155,6 +156,9 @@ const dropzone = useDropzoneUpload<UploadResponse, string>({
 
     if (uploadChannelName.value)
       uploadParams.channelName = uploadChannelName.value
+
+    if (uploadTags.value && uploadTags.value.length > 0)
+      uploadParams.tags = uploadTags.value.join(',')
 
     // 手动实现重试逻辑以支持不可重试的错误
     const maxRetries = 3
