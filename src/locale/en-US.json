@@ -159,7 +159,6 @@
     "uploadTime": "Upload Time",
     "channel": "Channel",
     "actions": "Actions",
-    "copyUrl": "Copy URL",
     "copySuccess": "URL copied",
     "delete": "Delete",
     "deleteSuccess": "Deleted successfully",
@@ -168,6 +167,34 @@
     "batchDeleteFailed": "Batch delete failed",
     "pageInfo": "Page {current} of {total}",
     "selectFilesToPerformActions": "Select files to perform batch actions",
-    "selectFolder": "Select folder"
+    "selectFolder": "Select folder",
+    "filterPlaceholder": "Filter current page...",
+    "menubar": {
+      "selection": "Select",
+      "selectAll": "Select All",
+      "deselectAll": "Deselect All",
+      "clearSelection": "Clear Selection",
+      "view": "View",
+      "foldersFirst": "Folders First",
+      "imageMode": {
+        "none": "No Images",
+        "lite": "Data Saver",
+        "full": "Full Load"
+      },
+      "tools": "Tools",
+      "globalSearch": "Global Search",
+      "copyUrl": "Copy URL",
+      "moveTo": "Move to"
+    },
+    "globalSearch": {
+      "title": "Global Search",
+      "description": "Search across all files",
+      "keyword": "Keyword",
+      "placeholder": "Enter file name...",
+      "search": "Search",
+      "resultsCount": "Found {count} results",
+      "failed": "Search failed"
+    },
+    "fileDetail": "File Details"
   }
 }

@@ -1,21 +1,11 @@
 <script setup lang="ts">
 import { LogOut } from '@lucide/vue'
-import { onClickOutside } from '@vueuse/core'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue-sonner'
 
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/shadcn/alert-dialog'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -27,11 +17,6 @@ const { t } = useI18n()
 const router = useRouter()
 const { logout } = useAuth()
 const showLogoutDialog = ref(false)
-const dialogRef = ref(null)
-
-onClickOutside(dialogRef, () => {
-  showLogoutDialog.value = false
-})
 
 async function confirmLogout() {
   try {
@@ -55,20 +40,12 @@ async function confirmLogout() {
     </SidebarMenuItem>
   </SidebarMenu>
 
-  <AlertDialog v-model:open="showLogoutDialog">
-    <AlertDialogContent ref="dialogRef">
-      <AlertDialogHeader>
-        <AlertDialogTitle>{{ t('auth.logout.confirm') }}</AlertDialogTitle>
-        <AlertDialogDescription>
-          {{ t('auth.logout.description') }}
-        </AlertDialogDescription>
-      </AlertDialogHeader>
-      <AlertDialogFooter>
-        <AlertDialogCancel>{{ t('common.cancel') }}</AlertDialogCancel>
-        <AlertDialogAction @click="confirmLogout">
-          {{ t('common.confirm') }}
-        </AlertDialogAction>
-      </AlertDialogFooter>
-    </AlertDialogContent>
-  </AlertDialog>
+  <ConfirmDialog
+    v-model:open="showLogoutDialog"
+    :title="t('auth.logout.confirm')"
+    :description="t('auth.logout.description')"
+    :cancel-text="t('common.cancel')"
+    :confirm-text="t('common.confirm')"
+    @confirm="confirmLogout"
+  />
 </template>

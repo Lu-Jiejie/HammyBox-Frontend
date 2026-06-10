@@ -78,11 +78,14 @@ export function getQuotaStats() {
   return axios.get<QuotaStats>('/manage/quota')
 }
 
-// 删除文件
+// 删除文件或文件夹
 export function deleteFile(fileId: string, isFolder = false) {
+  if (isFolder) {
+    return axios.delete('/manage/folders', { data: { path: fileId, recursive: true } })
+  }
   const path = fileId.replace(/\//g, ',')
   return axios.post(`/manage/delete/${path}`, null, {
-    params: { folder: isFolder },
+    params: { folder: false },
   })
 }
 
@@ -111,9 +114,9 @@ export async function batchMove(fileIds: string[], targetDir: string) {
 }
 
 // 重命名文件
-export function renameFile(fileId: string, newName: string) {
+export function renameFile(fileId: string, newFileId: string) {
   const path = fileId.replace(/\//g, ',')
-  return axios.post(`/manage/rename/${path}`, { newName })
+  return axios.post(`/manage/rename/${path}`, { newFileId })
 }
 
 // 修改文件元数据

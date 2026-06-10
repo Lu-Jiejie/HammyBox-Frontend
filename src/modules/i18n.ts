@@ -18,6 +18,42 @@ const i18n = createI18n({
     'en-US': enUS,
     'zh-CN': zhCN,
   },
+  datetimeFormats: {
+    'en-US': {
+      short: {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      },
+      long: {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+      },
+    },
+    'zh-CN': {
+      short: {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+      },
+      long: {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+      },
+    },
+  },
 })
 
 export function changeLocale(newLocale: AvailableLocale) {

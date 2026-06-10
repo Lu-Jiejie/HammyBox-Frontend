@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { TreeNode } from '@/components/TreeView.vue'
+import { useQueryClient } from '@tanstack/vue-query'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getFolderTree } from '@/api/files'
@@ -20,16 +21,20 @@ interface FolderTreeNode {
 
 interface Props {
   modelValue?: string
+  inline?: boolean
 }
 
 interface Emits {
   (e: 'update:modelValue', value: string): void
 }
 
-const props = defineProps<Props>()
+const props = withDefaults(defineProps<Props>(), {
+  inline: false,
+})
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
+const queryClient = useQueryClient()
 
 const folderTree = ref<FolderTreeNode[]>([])
 const isLoading = ref(false)
@@ -52,25 +57,38 @@ function convertToTreeNodes(folders: FolderTreeNode[]): TreeNode[] {
 
 const treeData = computed<TreeNode[]>(() => convertToTreeNodes(folderTree.value))
 
+// 计算用于 TreeView 的 selected-id（需要统一格式）
+const treeSelectedId = computed(() => {
+  if (selectedFolderId.value === '' || selectedFolderId.value === '__root__') {
+    return '__root__'
+  }
+  // 确保以 / 结尾，因为后端返回的 folder.path 都带尾部斜杠
+  const result = selectedFolderId.value.endsWith('/') ? selectedFolderId.value : `${selectedFolderId.value}/`
+  console.log('treeSelectedId:', result, 'selectedFolderId:', selectedFolderId.value)
+  return result
+})
+
 // 根据当前选中的路径，自动展开父级节点
 function getExpandedIdsForPath(path: string, _tree: FolderTreeNode[]): string[] {
   const expandedIds: string[] = []
 
-  // 如果是根目录，展开根节点
-  if (path === '' || path === '__root__') {
-    expandedIds.push('__root__')
-    return expandedIds
-  }
-
-  // 分析路径，找出所有父级路径
-  const parts = path.split('/').filter(Boolean)
-  let currentPath = ''
-
   // 始终展开根节点
   expandedIds.push('__root__')
 
-  // 展开所有父级节点
-  for (let i = 0; i < parts.length - 1; i++) {
+  // 如果是根目录，只展开根节点
+  if (path === '' || path === '__root__') {
+    return expandedIds
+  }
+
+  // 确保路径以 / 结尾
+  const normalizedPath = path.endsWith('/') ? path : `${path}/`
+
+  // 分析路径，找出所有父级路径
+  const parts = normalizedPath.split('/').filter(Boolean)
+  let currentPath = ''
+
+  // 展开所有父级节点和当前节点
+  for (let i = 0; i < parts.length; i++) {
     currentPath += `${parts[i]}/`
     expandedIds.push(currentPath)
   }
@@ -135,9 +153,13 @@ async function loadFolders() {
     loaded.value = true
 
     // 检查当前选中的路径是否存在，不存在则重置到根目录
-    if (props.modelValue && !pathExistsInTree(props.modelValue, folderTree.value)) {
-      selectedFolderId.value = ''
-      emit('update:modelValue', '')
+    if (props.modelValue && props.modelValue !== '__root__') {
+      // 统一格式：确保检查时路径带尾部斜杠
+      const pathToCheck = props.modelValue.endsWith('/') ? props.modelValue : `${props.modelValue}/`
+      if (!pathExistsInTree(pathToCheck, folderTree.value)) {
+        selectedFolderId.value = ''
+        emit('update:modelValue', '')
+      }
     }
   }
   catch (err) {
@@ -149,29 +171,56 @@ async function loadFolders() {
   }
 }
 
-// 监听 popover 打开状态，打开时加载文件夹列表
-watch(popoverOpen, (isOpen) => {
-  if (isOpen && !loaded.value) {
+// inline 模式下立即加载，否则监听 popover 打开状态
+if (props.inline) {
+  loadFolders()
+}
+else {
+  // 非 inline 模式下，监听 popover 打开时加载（仅首次）
+  watch(popoverOpen, (isOpen) => {
+    if (isOpen && !loaded.value) {
+      loadFolders()
+    }
+  })
+}
+
+// 监听 query invalidation 来重新加载数据
+watch(() => queryClient.getQueryState(['folderTree'])?.isInvalidated, (isInvalidated) => {
+  if (isInvalidated) {
+    loaded.value = false
     loadFolders()
   }
-})
-
-// 监听 modelValue 变化
-watch(() => props.modelValue, (newValue) => {
-  selectedFolderId.value = newValue || ''
 })
 
 function handleNodeClick(node: TreeNode) {
   const folderPath = node.id === '__root__' ? '' : node.id
   selectedFolderId.value = folderPath
   emit('update:modelValue', folderPath)
-  // 选中后关闭 popover
-  popoverOpen.value = false
+  // inline 模式不关闭 popover
+  if (!props.inline) {
+    popoverOpen.value = false
+  }
 }
 </script>
 
 <template>
-  <Popover v-model:open="popoverOpen">
+  <div v-if="inline" class="w-full">
+    <div v-if="isLoading" class="text-sm text-muted-foreground py-8 text-center">
+      {{ t('common.loading') }}
+    </div>
+    <div v-else-if="error" class="text-sm text-destructive py-8 text-center">
+      Error loading folders
+    </div>
+    <TreeView
+      v-else
+      :data="treeData"
+      :default-expanded-ids="defaultExpandedIds"
+      :selected-id="treeSelectedId"
+      class="max-h-[300px] overflow-y-auto"
+      @node-click="handleNodeClick"
+    />
+  </div>
+  <Popover v-else v-model:open="popoverOpen">
     <PopoverTrigger as-child>
       <Button variant="outline" class="font-normal text-left w-full justify-start">
         <div class="i-lucide-folder mr-2 h-4 w-4" />
@@ -189,7 +238,7 @@ function handleNodeClick(node: TreeNode) {
         v-else
         :data="treeData"
         :default-expanded-ids="defaultExpandedIds"
-        :selected-id="selectedFolderId === '' ? '__root__' : selectedFolderId"
+        :selected-id="treeSelectedId"
         class="max-h-[300px] overflow-y-auto"
         @node-click="handleNodeClick"
       />

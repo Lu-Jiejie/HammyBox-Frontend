@@ -55,7 +55,15 @@ const builtInTags = ['blocked', 'whitelist', 'nsfw', 'shared']
 
 // 合并内置标签和用户标签
 const availableTags = computed(() => {
-  return [...builtInTags, ...userTags.value]
+  const allTags = [...builtInTags, ...userTags.value]
+  return allTags.sort((a, b) => {
+    const aIndex = builtInTags.indexOf(a)
+    const bIndex = builtInTags.indexOf(b)
+    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
+    if (aIndex !== -1) return -1
+    if (bIndex !== -1) return 1
+    return a.localeCompare(b)
+  })
 })
 
 // 新标签输入
@@ -99,6 +107,13 @@ function toggleTag(tagName: string) {
     uploadTags.value.splice(index, 1)
   }
   else {
+    // blocked 和 whitelist 互斥
+    if (tagName === 'blocked' && uploadTags.value.includes('whitelist')) {
+      uploadTags.value.splice(uploadTags.value.indexOf('whitelist'), 1)
+    }
+    else if (tagName === 'whitelist' && uploadTags.value.includes('blocked')) {
+      uploadTags.value.splice(uploadTags.value.indexOf('blocked'), 1)
+    }
     uploadTags.value.push(tagName)
   }
 }

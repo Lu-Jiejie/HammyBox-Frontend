@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useQueryClient } from '@tanstack/vue-query'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { getFolderTree } from '@/api/files'
@@ -30,6 +31,7 @@ const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
+const queryClient = useQueryClient()
 
 const folders = ref<FolderItem[]>([])
 const isLoading = ref(false)
@@ -69,12 +71,20 @@ async function loadFolders() {
   }
 }
 
-// 监听 open 状态，当打开时加载文件夹列表
 watch(() => props.open, (isOpen) => {
   if (isOpen && !loaded.value) {
     loadFolders()
   }
 }, { immediate: true })
+
+watch(() => queryClient.getQueryState(['folderTree'])?.isInvalidated, (isInvalidated) => {
+  if (isInvalidated) {
+    loaded.value = false
+    if (props.open) {
+      loadFolders()
+    }
+  }
+})
 
 function getFolderDisplayName(folder: FolderItem): string {
   const indent = '  '.repeat(folder.depth)

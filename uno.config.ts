@@ -9,6 +9,9 @@ import {
 } from 'unocss'
 import presetAnimations from 'unocss-preset-animations'
 import { presetShadcn } from 'unocss-preset-shadcn'
+import { fileIcons } from './src/constants/fileExtensions'
+
+const autoIcons = Object.keys(fileIcons).map(i => `i-catppuccin-${i}`)
 
 export default defineConfig({
   shortcuts: [
@@ -51,4 +54,7 @@ export default defineConfig({
       ],
     },
   },
+  safelist: [
+    ...autoIcons,
+  ],
 })

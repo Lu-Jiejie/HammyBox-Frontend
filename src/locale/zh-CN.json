@@ -159,7 +159,6 @@
     "uploadTime": "上传时间",
     "channel": "渠道",
     "actions": "操作",
-    "copyUrl": "复制链接",
     "copySuccess": "链接已复制",
     "delete": "删除",
     "deleteSuccess": "删除成功",
@@ -168,6 +167,34 @@
     "batchDeleteFailed": "批量删除失败",
     "pageInfo": "第 {current} 页，共 {total} 页",
     "selectFilesToPerformActions": "选择文件以执行批量操作",
-    "selectFolder": "选择文件夹"
+    "selectFolder": "选择文件夹",
+    "menubar": {
+      "selection": "选择",
+      "selectAll": "全选",
+      "deselectAll": "取消全选",
+      "clearSelection": "清除选择",
+      "view": "视图",
+      "foldersFirst": "文件夹置顶",
+      "imageMode": {
+        "none": "无图模式",
+        "lite": "省流模式",
+        "full": "全量加载"
+      },
+      "tools": "工具",
+      "globalSearch": "全局搜索",
+      "copyUrl": "复制链接",
+      "moveTo": "移动"
+    },
+    "globalSearch": {
+      "title": "全局搜索",
+      "description": "在所有文件中搜索",
+      "keyword": "搜索关键词",
+      "placeholder": "输入文件名...",
+      "search": "搜索",
+      "resultsCount": "找到 {count} 个结果",
+      "failed": "搜索失败"
+    },
+    "filterPlaceholder": "过滤当前页...",
+    "fileDetail": "文件详情"
   }
 }

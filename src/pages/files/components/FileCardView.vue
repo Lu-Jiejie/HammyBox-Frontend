@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { FileItem } from '@/api/files'
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
-import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/shadcn/button'
 import { Checkbox } from '@/components/shadcn/checkbox'
@@ -26,6 +25,7 @@ interface Props {
   selectedFiles: string[]
   buildFileUrl: (fileName: string) => string
   formatFileSize: (bytes?: number) => string
+  formatDate: (timestamp?: number) => string
 }
 
 interface Emits {
@@ -33,6 +33,10 @@ interface Emits {
   (e: 'toggleSelection', fileName: string): void
   (e: 'copyUrl', fileName: string): void
   (e: 'delete', fileName: string, isFolder: boolean): void
+  (e: 'showDetail', file: FileItem): void
+  (e: 'rename', fileName: string, isFolder: boolean): void
+  (e: 'editTags', fileName: string): void
+  (e: 'move', fileName: string, isFolder: boolean): void
 }
 
 const props = defineProps<Props>()
@@ -58,7 +62,7 @@ function getPreviewUrl(file: CombinedItem): string {
       v-for="item in items"
       :key="item.name"
       class="group p-3 border rounded-lg flex flex-col gap-2 cursor-pointer transition-shadow relative hover:shadow-md"
-      @click="item.isFolder ? emit('navigateFolder', item.name) : emit('toggleSelection', item.name)"
+      @click="item.isFolder ? emit('navigateFolder', item.name) : emit('showDetail', { name: item.name, metadata: item.metadata })"
     >
       <!-- Selection checkbox for files -->
       <div v-if="!item.isFolder" class="left-2 top-2 absolute z-10" @click.stop>
@@ -107,12 +111,53 @@ function getPreviewUrl(file: CombinedItem): string {
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
+            <DropdownMenuItem @click.prevent="emit('showDetail', { name: item.name, metadata: item.metadata })">
+              <div class="i-lucide-info mr-2" style="width: 14px; height: 14px;" />
+              详情
+            </DropdownMenuItem>
             <DropdownMenuItem @click.prevent="emit('copyUrl', item.name)">
               <div class="i-lucide-copy mr-2" style="width: 14px; height: 14px;" />
-              {{ t('files.copyUrl') }}
+              {{ t('files.menubar.copyUrl') }}
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem @click.prevent="emit('rename', item.name, false)">
+              <div class="i-lucide-pencil mr-2" style="width: 14px; height: 14px;" />
+              重命名
+            </DropdownMenuItem>
+            <DropdownMenuItem @click.prevent="emit('editTags', item.name)">
+              <div class="i-lucide-tags mr-2" style="width: 14px; height: 14px;" />
+              编辑标签
+            </DropdownMenuItem>
+            <DropdownMenuItem @click.prevent="emit('move', item.name, false)">
+              <div class="i-lucide-folder-input mr-2" style="width: 14px; height: 14px;" />
+              移动
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem class="text-destructive" @click.prevent="emit('delete', item.name, false)">
+              <div class="i-lucide-trash-2 mr-2" style="width: 14px; height: 14px;" />
+              {{ t('files.delete') }}
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+      <div v-else class="opacity-0 transition-opacity group-hover:opacity-100" @click.stop>
+        <DropdownMenu>
+          <DropdownMenuTrigger as-child>
+            <Button variant="ghost" size="sm" class="p-0 h-7 w-7" type="button">
+              <div class="i-lucide-more-horizontal" style="width: 16px; height: 16px;" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem @click.prevent="emit('rename', item.name, true)">
+              <div class="i-lucide-pencil mr-2" style="width: 14px; height: 14px;" />
+              重命名
+            </DropdownMenuItem>
+            <DropdownMenuItem @click.prevent="emit('move', item.name, true)">
+              <div class="i-lucide-folder-input mr-2" style="width: 14px; height: 14px;" />
+              移动
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem class="text-destructive" @click.prevent="emit('delete', item.name, true)">
               <div class="i-lucide-trash-2 mr-2" style="width: 14px; height: 14px;" />
               {{ t('files.delete') }}
             </DropdownMenuItem>

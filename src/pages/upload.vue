@@ -54,6 +54,14 @@ const namingDisplayName = computed(() => {
 const channelNameDisplay = computed(() => {
   return uploadChannelName.value || t('uploadPreferences.channel.channelNameHint')
 })
+
+const builtInTags = ['whitelist', 'blocked', 'nsfw', 'shared']
+
+const sortedUploadTags = computed(() => {
+  const builtin = uploadTags.value.filter(tag => builtInTags.includes(tag))
+  const custom = uploadTags.value.filter(tag => !builtInTags.includes(tag))
+  return [...builtin, ...custom]
+})
 </script>
 
 <template>
@@ -219,14 +227,14 @@ const channelNameDisplay = computed(() => {
             </div>
 
             <!-- 标签 -->
-            <div v-if="uploadTags.length > 0" class="space-y-2 lg:col-span-3 sm:col-span-2">
+            <div v-if="sortedUploadTags.length > 0" class="space-y-2 lg:col-span-3 sm:col-span-2">
               <div class="flex gap-2 items-center">
                 <div class="i-lucide-tags text-muted-foreground/60" style="width: 12px; height: 12px;" />
                 <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('uploadPreferences.tags.title') }}</span>
               </div>
               <div class="flex flex-wrap gap-1.5">
                 <TagBadge
-                  v-for="tag in uploadTags"
+                  v-for="tag in sortedUploadTags"
                   :key="tag"
                   :tag="tag"
                   :color="store.getTagColor(tag)"
