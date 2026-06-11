@@ -26,8 +26,9 @@ const {
   uploadFolder,
   uploadNameType,
   uploadTags,
-  compressConfig,
 } = storeToRefs(store)
+
+const compressConfig = store.compressConfig
 
 const channelDisplayName = computed(() => {
   const channelMap: Record<string, string> = {
@@ -43,16 +44,16 @@ const channelDisplayName = computed(() => {
 
 const namingDisplayName = computed(() => {
   const namingMap: Record<string, string> = {
-    default: t('uploadPreferences.naming.default'),
-    index: t('uploadPreferences.naming.index'),
-    origin: t('uploadPreferences.naming.origin'),
-    short: t('uploadPreferences.naming.short'),
+    default: t('pages.upload.preferences.naming.default'),
+    index: t('pages.upload.preferences.naming.index'),
+    origin: t('pages.upload.preferences.naming.origin'),
+    short: t('pages.upload.preferences.naming.short'),
   }
   return namingMap[uploadNameType.value] || uploadNameType.value
 })
 
 const channelNameDisplay = computed(() => {
-  return uploadChannelName.value || t('uploadPreferences.channel.channelNameHint')
+  return uploadChannelName.value || t('pages.upload.preferences.channel.autoSelect')
 })
 
 const builtInTags = ['whitelist', 'blocked', 'nsfw', 'shared']
@@ -69,11 +70,11 @@ const sortedUploadTags = computed(() => {
     <div class="mb-6">
       <div class="mb-2 flex gap-3 items-center">
         <h1 class="text-3xl font-bold">
-          {{ t('upload.title') }}
+          {{ t('pages.upload.title') }}
         </h1>
       </div>
       <p class="text-muted-foreground">
-        {{ t('upload.dragUploadText') }}
+        {{ t('pages.upload.dragText') }}
       </p>
     </div>
 
@@ -85,7 +86,7 @@ const sortedUploadTags = computed(() => {
       >
         <div class="flex flex-1 gap-2 min-w-0 items-center">
           <div class="i-lucide-layers text-muted-foreground shrink-0 transition-colors group-hover:text-foreground" style="width: 15px; height: 15px;" />
-          <span class="text-sm font-medium">{{ t('upload.currentConfiguration') }}</span>
+          <span class="text-sm font-medium">{{ t('pages.upload.preferences.currentConfiguration') }}</span>
           <div class="text-xs text-muted-foreground/70 gap-2 min-w-0 hidden items-center sm:flex">
             <span class="truncate">{{ channelDisplayName }}</span>
             <span class="text-muted-foreground/40">·</span>
@@ -123,7 +124,7 @@ const sortedUploadTags = computed(() => {
             <div class="space-y-2">
               <div class="flex gap-2 items-center">
                 <div class="i-lucide-cloud text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('uploadPreferences.channel.type') }}</span>
+                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.channel.type') }}</span>
               </div>
               <div class="text-sm text-foreground font-medium">
                 {{ channelDisplayName }}
@@ -134,7 +135,7 @@ const sortedUploadTags = computed(() => {
             <div class="space-y-2">
               <div class="flex gap-2 items-center">
                 <div class="i-lucide-tag text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('uploadPreferences.channel.name') }}</span>
+                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.channel.name') }}</span>
               </div>
               <div class="text-sm" :class="uploadChannelName ? 'font-medium text-foreground' : 'text-muted-foreground/60 italic'">
                 {{ channelNameDisplay }}
@@ -145,7 +146,7 @@ const sortedUploadTags = computed(() => {
             <div class="space-y-2">
               <div class="flex gap-2 items-center">
                 <div class="i-lucide-folder text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('uploadPreferences.channel.directory') }}</span>
+                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.channel.directory') }}</span>
               </div>
               <code class="text-sm text-foreground font-medium font-mono block">
                 {{ uploadFolder || '/' }}
@@ -156,7 +157,7 @@ const sortedUploadTags = computed(() => {
             <div class="space-y-2">
               <div class="flex gap-2 items-center">
                 <div class="i-lucide-file-text text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('uploadPreferences.naming.title') }}</span>
+                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.naming.title') }}</span>
               </div>
               <div class="text-sm text-foreground font-medium">
                 {{ namingDisplayName }}
@@ -167,7 +168,7 @@ const sortedUploadTags = computed(() => {
             <div class="space-y-2">
               <div class="flex gap-2 items-center">
                 <div class="i-lucide-image text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('uploadPreferences.preprocessing.convertToWebp') }}</span>
+                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.preprocessing.convertToWebp') }}</span>
               </div>
               <div class="flex gap-2 items-center">
                 <div
@@ -175,7 +176,7 @@ const sortedUploadTags = computed(() => {
                   :class="compressConfig.convertToWebp ? 'bg-green-500' : 'bg-muted-foreground/30'"
                 />
                 <span class="text-sm font-medium" :class="compressConfig.convertToWebp ? 'text-foreground' : 'text-muted-foreground/60'">
-                  {{ compressConfig.convertToWebp ? t('upload.enabled') : t('upload.disabled') }}
+                  {{ compressConfig.convertToWebp ? t('pages.upload.preferences.enabled') : t('pages.upload.preferences.disabled') }}
                 </span>
               </div>
             </div>
@@ -184,7 +185,9 @@ const sortedUploadTags = computed(() => {
             <div class="space-y-2" :class="compressConfig.customerCompress ? 'sm:col-span-2 lg:col-span-3' : ''">
               <div class="flex gap-2 items-center">
                 <div class="i-lucide-package text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('uploadPreferences.preprocessing.clientCompress') }}</span>
+                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">
+                  {{ t('pages.upload.preferences.preprocessing.compress') }}
+                </span>
               </div>
               <div class="flex flex-wrap gap-3 items-center">
                 <div class="flex gap-2 items-center">
@@ -193,17 +196,17 @@ const sortedUploadTags = computed(() => {
                     :class="compressConfig.customerCompress ? 'bg-green-500' : 'bg-muted-foreground/30'"
                   />
                   <span class="text-sm font-medium" :class="compressConfig.customerCompress ? 'text-foreground' : 'text-muted-foreground/60'">
-                    {{ compressConfig.customerCompress ? t('upload.enabled') : t('upload.disabled') }}
+                    {{ compressConfig.customerCompress ? t('pages.upload.preferences.enabled') : t('pages.upload.preferences.disabled') }}
                   </span>
                 </div>
                 <template v-if="compressConfig.customerCompress">
                   <span class="text-muted-foreground/30">·</span>
                   <span class="text-xs text-muted-foreground/70">
-                    {{ t('uploadPreferences.preprocessing.compressThreshold') }}: <span class="text-foreground font-semibold">{{ compressConfig.compressBar }} MB</span>
+                    {{ t('pages.upload.preferences.preprocessing.compressThreshold') }}: <span class="text-foreground font-semibold">{{ compressConfig.compressBar }} MB</span>
                   </span>
                   <span class="text-muted-foreground/30">·</span>
                   <span class="text-xs text-muted-foreground/70">
-                    {{ t('uploadPreferences.preprocessing.expectedSize') }}: <span class="text-foreground font-semibold">{{ compressConfig.compressQuality }} MB</span>
+                    {{ t('pages.upload.preferences.preprocessing.expectedSize') }}: <span class="text-foreground font-semibold">{{ compressConfig.compressQuality }} MB</span>
                   </span>
                 </template>
               </div>
@@ -213,7 +216,7 @@ const sortedUploadTags = computed(() => {
             <div v-if="uploadChannel === 'telegram'" class="space-y-2">
               <div class="flex gap-2 items-center">
                 <div class="i-lucide-server text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('uploadPreferences.serverCompress.enable') }}</span>
+                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.serverCompress.enable') }}</span>
               </div>
               <div class="flex gap-2 items-center">
                 <div
@@ -221,7 +224,7 @@ const sortedUploadTags = computed(() => {
                   :class="compressConfig.serverCompress ? 'bg-green-500' : 'bg-muted-foreground/30'"
                 />
                 <span class="text-sm font-medium" :class="compressConfig.serverCompress ? 'text-foreground' : 'text-muted-foreground/60'">
-                  {{ compressConfig.serverCompress ? t('upload.enabled') : t('upload.disabled') }}
+                  {{ compressConfig.serverCompress ? t('pages.upload.preferences.enabled') : t('pages.upload.preferences.disabled') }}
                 </span>
               </div>
             </div>
@@ -230,7 +233,7 @@ const sortedUploadTags = computed(() => {
             <div v-if="sortedUploadTags.length > 0" class="space-y-2 lg:col-span-3 sm:col-span-2">
               <div class="flex gap-2 items-center">
                 <div class="i-lucide-tags text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('uploadPreferences.tags.title') }}</span>
+                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.tags.title') }}</span>
               </div>
               <div class="flex flex-wrap gap-1.5">
                 <TagBadge

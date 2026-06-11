@@ -1,5 +1,6 @@
 allowBuilds:
   esbuild: true
+  maplibre-gl: set this to true or false
   simple-git-hooks: true
   vue-demi: true
 minimumReleaseAgeExclude:

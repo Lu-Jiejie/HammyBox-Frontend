@@ -1,200 +1,568 @@
 {
+  "common": {
+    "actions": {
+      "cancel": "取消",
+      "confirm": "确定",
+      "save": "保存",
+      "delete": "删除",
+      "copy": "复制",
+      "edit": "编辑",
+      "rename": "重命名",
+      "move": "移动",
+      "close": "关闭"
+    },
+    "states": {
+      "loading": "加载中...",
+      "success": "成功",
+      "failed": "失败",
+      "empty": "暂无数据"
+    },
+    "toggles": {
+      "language": "切换语言",
+      "theme": "切换主题",
+      "background": "切换壁纸"
+    }
+  },
   "auth": {
     "login": {
       "title": "登录到 {name}",
-      "subTitle": "输入密码以登录",
+      "subtitle": "输入密码以登录",
       "password": "密码",
       "passwordPlaceholder": "请输入密码",
+      "action": "登录",
       "success": "登录成功",
       "failed": "密码错误，登录失败"
     },
     "logout": {
+      "action": "退出登录",
+      "confirm": "确认退出",
+      "description": "确定要退出登录吗？",
       "success": "已退出登录",
-      "confirm": "退出登录",
-      "description": "确定要退出登录吗？"
+      "failed": "退出登录失败"
     }
   },
-  "actions": {
-    "toggleLanguage": "切换语言",
-    "toggleTheme": "切换主题",
-    "toggleBackground": "切换壁纸",
-    "login": "登录",
-    "logout": "退出登录"
-  },
-  "fileds": {
-    "authCode": "认证码"
-  },
-  "upload": {
-    "title": "文件上传",
-    "dragUploadText": "点击或拖拽文件到此处上传",
-    "selectFiles": "选择文件",
-    "uploading": "上传中...",
-    "uploadSuccess": "上传成功",
-    "uploadFailed": "上传失败",
-    "copyUrlSuccess": "复制链接成功",
-    "copyAllSuccess": "复制全部链接成功",
-    "preferences": "上传偏好",
-    "currentConfiguration": "当前配置",
-    "showConfiguration": "显示配置",
-    "hideConfiguration": "收起配置",
-    "enabled": "已启用",
-    "disabled": "未启用",
-    "actions": {
-      "copyAll": "复制全部",
-      "retryFailed": "重试失败",
-      "clearSuccess": "清空成功",
-      "clearAll": "清空全部",
-      "clearList": "清空列表"
-    },
-    "status": {
-      "pending": "等待上传",
-      "uploading": "上传中",
-      "success": "上传成功",
-      "error": "上传失败"
-    },
-    "stats": {
-      "total": "总计",
-      "success": "成功",
-      "failed": "失败",
-      "uploading": "上传中"
-    },
-    "copyFormats": {
-      "url": "复制链接",
-      "markdown": "复制 Markdown",
-      "html": "复制 HTML",
-      "bbcode": "复制 BBCode"
-    }
-  },
-  "uploadPreferences": {
-    "title": "上传偏好",
-    "subtitle": "个性化上传体验，仅在当前浏览器生效",
-    "channel": {
-      "sectionTitle": "渠道配置",
-      "type": "渠道类型",
-      "name": "渠道名称",
-      "nameTooltip": "指定具体配置名称，留空则自动选择",
-      "channelNameHint": "自动选择",
-      "autoSelect": "自动选择",
-      "directory": "上传目录",
-      "directoryPlaceholder": "如 /images/2024"
-    },
-    "path": {
-      "sectionTitle": "上传路径"
-    },
-    "naming": {
-      "sectionTitle": "文件命名",
-      "title": "命名规则",
-      "default": "默认命名",
-      "index": "索引命名",
-      "origin": "原始文件名",
-      "short": "短链接"
-    },
-    "preprocessing": {
-      "sectionTitle": "客户端预处理",
-      "convertToWebp": "转换为 WebP",
-      "convertToWebpTooltip": "上传前将图片转换为 WebP 格式以获得更好的压缩率",
-      "clientCompress": "启用压缩",
-      "compressThreshold": "压缩阈值",
-      "compressThresholdTooltip": "大于此大小的文件将在上传前被压缩",
-      "expectedSize": "目标大小",
-      "expectedSizeTooltip": "压缩后的期望文件大小"
-    },
-    "serverCompress": {
-      "sectionTitle": "服务端压缩",
-      "enable": "启用服务端压缩",
-      "tooltip": "让 Telegram 服务器压缩图片（仅限 Telegram 渠道）"
-    },
-    "tags": {
-      "title": "标签",
-      "description": "为上传的文件添加标签以便后续管理和筛选",
-      "available": "可用标签",
-      "availableTags": "备选标签",
-      "noSelectedTags": "未选择标签",
-      "selectTags": "选择标签",
-      "addCustom": "添加自定义标签",
-      "inputPlaceholder": "添加新备选标签",
-      "customTags": "自定义标签"
-    }
-  },
-  "common": {
-    "cancel": "取消",
-    "confirm": "确定",
-    "save": "保存",
-    "delete": "删除",
-    "copy": "复制",
-    "loading": "加载中..."
-  },
-  "files": {
-    "title": "文件管理",
-    "description": "管理您的所有文件",
-    "refresh": "刷新",
-    "refreshed": "刷新成功",
-    "newFolder": "新建文件夹",
-    "newFolderDescription": "在当前目录下创建一个新文件夹",
-    "folderName": "文件夹名称",
-    "folderNamePlaceholder": "输入文件夹名称",
-    "createFolderSuccess": "文件夹创建成功",
-    "createFolderFailed": "文件夹创建失败",
-    "listView": "列表视图",
-    "cardView": "卡片视图",
-    "searchPlaceholder": "搜索文件...",
-    "filter": "筛选",
-    "filterOptions": "筛选选项",
-    "clearFilters": "清空筛选",
-    "sort": "排序",
-    "sortByDate": "按日期排序",
-    "sortByName": "按名称排序",
-    "totalFiles": "共 {count} 项",
-    "selectedCount": "已选择 {count} 项",
-    "selected": "已选中",
-    "clearSelection": "清空",
-    "noFiles": "暂无文件",
-    "noMatchingFiles": "没有匹配的文件",
-    "adjustSearchHint": "尝试调整搜索或筛选条件",
-    "uploadHint": "上传文件以开始使用",
-    "preview": "预览",
-    "fileName": "文件名",
-    "size": "大小",
-    "tags": "标签",
-    "uploadTime": "上传时间",
-    "channel": "渠道",
-    "actions": "操作",
-    "copySuccess": "链接已复制",
-    "delete": "删除",
-    "deleteSuccess": "删除成功",
-    "deleteFailed": "删除失败",
-    "batchDeleteSuccess": "批量删除成功",
-    "batchDeleteFailed": "批量删除失败",
-    "pageInfo": "第 {current} 页，共 {total} 页",
-    "selectFilesToPerformActions": "选择文件以执行批量操作",
-    "selectFolder": "选择文件夹",
-    "menubar": {
-      "selection": "选择",
-      "selectAll": "全选",
-      "deselectAll": "取消全选",
-      "clearSelection": "清除选择",
-      "view": "视图",
-      "foldersFirst": "文件夹置顶",
-      "imageMode": {
-        "none": "无图模式",
-        "lite": "省流模式",
-        "full": "全量加载"
+  "pages": {
+    "upload": {
+      "title": "文件上传",
+      "dragText": "点击或拖拽文件到此处上传",
+      "selectFiles": "选择文件",
+      "status": {
+        "pending": "等待上传",
+        "uploading": "上传中",
+        "success": "上传成功",
+        "error": "上传失败"
       },
-      "tools": "工具",
-      "globalSearch": "全局搜索",
-      "copyUrl": "复制链接",
-      "moveTo": "移动"
+      "stats": {
+        "total": "总计",
+        "success": "成功",
+        "failed": "失败",
+        "uploading": "上传中"
+      },
+      "actions": {
+        "copyAll": "复制全部",
+        "retryFailed": "重试失败",
+        "clearSuccess": "清空成功",
+        "clearAll": "清空全部",
+        "clearList": "清空列表"
+      },
+      "copyFormats": {
+        "url": "复制链接",
+        "markdown": "复制 Markdown",
+        "html": "复制 HTML",
+        "bbcode": "复制 BBCode"
+      },
+      "messages": {
+        "uploadSuccess": "上传成功",
+        "uploadFailed": "上传失败",
+        "copyUrlSuccess": "复制链接成功",
+        "copyAllSuccess": "复制全部链接成功"
+      },
+      "preferences": {
+        "title": "上传偏好",
+        "subtitle": "个性化上传体验，仅在当前浏览器生效",
+        "currentConfiguration": "当前配置",
+        "showConfiguration": "显示配置",
+        "hideConfiguration": "收起配置",
+        "enabled": "已启用",
+        "disabled": "未启用",
+        "channel": {
+          "title": "渠道配置",
+          "type": "渠道类型",
+          "name": "渠道名称",
+          "nameTooltip": "指定具体配置名称，留空则自动选择",
+          "autoSelect": "自动选择",
+          "directory": "上传目录",
+          "directoryPlaceholder": "如 /images/2024"
+        },
+        "path": {
+          "title": "上传路径"
+        },
+        "naming": {
+          "title": "文件命名",
+          "rule": "命名规则",
+          "default": "默认命名",
+          "index": "索引命名",
+          "origin": "原始文件名",
+          "short": "短链接"
+        },
+        "preprocessing": {
+          "title": "客户端预处理",
+          "convertToWebp": "转换为 WebP",
+          "convertToWebpTooltip": "上传前将图片转换为 WebP 格式以获得更好的压缩率",
+          "compress": "启用压缩",
+          "compressThreshold": "压缩阈值",
+          "compressThresholdTooltip": "大于此大小的文件将在上传前被压缩",
+          "expectedSize": "目标大小",
+          "expectedSizeTooltip": "压缩后的期望文件大小"
+        },
+        "serverCompress": {
+          "title": "服务端压缩",
+          "enable": "启用服务端压缩",
+          "tooltip": "让 Telegram 服务器压缩图片（仅限 Telegram 渠道）"
+        },
+        "tags": {
+          "title": "标签",
+          "description": "为上传的文件添加标签以便后续管理和筛选",
+          "available": "可用标签",
+          "availableTags": "备选标签",
+          "noSelectedTags": "未选择标签",
+          "selectTags": "选择标签",
+          "addCustom": "添加自定义标签",
+          "inputPlaceholder": "添加新备选标签",
+          "customTags": "自定义标签"
+        }
+      }
     },
-    "globalSearch": {
-      "title": "全局搜索",
-      "description": "在所有文件中搜索",
-      "keyword": "搜索关键词",
-      "placeholder": "输入文件名...",
-      "search": "搜索",
-      "resultsCount": "找到 {count} 个结果",
-      "failed": "搜索失败"
+    "files": {
+      "title": "文件管理",
+      "description": "管理您的所有文件",
+      "emptyState": "暂无文件",
+      "noMatchingFiles": "没有匹配的文件",
+      "adjustSearchHint": "尝试调整搜索或筛选条件",
+      "uploadHint": "上传文件以开始使用",
+      "toolbar": {
+        "refresh": "刷新",
+        "refreshed": "刷新成功",
+        "filterPlaceholder": "过滤当前页...",
+        "browse": "浏览"
+      },
+      "folder": {
+        "new": "新建文件夹",
+        "newDescription": "在当前目录下创建一个新文件夹",
+        "name": "文件夹名称",
+        "namePlaceholder": "输入文件夹名称",
+        "createSuccess": "文件夹创建成功",
+        "createFailed": "文件夹创建失败"
+      },
+      "filter": {
+        "title": "筛选",
+        "options": "筛选选项",
+        "clear": "清空筛选"
+      },
+      "sort": {
+        "title": "排序",
+        "byDate": "按日期排序",
+        "byName": "按名称排序"
+      },
+      "select": {
+        "title": "选择",
+        "selected": "已选中",
+        "selectAll": "全选",
+        "deselectAll": "取消全选",
+        "clear": "清除选择"
+      },
+      "view": {
+        "title": "视图",
+        "card": "卡片视图",
+        "list": "列表视图",
+        "foldersFirst": "文件夹置顶",
+        "imageMode": {
+          "title": "图片加载",
+          "none": "无图模式",
+          "lite": "省流模式",
+          "full": "全量加载"
+        }
+      },
+      "detail": {
+        "title": "文件详情",
+        "fileName": "文件名",
+        "fileUrl": "文件链接",
+        "size": "大小",
+        "channelType": "渠道类型",
+        "channel": "渠道名称",
+        "tagsLabel": "标签",
+        "uploadTime": "上传时间",
+        "tags": {
+          "blocked": "黑名单",
+          "whitelist": "白名单"
+        }
+      },
+      "actions": {
+        "copyUrl": "复制链接",
+        "copySuccess": "链接已复制",
+        "rename": "重命名",
+        "editTags": "编辑标签",
+        "move": "移动",
+        "delete": "删除",
+        "deleteSuccess": "删除成功",
+        "deleteFailed": "删除失败",
+        "deleteFolderConfirm": "确定要删除文件夹 \"<strong>{name}</strong>\" 及其所有内容吗？此操作不可恢复。",
+        "deleteFilesConfirm": "确定要删除选中的 <strong>{count}</strong> 个文件吗？此操作不可恢复。",
+        "deleteFileConfirm": "确定要删除文件 \"<strong>{name}</strong>\" 吗？此操作不可恢复。",
+        "batchDeleteSuccess": "批量删除成功",
+        "batchDeleteFailed": "批量删除失败",
+        "detail": "详情",
+        "confirmDeletion": "确认删除",
+        "moveFailed": "移动失败",
+        "moveSuccess": "移动成功",
+        "updateTagsSuccess": "更新标签成功",
+        "renameSuccess": "重命名成功",
+        "createFolderSuccess": "创建文件夹成功"
+      },
+      "move": {
+        "title": "移动到",
+        "description": "选择目标文件夹",
+        "targetPath": "目标路径"
+      },
+      "search": {
+        "global": "全局搜索",
+        "title": "全局搜索",
+        "description": "在所有文件中搜索",
+        "keyword": "搜索关键词",
+        "placeholder": "输入文件名...",
+        "button": "搜索",
+        "resultsCount": "找到 {count} 个结果",
+        "failed": "搜索失败"
+      },
+      "tools": {
+        "title": "工具"
+      },
+      "globalSearch": {
+        "title": "全局搜索"
+      }
     },
-    "filterPlaceholder": "过滤当前页...",
-    "fileDetail": "文件详情"
+    "blocked": {
+      "title": "禁止访问",
+      "description": "当前文件已被限制访问，或域名已被限制访问。",
+      "goBack": "返回",
+      "backToHome": "返回首页"
+    },
+    "notFound": {
+      "title": "页面未找到",
+      "description": "您访问的页面可能已被删除、更改名称或暂时不可用。",
+      "goBack": "返回",
+      "backToHome": "返回首页"
+    }
+  },
+  "components": {
+    "folderSelector": {
+      "loading": "加载文件夹...",
+      "error": "加载文件夹失败",
+      "selectFolder": "选择文件夹"
+    }
+  },
+  "sidebar": {
+    "upload": "上传",
+    "files": "文件管理",
+    "systemStatus": "系统状态",
+    "settings": "系统设置",
+    "security": "安全设置",
+    "uploadChannels": "上传渠道",
+    "pageConfig": "页面配置",
+    "others": "其他设置"
+  },
+  "settings": {
+    "status": {
+      "title": "系统状态",
+      "description": "查看系统统计信息和维护操作",
+      "overview": {
+        "totalFiles": "总文件数",
+        "lastUpdated": "索引更新时间"
+      },
+      "charts": {
+        "channelDistribution": "渠道分布",
+        "fileStatus": "文件状态",
+        "uploadTrend": "上传趋势"
+      },
+      "fileStates": {
+        "normal": "正常",
+        "blocked": "已屏蔽"
+      },
+      "maintenance": {
+        "title": "系统维护",
+        "rebuild": "重建索引",
+        "rebuilding": "重建中..."
+      },
+      "timeAgo": {
+        "daysAgo": "{n} 天前",
+        "hoursAgo": "{n} 小时前",
+        "minutesAgo": "{n} 分钟前",
+        "justNow": "刚刚"
+      },
+      "messages": {
+        "loadFailed": "加载系统状态失败",
+        "rebuildSuccess": "索引重建成功",
+        "rebuildFailed": "索引重建失败",
+        "noData": "暂无数据"
+      }
+    },
+    "upload": {
+      "title": "上传渠道配置",
+      "description": "配置 Telegram、R2、S3、Discord、HuggingFace、WebDAV 等上传渠道",
+      "actions": {
+        "refreshQuota": "刷新容量",
+        "addChannel": "添加渠道",
+        "edit": "编辑",
+        "delete": "删除"
+      },
+      "loadBalance": "负载均衡",
+      "channels": {
+        "telegram": "Telegram",
+        "cfr2": "Cloudflare R2",
+        "s3": "S3",
+        "discord": "Discord",
+        "huggingface": "HuggingFace",
+        "webdav": "WebDAV"
+      },
+      "dialog": {
+        "add": {
+          "title": "添加渠道",
+          "description": "配置新的上传渠道"
+        },
+        "edit": {
+          "title": "编辑渠道",
+          "description": "修改渠道配置"
+        },
+        "delete": {
+          "title": "删除渠道",
+          "description": "确定要删除此渠道吗？此操作无法撤销。"
+        }
+      },
+      "fields": {
+        "channelType": "渠道类型",
+        "channelName": "渠道名称",
+        "botToken": "Bot Token",
+        "chatId": "Chat ID",
+        "proxyUrl": "代理域名",
+        "proxyPlaceholder": "可选，用于代理访问",
+        "publicUrl": "公开 URL",
+        "publicUrlPlaceholder": "R2 公开访问地址",
+        "endpoint": "Endpoint",
+        "endpointPlaceholder": "https://s3.region.amazonaws.com",
+        "cdnDomain": "CDN 域名",
+        "cdnPlaceholder": "可选，加速访问",
+        "bucketName": "Bucket Name",
+        "bucketPlaceholder": "my-bucket",
+        "region": "Region",
+        "regionPlaceholder": "us-east-1",
+        "accessKeyId": "Access Key ID",
+        "accessKeyPlaceholder": "输入 Access Key",
+        "secretAccessKey": "Secret Access Key",
+        "secretKeyPlaceholder": "输入 Secret Key",
+        "pathStyle": "Path Style",
+        "channelId": "Channel ID",
+        "channelIdPlaceholder": "输入 Channel ID",
+        "isNitro": "Nitro 会员",
+        "repo": "仓库名称",
+        "repoPlaceholder": "username/repository",
+        "token": "Access Token",
+        "tokenPlaceholder": "输入 Access Token",
+        "isPrivate": "私有仓库",
+        "baseUrl": "Base URL",
+        "baseUrlPlaceholder": "https://webdav.example.com",
+        "username": "Username",
+        "usernamePlaceholder": "输入用户名",
+        "password": "Password",
+        "passwordPlaceholder": "输入密码",
+        "publicAccessUrl": "公开访问 URL",
+        "publicAccessPlaceholder": "可选，用于文件访问",
+        "createDirectory": "自动创建目录",
+        "namePlaceholder": "输入渠道名称",
+        "botTokenPlaceholder": "输入 Bot Token",
+        "chatIdPlaceholder": "输入 Chat ID"
+      },
+      "hints": {
+        "cfr2EnvOnly": "R2 渠道通过环境变量配置，无需手动添加",
+        "required": "必填项"
+      },
+      "badges": {
+        "env": "ENV",
+        "nitro": "Nitro"
+      },
+      "messages": {
+        "saved": "设置已保存",
+        "nameRequired": "请输入渠道名称",
+        "cannotDeleteFixed": "环境变量渠道无法删除",
+        "quotaRefreshed": "容量统计已刷新"
+      }
+    },
+    "security": {
+      "title": "安全设置",
+      "description": "认证、审查、会话策略配置",
+      "sections": {
+        "auth": {
+          "title": "认证管理",
+          "password": "登录密码",
+          "passwordPlaceholder": "留空则不修改",
+          "confirmPassword": "确认密码",
+          "clearPassword": "清除密码",
+          "cancelClear": "取消清除"
+        },
+        "referer": {
+          "title": "Referer 防盗链",
+          "enable": "启用防盗链",
+          "allowedDomains": "允许的域名（逗号分隔）",
+          "domainsPlaceholder": "example.com, file.example.com",
+          "allowEmpty": "允许空 Referer"
+        },
+        "whitelist": {
+          "title": "白名单模式",
+          "enable": "启用白名单模式",
+          "description": "仅允许访问标记为 whitelist 的文件",
+          "cacheWarning": "变更白名单模式后，已缓存的文件最多需要 30 天才能自动过期。建议立即清理缓存以确保访问控制立即生效。",
+          "purgeCache": "清理所有文件缓存"
+        },
+        "session": {
+          "title": "会话策略",
+          "secure": "安全模式 (HTTPS Only)",
+          "secureDescription": "仅通过 HTTPS 传输 Cookie",
+          "maxAge": "会话有效期（天）"
+        },
+        "token": {
+          "title": "API Token 管理",
+          "create": "创建 Token",
+          "table": {
+            "name": "名称",
+            "token": "Token",
+            "permissions": "权限",
+            "status": "状态",
+            "createdAt": "创建时间",
+            "actions": "操作"
+          },
+          "permissions": {
+            "upload": "上传",
+            "delete": "删除",
+            "list": "列表",
+            "manage": "管理"
+          },
+          "status": {
+            "active": "有效",
+            "expired": "已过期"
+          },
+          "dialog": {
+            "create": {
+              "title": "创建 API Token",
+              "description": "创建用于程序化访问的 API Token"
+            },
+            "result": {
+              "title": "Token 创建成功",
+              "warning": "⚠️ 请妥善保存此 Token，关闭后将无法再次查看完整值",
+              "fullToken": "完整 Token",
+              "saved": "已保存"
+            },
+            "edit": {
+              "title": "编辑 API Token",
+              "description": "修改 Token 权限和过期设置"
+            },
+            "delete": {
+              "title": "删除 Token",
+              "description": "确定要删除此 Token 吗？此操作不可撤销。"
+            }
+          },
+          "fields": {
+            "name": "Token 名称",
+            "namePlaceholder": "My API Token",
+            "permissions": "权限",
+            "neverExpire": "永不过期",
+            "expiration": "有效期",
+            "autoDelete": "过期后自动删除",
+            "units": {
+              "day": "天",
+              "month": "月",
+              "year": "年"
+            }
+          },
+          "empty": "暂无 API Token"
+        }
+      },
+      "messages": {
+        "saved": "保存成功",
+        "passwordMismatch": "两次密码输入不一致",
+        "sessionMaxAgeInvalid": "会话有效期必须大于 0",
+        "passwordChanged": "密码已变更，请重新登录",
+        "nameAndPermissionsRequired": "请填写名称并选择权限",
+        "permissionsRequired": "请选择至少一个权限",
+        "tokenCreated": "Token 创建成功",
+        "tokenCreateFailed": "Token 创建失败",
+        "tokenUpdated": "Token 更新成功",
+        "tokenUpdateFailed": "Token 更新失败",
+        "tokenDeleted": "Token 删除成功",
+        "tokenDeleteFailed": "Token 删除失败",
+        "tokenCopied": "Token 已复制",
+        "copyFailed": "复制失败",
+        "loadFailed": "加载设置失败",
+        "loadTokensFailed": "加载 Token 列表失败",
+        "cachePurged": "缓存已清理，共清理 {count} 个文件",
+        "cachePurgeFailed": "缓存清理失败"
+      }
+    },
+    "others": {
+      "title": "其他设置",
+      "description": "遥测、随机图、Cloudflare、WebDAV 等配置",
+      "sections": {
+        "telemetry": {
+          "title": "远端遥测",
+          "hint": "便于问题查找和定位，建议开启",
+          "enable": "启用遥测",
+          "description": "发送匿名使用数据以改进产品"
+        },
+        "randomImageApi": {
+          "title": "随机图 API",
+          "hint": "API 具体用法请查阅文档",
+          "enable": "启用随机图 API",
+          "allowedDir": "允许的目录",
+          "allowedDirPlaceholder": "留空表示全部目录"
+        },
+        "cloudflare": {
+          "title": "Cloudflare API Token",
+          "hint": "设置后可以使后端拉黑、删除等操作不受 CDN 缓存限制，建议设置，设置方式请查阅文档",
+          "zoneId": "Zone ID",
+          "email": "Email",
+          "apiKey": "API Key"
+        },
+        "webdav": {
+          "title": "WebDAV 服务",
+          "hint": "启用后，可以通过 WebDAV 协议访问和管理图片",
+          "enable": "启用 WebDAV",
+          "username": "用户名",
+          "password": "密码",
+          "uploadChannel": "上传渠道",
+          "uploadChannelPlaceholder": "例如: cfr2, s3",
+          "channelName": "渠道名称"
+        },
+        "publicBrowse": {
+          "title": "公开浏览",
+          "hint": "启用后，访客可通过 /browse 路径浏览指定目录的图片（只读，无法删除/移动）",
+          "enable": "启用公开浏览页面",
+          "description": "允许访客浏览文件列表",
+          "allowedDir": "允许浏览的目录",
+          "allowedDirPlaceholder": "留空表示全部目录"
+        }
+      },
+      "actions": {
+        "save": "保存设置"
+      },
+      "messages": {
+        "loadFailed": "加载设置失败",
+        "saved": "保存成功",
+        "saveFailed": "保存失败"
+      }
+    },
+    "page": {
+      "title": "页面配置",
+      "description": "网站名称、主题、Logo 等设置",
+      "comingSoon": "页面配置功能即将上线",
+      "hint": "将支持网站名称、Logo、主题颜色等自定义"
+    }
   }
 }

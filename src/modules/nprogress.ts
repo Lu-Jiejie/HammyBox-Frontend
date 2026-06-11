@@ -1,6 +1,5 @@
 import nprogress from 'nprogress'
 import 'nprogress/nprogress.css'
-
 import '@/styles/nprogress.css'
 
 export function registerModules() {

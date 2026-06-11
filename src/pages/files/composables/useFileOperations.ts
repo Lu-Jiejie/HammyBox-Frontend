@@ -4,7 +4,7 @@ import { batchDelete, batchMove, createFolder, deleteFile, moveFile, renameFile,
 export function useFileOperations(queryClient: QueryClient, t: (key: string) => string, toast: any) {
   async function handleDelete(fileName: string, isFolder: boolean) {
     await deleteFile(fileName, isFolder)
-    toast.success(t('files.deleteSuccess'))
+    toast.success(t('pages.files.actions.deleteSuccess'))
     queryClient.invalidateQueries({ queryKey: ['fileList'] })
     if (isFolder) {
       queryClient.invalidateQueries({ queryKey: ['folderTree'] })
@@ -13,20 +13,20 @@ export function useFileOperations(queryClient: QueryClient, t: (key: string) => 
 
   async function handleBatchDelete(fileIds: string[]) {
     await batchDelete(fileIds)
-    toast.success(t('files.batchDeleteSuccess'))
+    toast.success(t('pages.files.actions.batchDeleteSuccess'))
     queryClient.invalidateQueries({ queryKey: ['fileList'] })
   }
 
   async function handleCreateFolder(path: string) {
     await createFolder(path, false)
-    toast.success(t('files.createFolderSuccess'))
+    toast.success(t('pages.files.actions.createFolderSuccess'))
     queryClient.invalidateQueries({ queryKey: ['fileList'] })
     queryClient.invalidateQueries({ queryKey: ['folderTree'] })
   }
 
   async function handleRename(oldPath: string, newPath: string, isFolder: boolean) {
     await renameFile(oldPath, newPath)
-    toast.success('重命名成功')
+    toast.success(t('pages.files.actions.renameSuccess'))
     queryClient.invalidateQueries({ queryKey: ['fileList'] })
     if (isFolder) {
       queryClient.invalidateQueries({ queryKey: ['folderTree'] })
@@ -35,7 +35,7 @@ export function useFileOperations(queryClient: QueryClient, t: (key: string) => 
 
   async function handleUpdateTags(fileName: string, tags: string[]) {
     await updateFileTags(fileName, tags)
-    toast.success('标签更新成功')
+    toast.success(t('pages.files.actions.updateTagsSuccess'))
     queryClient.invalidateQueries({ queryKey: ['fileList'] })
   }
 
@@ -48,7 +48,7 @@ export function useFileOperations(queryClient: QueryClient, t: (key: string) => 
     else {
       await batchMove(targets.map(t => t.name), destination)
     }
-    toast.success('移动成功')
+    toast.success(t('pages.files.actions.moveSuccess'))
     queryClient.invalidateQueries({ queryKey: ['fileList'] })
     if (hasFolder) {
       queryClient.invalidateQueries({ queryKey: ['folderTree'] })

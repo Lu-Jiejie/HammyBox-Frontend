@@ -20,10 +20,10 @@ const { t } = useI18n()
     </Hint>
 
     <div class="header-sperator" />
-    <Hint :content="t('actions.toggleLanguage')" :as-child="false">
+    <Hint :content="t('common.toggles.language')" :as-child="false">
       <ToggleLanguage />
     </Hint>
-    <Hint :content="t('actions.toggleTheme')" :as-child="false">
+    <Hint :content="t('common.toggles.theme')" :as-child="false">
       <ToggleTheme />
     </Hint>
   </div>

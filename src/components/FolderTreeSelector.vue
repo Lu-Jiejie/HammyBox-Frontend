@@ -33,8 +33,8 @@ const props = withDefaults(defineProps<Props>(), {
 })
 const emit = defineEmits<Emits>()
 
-const { t } = useI18n()
 const queryClient = useQueryClient()
+const { t } = useI18n()
 
 const folderTree = ref<FolderTreeNode[]>([])
 const isLoading = ref(false)
@@ -206,10 +206,10 @@ function handleNodeClick(node: TreeNode) {
 <template>
   <div v-if="inline" class="w-full">
     <div v-if="isLoading" class="text-sm text-muted-foreground py-8 text-center">
-      {{ t('common.loading') }}
+      {{ t('common.states.loading') }}
     </div>
     <div v-else-if="error" class="text-sm text-destructive py-8 text-center">
-      Error loading folders
+      {{ t('components.folderSelector.error') }}
     </div>
     <TreeView
       v-else
@@ -229,10 +229,10 @@ function handleNodeClick(node: TreeNode) {
     </PopoverTrigger>
     <PopoverContent class="p-1 w-70" align="start">
       <div v-if="isLoading" class="text-sm text-muted-foreground py-8 text-center">
-        {{ t('common.loading') }}
+        {{ t('common.states.loading') }}
       </div>
       <div v-else-if="error" class="text-sm text-destructive py-8 text-center">
-        Error loading folders
+        {{ t('components.folderSelector.error') }}
       </div>
       <TreeView
         v-else

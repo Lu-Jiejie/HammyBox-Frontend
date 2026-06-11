@@ -1,27 +1,24 @@
 <script setup lang="ts">
-definePage({
-  meta: {
-    title: '页面配置',
-    auth: true,
-  },
-})
+import { useI18n } from 'vue-i18n'
+
+const { t } = useI18n()
 </script>
 
 <template>
-  <div class="space-y-4">
+  <div class="mx-auto p-6 max-w-5xl space-y-6">
     <div>
       <h1 class="text-2xl font-semibold">
-        页面配置
+        {{ t('settings.page.title') }}
       </h1>
       <p class="text-sm text-muted-foreground">
-        网站名称、主题、Logo 等设置
+        {{ t('settings.page.description') }}
       </p>
     </div>
 
-    <div class="border rounded-lg p-8 text-center text-muted-foreground">
-      <p>页面配置功能即将上线</p>
+    <div class="text-muted-foreground p-8 text-center border rounded-lg">
+      <p>{{ t('settings.page.comingSoon') }}</p>
       <p class="text-xs mt-2">
-        将支持网站名称、Logo、主题颜色等自定义
+        {{ t('settings.page.hint') }}
       </p>
     </div>
   </div>

@@ -59,9 +59,12 @@ const availableTags = computed(() => {
   return allTags.sort((a, b) => {
     const aIndex = builtInTags.indexOf(a)
     const bIndex = builtInTags.indexOf(b)
-    if (aIndex !== -1 && bIndex !== -1) return aIndex - bIndex
-    if (aIndex !== -1) return -1
-    if (bIndex !== -1) return 1
+    if (aIndex !== -1 && bIndex !== -1)
+      return aIndex - bIndex
+    if (aIndex !== -1)
+      return -1
+    if (bIndex !== -1)
+      return 1
     return a.localeCompare(b)
   })
 })
@@ -125,18 +128,45 @@ function removeSelectedTag(tagName: string) {
   }
 }
 
-// 压缩配置的响应式引用
-const compressConfig = computed(() => store.compressConfig)
+const compressConfig = store.compressConfig
+
+const convertToWebp = computed({
+  get: () => compressConfig.convertToWebp,
+  set: (val) => { compressConfig.convertToWebp = val },
+})
+const customerCompress = computed({
+  get: () => compressConfig.customerCompress,
+  set: (val) => { compressConfig.customerCompress = val },
+})
+const serverCompress = computed({
+  get: () => compressConfig.serverCompress,
+  set: (val) => { compressConfig.serverCompress = val },
+})
+const compressBar = computed({
+  get: () => compressConfig.compressBar,
+  set: (val) => { compressConfig.compressBar = val },
+})
+const compressQuality = computed({
+  get: () => compressConfig.compressQuality,
+  set: (val) => { compressConfig.compressQuality = val },
+})
+
+// 当 threshold 变小时，自动调整 quality
+watch(() => compressConfig.compressBar, (newBar) => {
+  if (compressConfig.compressQuality > newBar) {
+    compressConfig.compressQuality = newBar
+  }
+})
 
 // 用于 Slider 的本地数组（Slider 需要数组格式）
 const compressBarArray = computed({
-  get: () => [store.compressConfig.compressBar],
-  set: (val) => { store.compressConfig.compressBar = val[0] },
+  get: () => [compressBar.value],
+  set: (val) => { compressBar.value = val[0] },
 })
 
 const compressQualityArray = computed({
-  get: () => [store.compressConfig.compressQuality],
-  set: (val) => { store.compressConfig.compressQuality = val[0] },
+  get: () => [compressQuality.value],
+  set: (val) => { compressQuality.value = val[0] },
 })
 
 // 静态配置：可用渠道列表
@@ -151,10 +181,10 @@ const channels = [
 
 // 静态配置：文件命名方式
 const namingTypes = [
-  { value: 'default', label: t('uploadPreferences.naming.default'), description: '时间戳+随机数_原文件名' },
-  { value: 'index', label: t('uploadPreferences.naming.index'), description: '时间戳+随机数.扩展名' },
-  { value: 'origin', label: t('uploadPreferences.naming.origin'), description: '保留原文件名' },
-  { value: 'short', label: t('uploadPreferences.naming.short'), description: '8位随机短链' },
+  { value: 'default', label: t('pages.upload.preferences.naming.default'), description: '时间戳+随机数_原文件名' },
+  { value: 'index', label: t('pages.upload.preferences.naming.index'), description: '时间戳+随机数.扩展名' },
+  { value: 'origin', label: t('pages.upload.preferences.naming.origin'), description: '保留原文件名' },
+  { value: 'short', label: t('pages.upload.preferences.naming.short'), description: '8位随机短链' },
 ]
 
 // uploadFolder 的特殊处理：移除前导斜杠（后端使用空字符串表示根目录）
@@ -169,9 +199,9 @@ watch(uploadFolder, (newValue) => {
   <Dialog :open="open" @update:open="val => emit('update:open', val)">
     <DialogContent class="max-h-[80vh] max-w-2xl w-[calc(100vw-2rem)] overflow-y-auto sm:w-full">
       <DialogHeader>
-        <DialogTitle>{{ t('uploadPreferences.title') }}</DialogTitle>
+        <DialogTitle>{{ t('pages.upload.preferences.title') }}</DialogTitle>
         <DialogDescription class="text-xs">
-          {{ t('uploadPreferences.subtitle') }}
+          {{ t('pages.upload.preferences.subtitle') }}
         </DialogDescription>
       </DialogHeader>
 
@@ -179,10 +209,10 @@ watch(uploadFolder, (newValue) => {
         <!-- 渠道配置组 -->
         <div class="space-y-4">
           <div class="space-y-2">
-            <Label for="uploadChannel">{{ t('uploadPreferences.channel.type') }}</Label>
+            <Label for="uploadChannel">{{ t('pages.upload.preferences.channel.type') }}</Label>
             <Select v-model="uploadChannel">
               <SelectTrigger id="uploadChannel">
-                <SelectValue :placeholder="t('uploadPreferences.channel.type')" />
+                <SelectValue :placeholder="t('pages.upload.preferences.channel.type')" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem
@@ -201,13 +231,13 @@ watch(uploadFolder, (newValue) => {
 
           <div class="space-y-2">
             <div class="flex gap-1.5 items-center">
-              <Label for="channelName">{{ t('uploadPreferences.channel.name') }}</Label>
-              <InfoPopover :content="t('uploadPreferences.channel.nameTooltip')" />
+              <Label for="channelName">{{ t('pages.upload.preferences.channel.name') }}</Label>
+              <InfoPopover :content="t('pages.upload.preferences.channel.nameTooltip')" />
             </div>
             <Input
               id="channelName"
               v-model="uploadChannelName"
-              :placeholder="t('uploadPreferences.channel.autoSelect')"
+              :placeholder="t('pages.upload.preferences.channel.autoSelect')"
             />
           </div>
         </div>
@@ -217,10 +247,10 @@ watch(uploadFolder, (newValue) => {
 
         <!-- 上传路径组 -->
         <div class="space-y-2">
-          <Label for="uploadFolder">{{ t('uploadPreferences.channel.directory') }}</Label>
+          <Label for="uploadFolder">{{ t('pages.upload.preferences.channel.directory') }}</Label>
           <FolderTreeSelector v-model="uploadFolder" />
           <p class="text-xs text-muted-foreground">
-            {{ t('uploadPreferences.channel.directoryPlaceholder') }}
+            {{ t('pages.upload.preferences.channel.directoryPlaceholder') }}
           </p>
         </div>
 
@@ -229,10 +259,10 @@ watch(uploadFolder, (newValue) => {
 
         <!-- 文件命名组 -->
         <div class="space-y-2">
-          <Label for="namingType">{{ t('uploadPreferences.naming.title') }}</Label>
+          <Label for="namingType">{{ t('pages.upload.preferences.naming.title') }}</Label>
           <Select v-model="uploadNameType">
             <SelectTrigger id="namingType">
-              <SelectValue :placeholder="t('uploadPreferences.naming.title')">
+              <SelectValue :placeholder="t('pages.upload.preferences.naming.title')">
                 {{ namingTypes.find(type => type.value === uploadNameType)?.label }}
               </SelectValue>
             </SelectTrigger>
@@ -261,9 +291,9 @@ watch(uploadFolder, (newValue) => {
         <!-- 标签配置组 -->
         <div class="space-y-4">
           <div class="space-y-2">
-            <Label>{{ t('uploadPreferences.tags.title') }}</Label>
+            <Label>{{ t('pages.upload.preferences.tags.title') }}</Label>
             <p class="text-xs text-muted-foreground">
-              {{ t('uploadPreferences.tags.description') }}
+              {{ t('pages.upload.preferences.tags.description') }}
             </p>
           </div>
 
@@ -282,7 +312,7 @@ watch(uploadFolder, (newValue) => {
               </div>
             </div>
             <div v-else class="p-3 text-center border rounded-lg bg-muted/30">
-              <span class="text-sm text-muted-foreground">{{ t('uploadPreferences.tags.noSelectedTags') }}</span>
+              <span class="text-sm text-muted-foreground">{{ t('pages.upload.preferences.tags.noSelectedTags') }}</span>
             </div>
           </div>
 
@@ -291,7 +321,7 @@ watch(uploadFolder, (newValue) => {
             <div class="flex gap-2">
               <Input
                 v-model="newTagInput"
-                :placeholder="t('uploadPreferences.tags.inputPlaceholder')"
+                :placeholder="t('pages.upload.preferences.tags.inputPlaceholder')"
                 class="flex-1"
                 @keyup.enter="addNewTag"
               />
@@ -303,7 +333,7 @@ watch(uploadFolder, (newValue) => {
 
           <!-- 备选标签 -->
           <div class="space-y-2">
-            <Label class="text-xs text-muted-foreground">{{ t('uploadPreferences.tags.availableTags') }}</Label>
+            <Label class="text-xs text-muted-foreground">{{ t('pages.upload.preferences.tags.availableTags') }}</Label>
             <div class="p-3 border rounded-lg bg-background min-h-[80px]">
               <div class="flex flex-wrap gap-2">
                 <TagBadge
@@ -330,28 +360,28 @@ watch(uploadFolder, (newValue) => {
           <div class="p-3 border rounded-lg bg-card flex gap-3 items-center justify-between">
             <div class="flex gap-1.5 min-w-0 items-center">
               <Label for="convertToWebp" class="font-medium cursor-pointer">
-                {{ t('uploadPreferences.preprocessing.convertToWebp') }}
+                {{ t('pages.upload.preferences.preprocessing.convertToWebp') }}
               </Label>
-              <InfoPopover :content="t('uploadPreferences.preprocessing.convertToWebpTooltip')" />
+              <InfoPopover :content="t('pages.upload.preferences.preprocessing.convertToWebpTooltip')" />
             </div>
-            <Switch id="convertToWebp" v-model:checked="compressConfig.convertToWebp" />
+            <Switch id="convertToWebp" v-model="convertToWebp" />
           </div>
 
           <div class="p-3 border rounded-lg bg-card flex gap-3 items-center justify-between">
             <div class="flex gap-1.5 min-w-0 items-center">
               <Label for="customerCompress" class="font-medium cursor-pointer">
-                {{ t('uploadPreferences.preprocessing.clientCompress') }}
+                {{ t('pages.upload.preferences.preprocessing.compress') }}
               </Label>
             </div>
-            <Switch id="customerCompress" v-model:checked="compressConfig.customerCompress" />
+            <Switch id="customerCompress" v-model="customerCompress" />
           </div>
 
-          <div v-if="compressConfig.customerCompress" class="space-y-4">
+          <div v-if="customerCompress" class="space-y-4">
             <div class="space-y-2">
               <div class="flex gap-1.5 items-center justify-between">
                 <div class="flex gap-1.5 items-center">
-                  <Label for="compressBar">{{ t('uploadPreferences.preprocessing.compressThreshold') }}</Label>
-                  <InfoPopover :content="t('uploadPreferences.preprocessing.compressThresholdTooltip')" />
+                  <Label for="compressBar">{{ t('pages.upload.preferences.preprocessing.compressThreshold') }}</Label>
+                  <InfoPopover :content="t('pages.upload.preferences.preprocessing.compressThresholdTooltip')" />
                 </div>
                 <span class="text-sm font-medium">{{ compressBarArray[0] }} MB</span>
               </div>
@@ -367,8 +397,8 @@ watch(uploadFolder, (newValue) => {
             <div class="space-y-2">
               <div class="flex gap-1.5 items-center justify-between">
                 <div class="flex gap-1.5 items-center">
-                  <Label for="compressQuality">{{ t('uploadPreferences.preprocessing.expectedSize') }}</Label>
-                  <InfoPopover :content="t('uploadPreferences.preprocessing.expectedSizeTooltip')" />
+                  <Label for="compressQuality">{{ t('pages.upload.preferences.preprocessing.expectedSize') }}</Label>
+                  <InfoPopover :content="t('pages.upload.preferences.preprocessing.expectedSizeTooltip')" />
                 </div>
                 <span class="text-sm font-medium">{{ compressQualityArray[0] }} MB</span>
               </div>
@@ -391,11 +421,11 @@ watch(uploadFolder, (newValue) => {
           <div class="p-3 border rounded-lg bg-card flex gap-3 items-center justify-between">
             <div class="flex gap-1.5 min-w-0 items-center">
               <Label for="serverCompress" class="font-medium cursor-pointer">
-                {{ t('uploadPreferences.serverCompress.enable') }}
+                {{ t('pages.upload.preferences.serverCompress.enable') }}
               </Label>
-              <InfoPopover :content="t('uploadPreferences.serverCompress.tooltip')" />
+              <InfoPopover :content="t('pages.upload.preferences.serverCompress.tooltip')" />
             </div>
-            <Switch id="serverCompress" v-model:checked="compressConfig.serverCompress" />
+            <Switch id="serverCompress" v-model="serverCompress" />
           </div>
         </div>
       </div>

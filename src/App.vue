@@ -8,10 +8,11 @@ import Header from '@/layout/Header.vue'
 const route = useRoute()
 
 const currentLayout = computed(() => {
-  // 登录页只显示 header，其他页面使用完整应用外壳（header + sidebar）
-  if (route.path === '/login') {
+  // 登录页、blocked、404 等不需要布局的页面
+  if (route.path === '/login' || route.path === '/blocked' || route.meta.layout === false) {
     return Header
   }
+  // 其他页面使用完整应用外壳（header + sidebar）
   return AppShell
 })
 </script>
@@ -28,8 +29,9 @@ const currentLayout = computed(() => {
     }"
   />
   <div>
-    <component :is="currentLayout">
+    <component :is="currentLayout" v-if="currentLayout">
       <router-view />
     </component>
+    <router-view v-else />
   </div>
 </template>

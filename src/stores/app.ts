@@ -16,9 +16,9 @@ export const useAppStore = defineStore('app', () => {
 
   const compressConfig = reactive({
     customerCompress: false,
-    compressQuality: 4, // MB - target size after compression
-    compressBar: 5, // MB - threshold to trigger compression
-    serverCompress: true, // Telegram server-side compression
+    compressQuality: 4,
+    compressBar: 5,
+    serverCompress: false,
     convertToWebp: false,
   })
 
@@ -85,7 +85,8 @@ export const useAppStore = defineStore('app', () => {
   const cusDarkMode = ref(false)
 
   // 文件视图模式偏好
-  const fileViewMode = ref<'card' | 'list'>('card')
+  const fileViewMode = ref<'card' | 'list'>('list')
+  const imageLoadMode = ref<'none' | 'lite' | 'full'>('full')
 
   /* ─── 2. Getters (计算属性) ─── */
   const credentials = computed(() => loggedIn.value ? '__session__' : null)
@@ -126,6 +127,7 @@ export const useAppStore = defineStore('app', () => {
     useDarkMode,
     cusDarkMode,
     fileViewMode,
+    imageLoadMode,
     credentials,
 
     // 导出操作方法
@@ -155,6 +157,7 @@ export const useAppStore = defineStore('app', () => {
       'useDarkMode',
       'cusDarkMode',
       'fileViewMode',
+      'imageLoadMode',
     ],
   },
 })

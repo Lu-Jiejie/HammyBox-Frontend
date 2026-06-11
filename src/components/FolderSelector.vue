@@ -29,8 +29,8 @@ interface Emits {
 
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
-
 const { t } = useI18n()
+
 const queryClient = useQueryClient()
 
 const folders = ref<FolderItem[]>([])
@@ -53,7 +53,8 @@ const selectedFolder = computed({
 })
 
 async function loadFolders() {
-  if (loaded.value) return
+  if (loaded.value)
+    return
 
   isLoading.value = true
   error.value = false
@@ -99,7 +100,7 @@ function getFolderValue(folder: FolderItem): string {
 <template>
   <Select v-model="selectedFolder">
     <SelectTrigger>
-      <SelectValue :placeholder="isLoading ? t('common.loading') : error ? 'Error loading folders' : t('files.selectFolder')" />
+      <SelectValue :placeholder="isLoading ? t('components.folderSelector.loading') : error ? t('components.folderSelector.error') : t('components.folderSelector.selectFolder')" />
     </SelectTrigger>
     <SelectContent>
       <SelectItem

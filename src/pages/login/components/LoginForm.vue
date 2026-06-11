@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { HTMLAttributes } from 'vue'
 import { ref } from 'vue'
+import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
 import { Button } from '@/components/shadcn/button'
 import {
@@ -25,6 +26,7 @@ const props = defineProps<{
 
 const router = useRouter()
 const route = useRoute()
+const { t } = useI18n()
 const { login, loading } = useAuth()
 
 const password = ref('')
@@ -46,24 +48,21 @@ async function onSubmit() {
     <Card>
       <CardHeader>
         <CardTitle class="text-2xl">
-          {{ $t('auth.login.title') }}
+          {{ t('auth.login.title', { name: 'Hammy Box' }) }}
         </CardTitle>
-        <CardDescription>
-          {{ $t('auth.login.subTitle') }}
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <form @submit.prevent="onSubmit">
           <FieldGroup>
             <Field>
               <FieldLabel for="password">
-                {{ $t('auth.login.password') }}
+                {{ t('auth.login.password') }}
               </FieldLabel>
               <Input
                 id="password"
                 v-model="password"
                 type="password"
-                :placeholder="$t('auth.login.passwordPlaceholder')"
+                :placeholder="t('auth.login.passwordPlaceholder')"
                 autocomplete="current-password"
                 required
                 :disabled="loading"
@@ -72,7 +71,7 @@ async function onSubmit() {
             <Field>
               <Button type="submit" :disabled="loading" class="w-full">
                 <div v-if="loading" class="i-lucide-loader-circle mr-2 size-4 animate-spin" />
-                {{ $t('actions.login') }}
+                {{ t('auth.login.action') }}
               </Button>
             </Field>
           </FieldGroup>

@@ -25,7 +25,7 @@ async function confirmLogout() {
     router.push('/login')
   }
   catch {
-    toast.error('Logout failed')
+    toast.error(t('auth.logout.failed'))
   }
 }
 </script>
@@ -33,9 +33,9 @@ async function confirmLogout() {
 <template>
   <SidebarMenu class="overflow-x-hidden">
     <SidebarMenuItem class="overflow-x-hidden">
-      <SidebarMenuButton :tooltip="t('actions.logout')" class="!overflow-x-hidden" @click="showLogoutDialog = true">
+      <SidebarMenuButton :tooltip="t('auth.logout.action')" class="!overflow-x-hidden" @click="showLogoutDialog = true">
         <LogOut />
-        <span class="whitespace-nowrap overflow-hidden transition-opacity duration-200 group-data-[collapsible=icon]:opacity-0 !text-clip">{{ t('actions.logout') }}</span>
+        <span class="whitespace-nowrap transition-opacity duration-200 overflow-hidden group-data-[collapsible=icon]:opacity-0 !text-clip">{{ t('auth.logout.action') }}</span>
       </SidebarMenuButton>
     </SidebarMenuItem>
   </SidebarMenu>
@@ -44,8 +44,8 @@ async function confirmLogout() {
     v-model:open="showLogoutDialog"
     :title="t('auth.logout.confirm')"
     :description="t('auth.logout.description')"
-    :cancel-text="t('common.cancel')"
-    :confirm-text="t('common.confirm')"
+    :cancel-text="t('common.actions.cancel')"
+    :confirm-text="t('common.actions.confirm')"
     @confirm="confirmLogout"
   />
 </template>

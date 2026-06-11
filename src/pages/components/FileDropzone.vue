@@ -1,10 +1,9 @@
 <script setup lang="ts">
-import { useClipboard } from '@vueuse/core'
+import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import { storeToRefs } from 'pinia'
 import { computed, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
-import { vAutoAnimate } from '@formkit/auto-animate/vue'
 import Hint from '@/components/Hint.vue'
 import InfoPopover from '@/components/InfoPopover.vue'
 import { Button } from '@/components/shadcn/button'
@@ -30,7 +29,6 @@ import { uploadWithRouting } from '@/utils/upload'
 
 const { t } = useI18n()
 const store = useAppStore()
-const { copy } = useClipboard()
 
 // 直接就近从 Pinia 中吸取全局状态，消除组件 Props 层层传递
 const {
@@ -89,8 +87,8 @@ async function copyInFormat(url: string, fileName: string, format: 'url' | 'mark
       textToCopy = `[img]${url}[/img]`
       break
   }
-  await copy(textToCopy)
-  toast.success(t('upload.copyUrlSuccess'))
+  navigator.clipboard.writeText(textToCopy)
+  toast.success(t('pages.upload.messages.copyUrlSuccess'))
 }
 
 // 不可重试的错误码列表（渠道配置问题、IP封禁等）
@@ -113,7 +111,7 @@ const NON_RETRYABLE_ERROR_CODES = [
 // 提取后端错误信息
 function extractBackendError(error: any): { message: string, code?: string, isRetryable: boolean } {
   console.log('[extractBackendError] 原始错误对象:', error)
-  let errorMessage = t('upload.uploadFailed')
+  let errorMessage = t('pages.upload.messages.uploadFailed')
   let errorCode: string | undefined
 
   if (error?.response?.data) {
@@ -200,7 +198,7 @@ const dropzone = useDropzoneUpload<UploadResponse, string>({
     }
 
     // 理论上不会到这里，但为了类型安全
-    return { status: 'error' as const, error: t('upload.uploadFailed') }
+    return { status: 'error' as const, error: t('pages.upload.messages.uploadFailed') }
   },
   onRemoveFile: async (id: string) => {
     const file = dropzone.fileStatuses.value.find(f => f.id === id)
@@ -208,13 +206,13 @@ const dropzone = useDropzoneUpload<UploadResponse, string>({
       createdUrls.delete(file.result.data.src)
   },
   onFileUploaded: (result: UploadResponse) => {
-    toast.success(t('upload.uploadSuccess'))
+    toast.success(t('pages.upload.messages.uploadSuccess'))
     if (result.data.src)
       createdUrls.add(result.data.src)
   },
   onFileUploadError: (error: string) => {
     // 直接显示传入的错误信息（已经在 onDropFile 中提取过）
-    toast.error(error || t('upload.uploadFailed'))
+    toast.error(error || t('pages.upload.messages.uploadFailed'))
   },
   validation: {
     maxFiles: 10,
@@ -240,8 +238,8 @@ async function copyAllUrls() {
     .map(f => buildFileUrl(f.result!.data!.src))
     .join('\n')
   if (urls) {
-    await copy(urls)
-    toast.success(t('upload.copyAllSuccess'))
+    navigator.clipboard.writeText(urls)
+    toast.success(t('pages.upload.messages.copyAllSuccess'))
   }
 }
 
@@ -288,7 +286,7 @@ async function retryFile(fileId: string) {
 
     file.status = 'success'
     file.result = result
-    toast.success(t('upload.uploadSuccess'))
+    toast.success(t('pages.upload.messages.uploadSuccess'))
   }
   catch (error: any) {
     const { message: errorMessage } = extractBackendError(error)
@@ -321,10 +319,10 @@ onBeforeUnmount(() => {
         <div class="i-lucide-cloud-upload text-muted-foreground" style="width: 48px; height: 48px;" />
         <div class="text-sm">
           <p class="text-lg font-medium">
-            {{ t('upload.selectFiles') }}
+            {{ t('pages.upload.selectFiles') }}
           </p>
           <p class="text-muted-foreground mt-1">
-            {{ t('upload.dragUploadText') }}
+            {{ t('pages.upload.dragText') }}
           </p>
         </div>
       </DropzoneTrigger>
@@ -355,32 +353,32 @@ onBeforeUnmount(() => {
 
         <!-- 右侧：操作按钮 -->
         <div class="flex shrink-0 flex-wrap gap-2 sm:flex-nowrap">
-          <Hint :content="t('upload.actions.copyAll')">
+          <Hint :content="t('pages.upload.actions.copyAll')">
             <Button variant="outline" size="sm" class="flex-1 sm:flex-none" @click="copyAllUrls">
-              {{ t('upload.actions.copyAll') }}
+              {{ t('pages.upload.actions.copyAll') }}
             </Button>
           </Hint>
-          <Hint :content="t('upload.actions.retryFailed')">
+          <Hint :content="t('pages.upload.actions.retryFailed')">
             <Button variant="outline" size="sm" class="flex-1 sm:flex-none" :disabled="taskStats.failed === 0" @click="retryAllFailed">
-              {{ t('upload.actions.retryFailed') }}
+              {{ t('pages.upload.actions.retryFailed') }}
             </Button>
           </Hint>
 
           <!-- 清空列表下拉菜单 -->
-          <Hint :content="t('upload.actions.clearList')" :as-child="false">
+          <Hint :content="t('pages.upload.actions.clearList')" :as-child="false">
             <DropdownMenu>
               <DropdownMenuTrigger as-child>
                 <Button variant="destructive" size="sm" class="flex-1 sm:flex-none">
-                  {{ t('upload.actions.clearList') }}
+                  {{ t('pages.upload.actions.clearList') }}
                   <div class="i-lucide-chevron-down ml-1" style="width: 14px; height: 14px;" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuItem @click="clearSuccess">
-                  {{ t('upload.actions.clearSuccess') }}
+                  {{ t('pages.upload.actions.clearSuccess') }}
                 </DropdownMenuItem>
                 <DropdownMenuItem @click="clearAll">
-                  {{ t('upload.actions.clearAll') }}
+                  {{ t('pages.upload.actions.clearAll') }}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -425,7 +423,7 @@ onBeforeUnmount(() => {
                   <!-- 错误信息按钮 (仅失败时显示) -->
                   <InfoPopover
                     v-if="file.status === 'error'"
-                    :content="file.error || t('upload.uploadFailed')"
+                    :content="file.error || t('pages.upload.messages.uploadFailed')"
                     side="left"
                     align="start"
                     variant="error"
@@ -452,22 +450,22 @@ onBeforeUnmount(() => {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
                       <DropdownMenuItem @click="copyInFormat(buildFileUrl(file.result.data.src), file.fileName, 'url')">
-                        {{ t('upload.copyFormats.url') }}
+                        {{ t('pages.upload.copyFormats.url') }}
                       </DropdownMenuItem>
                       <DropdownMenuItem @click="copyInFormat(buildFileUrl(file.result.data.src), file.fileName, 'markdown')">
-                        {{ t('upload.copyFormats.markdown') }}
+                        {{ t('pages.upload.copyFormats.markdown') }}
                       </DropdownMenuItem>
                       <DropdownMenuItem @click="copyInFormat(buildFileUrl(file.result.data.src), file.fileName, 'html')">
-                        {{ t('upload.copyFormats.html') }}
+                        {{ t('pages.upload.copyFormats.html') }}
                       </DropdownMenuItem>
                       <DropdownMenuItem @click="copyInFormat(buildFileUrl(file.result.data.src), file.fileName, 'bbcode')">
-                        {{ t('upload.copyFormats.bbcode') }}
+                        {{ t('pages.upload.copyFormats.bbcode') }}
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>
 
                   <!-- 重试按钮 (仅失败时显示) -->
-                  <Hint v-if="file.status === 'error'" :content="t('upload.actions.retryFailed')">
+                  <Hint v-if="file.status === 'error'" :content="t('pages.upload.actions.retryFailed')">
                     <Button variant="ghost" size="sm" class="p-1 h-7 w-7" @click="retryFile(file.id)">
                       <div class="i-lucide-refresh-cw" style="width: 14px; height: 14px;" />
                     </Button>

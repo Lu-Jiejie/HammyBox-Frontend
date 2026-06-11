@@ -1,3 +1,4 @@
+import type { FileItem } from '@/api/files'
 import { ref } from 'vue'
 
 export function useFileDialogs() {
@@ -10,8 +11,7 @@ export function useFileDialogs() {
 
   const showEditTagsDialog = ref(false)
   const editTagsTarget = ref('')
-  const editingTags = ref<string[]>([])
-  const newTagInput = ref('')
+  const editTagsFile = ref<FileItem | null>(null)
 
   const showMoveDialog = ref(false)
   const moveTargets = ref<Array<{ name: string, isFolder: boolean }>>([])
@@ -25,8 +25,7 @@ export function useFileDialogs() {
     newName,
     showEditTagsDialog,
     editTagsTarget,
-    editingTags,
-    newTagInput,
+    editTagsFile,
     showMoveDialog,
     moveTargets,
     moveDestination,

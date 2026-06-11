@@ -25,14 +25,14 @@ withDefaults(defineProps<Props>(), {
       <slot>
         <button
           type="button"
-          :class="[
-            'transition-colors flex-shrink-0',
+          class="flex-shrink-0 transition-colors" :class="[
             variant === 'error'
               ? 'i-lucide-alert-circle text-destructive hover:text-destructive/80'
               : 'i-lucide-info text-muted-foreground hover:text-foreground',
           ]"
           style="width: 14px; height: 14px;"
           aria-label="More info"
+          @click.stop
         />
       </slot>
     </PopoverTrigger>
@@ -42,8 +42,7 @@ withDefaults(defineProps<Props>(), {
       :align-offset="0"
       :side-offset="8"
       :collision-padding="16"
-      :class="[
-        'text-xs max-w-[min(320px,calc(100vw-2rem))] break-words',
+      class="text-xs max-w-[min(320px,calc(100vw-2rem))] break-words" :class="[
         variant === 'error' ? 'text-destructive' : '',
       ]"
     >

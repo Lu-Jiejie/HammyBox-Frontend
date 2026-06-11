@@ -38,9 +38,16 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/api-tokens/': RouteRecordInfo<
-      '/api-tokens/',
-      '/api-tokens',
+    '/[...all]': RouteRecordInfo<
+      '/[...all]',
+      '/:all(.*)',
+      { all: ParamValue<true> },
+      { all: ParamValue<false> },
+      | never
+    >,
+    '/blocked': RouteRecordInfo<
+      '/blocked',
+      '/blocked',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -94,9 +101,9 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
-    '/tags/': RouteRecordInfo<
-      '/tags/',
-      '/tags',
+    '/status': RouteRecordInfo<
+      '/status',
+      '/status',
       Record<never, never>,
       Record<never, never>,
       | never
@@ -129,9 +136,17 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/api-tokens/index.vue': {
+    'src/pages/[...all].vue': {
       routes:
-        | '/api-tokens/'
+        | '/[...all]'
+      views:
+        | never
+      pathParamNames:
+        | 'all'
+    }
+    'src/pages/blocked.vue': {
+      routes:
+        | '/blocked'
       views:
         | never
       pathParamNames:
@@ -193,9 +208,9 @@ declare module 'vue-router/auto-routes' {
       pathParamNames:
         | never
     }
-    'src/pages/tags/index.vue': {
+    'src/pages/status.vue': {
       routes:
-        | '/tags/'
+        | '/status'
       views:
         | never
       pathParamNames:

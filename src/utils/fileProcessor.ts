@@ -87,6 +87,9 @@ export async function compressImage(file: File, targetSizeMB: number): Promise<F
   }
 
   const targetSizeKB = targetSizeMB * 1024
+  const originalSizeMB = file.size / (1024 * 1024)
+
+  console.log(`[Compress] Original: ${originalSizeMB.toFixed(2)}MB, Target: ${targetSizeMB}MB`)
 
   try {
     // image-conversion expects size in KB
@@ -97,6 +100,9 @@ export async function compressImage(file: File, targetSizeMB: number): Promise<F
       type: file.type,
       lastModified: Date.now(),
     })
+
+    const compressedSizeMB = compressedFile.size / (1024 * 1024)
+    console.log(`[Compress] Result: ${compressedSizeMB.toFixed(2)}MB`)
 
     return compressedFile
   }
@@ -114,8 +120,34 @@ export async function compressImage(file: File, targetSizeMB: number): Promise<F
 export async function processFile(file: File, config: CompressConfig): Promise<File> {
   let processedFile = file
 
-  // Step 1: Convert to WebP if enabled
+  console.log('[ProcessFile] Start processing:', file.name, file.size / (1024 * 1024), 'MB')
+  console.log('[ProcessFile] Config:', config)
+
+  // Step 1: Compress first if enabled and file exceeds threshold
+  if (config.customerCompress) {
+    const fileSizeMB = file.size / (1024 * 1024)
+    console.log('[ProcessFile] customerCompress enabled, file size:', fileSizeMB, 'MB, threshold:', config.compressBar, 'MB')
+
+    if (fileSizeMB > config.compressBar) {
+      console.log('[ProcessFile] File exceeds threshold, compressing...')
+      try {
+        processedFile = await compressImage(processedFile, config.compressQuality)
+      }
+      catch (error) {
+        console.warn('Compression failed, using original file:', error)
+      }
+    }
+    else {
+      console.log('[ProcessFile] File below threshold, skipping compression')
+    }
+  }
+  else {
+    console.log('[ProcessFile] customerCompress disabled')
+  }
+
+  // Step 2: Convert to WebP if enabled (after compression)
   if (config.convertToWebp) {
+    console.log('[ProcessFile] Converting to WebP...')
     try {
       processedFile = await convertToWebP(processedFile)
     }
@@ -124,19 +156,7 @@ export async function processFile(file: File, config: CompressConfig): Promise<F
     }
   }
 
-  // Step 2: Compress if enabled and file exceeds threshold
-  if (config.customerCompress) {
-    const fileSizeMB = processedFile.size / (1024 * 1024)
-
-    if (fileSizeMB > config.compressBar) {
-      try {
-        processedFile = await compressImage(processedFile, config.compressQuality)
-      }
-      catch (error) {
-        console.warn('Compression failed, using original file:', error)
-      }
-    }
-  }
+  console.log('[ProcessFile] Final size:', processedFile.size / (1024 * 1024), 'MB')
 
   return processedFile
 }

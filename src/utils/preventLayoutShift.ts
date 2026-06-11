@@ -26,7 +26,7 @@ const observer = new MutationObserver(() => {
   if (hasOverflowHidden && !isLocked) {
     isLocked = true
 
-    console.log('[ScrollLock] Locking scroll at position:', savedScrollPosition)
+    // console.log('[ScrollLock] Locking scroll at position:', savedScrollPosition)
 
     // 计算滚动条宽度
     const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth
@@ -46,7 +46,7 @@ const observer = new MutationObserver(() => {
   else if (!hasOverflowHidden && isLocked) {
     isLocked = false
 
-    console.log('[ScrollLock] Unlocking scroll, restoring to:', savedScrollPosition)
+    // console.log('[ScrollLock] Unlocking scroll, restoring to:', savedScrollPosition)
 
     // 恢复 body 样式
     body.style.position = ''

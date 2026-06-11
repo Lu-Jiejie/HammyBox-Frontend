@@ -1,200 +1,568 @@
 {
+  "common": {
+    "actions": {
+      "cancel": "Cancel",
+      "confirm": "Confirm",
+      "save": "Save",
+      "delete": "Delete",
+      "copy": "Copy",
+      "edit": "Edit",
+      "rename": "Rename",
+      "move": "Move",
+      "close": "Close"
+    },
+    "states": {
+      "loading": "Loading...",
+      "success": "Success",
+      "failed": "Failed",
+      "empty": "No data"
+    },
+    "toggles": {
+      "language": "Toggle Language",
+      "theme": "Toggle Theme",
+      "background": "Toggle Background"
+    }
+  },
   "auth": {
     "login": {
       "title": "Sign in to {name}",
-      "subTitle": "Enter your password to sign in.",
+      "subtitle": "Enter your password to sign in.",
       "password": "Password",
       "passwordPlaceholder": "Enter your password",
+      "action": "Login",
       "success": "Signed in successfully",
       "failed": "Wrong password, sign-in failed"
     },
     "logout": {
-      "success": "Signed out",
+      "action": "Logout",
       "confirm": "Sign out",
-      "description": "Are you sure you want to sign out?"
+      "description": "Are you sure you want to sign out?",
+      "success": "Logged out",
+      "failed": "Log out failed"
     }
   },
-  "actions": {
-    "toggleLanguage": "Toggle Language",
-    "toggleTheme": "Toggle Theme",
-    "toggleBackground": "Toggle Background",
-    "login": "Login",
-    "logout": "Logout"
-  },
-  "fileds": {
-    "authCode": "Access Code"
-  },
-  "upload": {
-    "title": "File Upload",
-    "dragUploadText": "Click or drag files here to upload",
-    "selectFiles": "Select files",
-    "uploading": "Uploading...",
-    "uploadSuccess": "Upload successful",
-    "uploadFailed": "Upload failed",
-    "copyUrlSuccess": "Link copied",
-    "copyAllSuccess": "All links copied",
-    "preferences": "Upload Preferences",
-    "currentConfiguration": "Current Configuration",
-    "showConfiguration": "Show Configuration",
-    "hideConfiguration": "Hide Configuration",
-    "enabled": "Enabled",
-    "disabled": "Disabled",
-    "actions": {
-      "copyAll": "Copy All",
-      "retryFailed": "Retry Failed",
-      "clearSuccess": "Clear Success",
-      "clearAll": "Clear All",
-      "clearList": "Clear List"
-    },
-    "status": {
-      "pending": "Pending",
-      "uploading": "Uploading",
-      "success": "Success",
-      "error": "Failed"
-    },
-    "stats": {
-      "total": "Total",
-      "success": "Success",
-      "failed": "Failed",
-      "uploading": "Uploading"
-    },
-    "copyFormats": {
-      "url": "Copy URL",
-      "markdown": "Copy Markdown",
-      "html": "Copy HTML",
-      "bbcode": "Copy BBCode"
-    }
-  },
-  "uploadPreferences": {
-    "title": "Upload Preferences",
-    "subtitle": "Customize your upload experience, local to this browser only",
-    "channel": {
-      "sectionTitle": "Channel Configuration",
-      "type": "Channel Type",
-      "name": "Channel Name",
-      "nameTooltip": "Specify config name; leave empty to auto-select",
-      "channelNameHint": "Auto select",
-      "autoSelect": "Auto select",
-      "directory": "Upload Directory",
-      "directoryPlaceholder": "e.g. /images/2024"
-    },
-    "path": {
-      "sectionTitle": "Upload Path"
-    },
-    "naming": {
-      "sectionTitle": "File Naming",
-      "title": "Naming Rule",
-      "default": "Default Name",
-      "index": "Indexed Name",
-      "origin": "Original Filename",
-      "short": "Short Link"
-    },
-    "preprocessing": {
-      "sectionTitle": "Client Preprocessing",
-      "convertToWebp": "Convert to WebP",
-      "convertToWebpTooltip": "Convert images to WebP format before upload for better compression",
-      "clientCompress": "Enable Compression",
-      "compressThreshold": "Compression Threshold",
-      "compressThresholdTooltip": "Files larger than this size will be compressed before upload",
-      "expectedSize": "Target Size",
-      "expectedSizeTooltip": "Expected file size after compression"
-    },
-    "serverCompress": {
-      "sectionTitle": "Server Compression",
-      "enable": "Enable Server Compression",
-      "tooltip": "Let Telegram server compress images (Telegram only)"
-    },
-    "tags": {
-      "title": "Tags",
-      "description": "Add tags to uploaded files for easier management and filtering",
-      "available": "Available Tags",
-      "availableTags": "Available Tags",
-      "noSelectedTags": "No tags selected",
-      "selectTags": "Select Tags",
-      "addCustom": "Add Custom Tag",
-      "inputPlaceholder": "Add new tag",
-      "customTags": "Custom Tags"
-    }
-  },
-  "common": {
-    "cancel": "Cancel",
-    "confirm": "Confirm",
-    "save": "Save",
-    "delete": "Delete",
-    "copy": "Copy",
-    "loading": "Loading..."
-  },
-  "files": {
-    "title": "File Management",
-    "description": "Manage all your files",
-    "refresh": "Refresh",
-    "refreshed": "Refreshed successfully",
-    "newFolder": "New Folder",
-    "newFolderDescription": "Create a new folder in the current directory",
-    "folderName": "Folder Name",
-    "folderNamePlaceholder": "Enter folder name",
-    "createFolderSuccess": "Folder created successfully",
-    "createFolderFailed": "Failed to create folder",
-    "listView": "List View",
-    "cardView": "Card View",
-    "searchPlaceholder": "Search files...",
-    "filter": "Filter",
-    "filterOptions": "Filter Options",
-    "clearFilters": "Clear Filters",
-    "sort": "Sort",
-    "sortByDate": "Sort by Date",
-    "sortByName": "Sort by Name",
-    "totalFiles": "{count} items",
-    "selectedCount": "{count} selected",
-    "selected": "selected",
-    "clearSelection": "Clear",
-    "noFiles": "No files yet",
-    "noMatchingFiles": "No matching files",
-    "adjustSearchHint": "Try adjusting your search or filters",
-    "uploadHint": "Upload files to get started",
-    "preview": "Preview",
-    "fileName": "Name",
-    "size": "Size",
-    "tags": "Tags",
-    "uploadTime": "Upload Time",
-    "channel": "Channel",
-    "actions": "Actions",
-    "copySuccess": "URL copied",
-    "delete": "Delete",
-    "deleteSuccess": "Deleted successfully",
-    "deleteFailed": "Delete failed",
-    "batchDeleteSuccess": "Batch delete successful",
-    "batchDeleteFailed": "Batch delete failed",
-    "pageInfo": "Page {current} of {total}",
-    "selectFilesToPerformActions": "Select files to perform batch actions",
-    "selectFolder": "Select folder",
-    "filterPlaceholder": "Filter current page...",
-    "menubar": {
-      "selection": "Select",
-      "selectAll": "Select All",
-      "deselectAll": "Deselect All",
-      "clearSelection": "Clear Selection",
-      "view": "View",
-      "foldersFirst": "Folders First",
-      "imageMode": {
-        "none": "No Images",
-        "lite": "Data Saver",
-        "full": "Full Load"
+  "pages": {
+    "upload": {
+      "title": "File Upload",
+      "dragText": "Click or drag files here to upload",
+      "selectFiles": "Select files",
+      "status": {
+        "pending": "Pending",
+        "uploading": "Uploading",
+        "success": "Success",
+        "error": "Failed"
       },
-      "tools": "Tools",
-      "globalSearch": "Global Search",
-      "copyUrl": "Copy URL",
-      "moveTo": "Move to"
+      "stats": {
+        "total": "Total",
+        "success": "Success",
+        "failed": "Failed",
+        "uploading": "Uploading"
+      },
+      "actions": {
+        "copyAll": "Copy All",
+        "retryFailed": "Retry Failed",
+        "clearSuccess": "Clear Success",
+        "clearAll": "Clear All",
+        "clearList": "Clear List"
+      },
+      "copyFormats": {
+        "url": "Copy URL",
+        "markdown": "Copy Markdown",
+        "html": "Copy HTML",
+        "bbcode": "Copy BBCode"
+      },
+      "messages": {
+        "uploadSuccess": "Upload successful",
+        "uploadFailed": "Upload failed",
+        "copyUrlSuccess": "Link copied",
+        "copyAllSuccess": "All links copied"
+      },
+      "preferences": {
+        "title": "Upload Preferences",
+        "subtitle": "Customize your upload experience, local to this browser only",
+        "currentConfiguration": "Current Configuration",
+        "showConfiguration": "Show Configuration",
+        "hideConfiguration": "Hide Configuration",
+        "enabled": "Enabled",
+        "disabled": "Disabled",
+        "channel": {
+          "title": "Channel Configuration",
+          "type": "Channel Type",
+          "name": "Channel Name",
+          "nameTooltip": "Specify config name; leave empty to auto-select",
+          "autoSelect": "Auto select",
+          "directory": "Upload Directory",
+          "directoryPlaceholder": "e.g. /images/2024"
+        },
+        "path": {
+          "title": "Upload Path"
+        },
+        "naming": {
+          "title": "File Naming",
+          "rule": "Naming Rule",
+          "default": "Default Name",
+          "index": "Indexed Name",
+          "origin": "Original Filename",
+          "short": "Short Link"
+        },
+        "preprocessing": {
+          "title": "Client Preprocessing",
+          "convertToWebp": "Convert to WebP",
+          "convertToWebpTooltip": "Convert images to WebP format before upload for better compression",
+          "compress": "Enable Compression",
+          "compressThreshold": "Compression Threshold",
+          "compressThresholdTooltip": "Files larger than this size will be compressed before upload",
+          "expectedSize": "Target Size",
+          "expectedSizeTooltip": "Expected file size after compression"
+        },
+        "serverCompress": {
+          "title": "Server Compression",
+          "enable": "Enable Server Compression",
+          "tooltip": "Let Telegram server compress images (Telegram only)"
+        },
+        "tags": {
+          "title": "Tags",
+          "description": "Add tags to uploaded files for easier management and filtering",
+          "available": "Available Tags",
+          "availableTags": "Available Tags",
+          "noSelectedTags": "No tags selected",
+          "selectTags": "Select Tags",
+          "addCustom": "Add Custom Tag",
+          "inputPlaceholder": "Add new tag",
+          "customTags": "Custom Tags"
+        }
+      }
     },
-    "globalSearch": {
-      "title": "Global Search",
-      "description": "Search across all files",
-      "keyword": "Keyword",
-      "placeholder": "Enter file name...",
-      "search": "Search",
-      "resultsCount": "Found {count} results",
-      "failed": "Search failed"
+    "files": {
+      "title": "File Management",
+      "description": "Manage all your files",
+      "emptyState": "No files yet",
+      "noMatchingFiles": "No matching files",
+      "adjustSearchHint": "Try adjusting your search or filters",
+      "uploadHint": "Upload files to get started",
+      "toolbar": {
+        "refresh": "Refresh",
+        "refreshed": "Refreshed successfully",
+        "filterPlaceholder": "Filter current page...",
+        "browse": "Browse"
+      },
+      "folder": {
+        "new": "New Folder",
+        "newDescription": "Create a new folder in the current directory",
+        "name": "Folder Name",
+        "namePlaceholder": "Enter folder name",
+        "createSuccess": "Folder created successfully",
+        "createFailed": "Failed to create folder"
+      },
+      "filter": {
+        "title": "Filter",
+        "options": "Filter Options",
+        "clear": "Clear Filters"
+      },
+      "sort": {
+        "title": "Sort",
+        "byDate": "Sort by Date",
+        "byName": "Sort by Name"
+      },
+      "select": {
+        "title": "Select",
+        "selected": "selected",
+        "selectAll": "Select All",
+        "deselectAll": "Deselect All",
+        "clear": "Clear Selection"
+      },
+      "view": {
+        "title": "View",
+        "card": "Card View",
+        "list": "List View",
+        "foldersFirst": "Folders First",
+        "imageMode": {
+          "title": "Image Loading",
+          "none": "No Images",
+          "lite": "Data Saver",
+          "full": "Full Load"
+        }
+      },
+      "detail": {
+        "title": "File Details",
+        "fileName": "Name",
+        "fileUrl": "File URL",
+        "size": "Size",
+        "channelType": "Channel Type",
+        "channel": "Channel Name",
+        "tagsLabel": "Tags",
+        "uploadTime": "Upload Time",
+        "tags": {
+          "blocked": "Blocked",
+          "whitelist": "Whitelist"
+        }
+      },
+      "actions": {
+        "copyUrl": "Copy URL",
+        "copySuccess": "URL copied",
+        "rename": "Rename",
+        "editTags": "Edit Tags",
+        "move": "Move",
+        "delete": "Delete",
+        "deleteSuccess": "Deleted successfully",
+        "deleteFailed": "Delete failed",
+        "deleteFolderConfirm": "Are you sure you want to delete the folder \"<strong>{name}</strong>\" and all its contents? This action cannot be undone.",
+        "deleteFilesConfirm": "Are you sure you want to delete the selected <strong>{count}</strong> files? This action cannot be undone.",
+        "deleteFileConfirm": "Are you sure you want to delete the file \"<strong>{name}</strong>\"? This action cannot be undone.",
+        "batchDeleteSuccess": "Batch delete successful",
+        "batchDeleteFailed": "Batch delete failed",
+        "detail": "Detail",
+        "confirmDeletion": "Confirm Deletion",
+        "moveFailed": "Move failed",
+        "moveSuccess": "Moved successfully",
+        "updateTagsSuccess": "Tag updated successfully",
+        "renameSuccess": "Renamed successfully",
+        "createFolderSuccess": "Folder created successfully"
+      },
+      "move": {
+        "title": "Move to",
+        "description": "Select target folder",
+        "targetPath": "Target Path"
+      },
+      "search": {
+        "global": "Global Search",
+        "title": "Global Search",
+        "description": "Search across all files",
+        "keyword": "Keyword",
+        "placeholder": "Enter file name...",
+        "button": "Search",
+        "resultsCount": "Found {count} results",
+        "failed": "Search failed"
+      },
+      "tools": {
+        "title": "Tools"
+      },
+      "globalSearch": {
+        "title": "Global Search"
+      }
     },
-    "fileDetail": "File Details"
+    "blocked": {
+      "title": "Access Denied",
+      "description": "This file has been restricted from access, or the domain has been blocked.",
+      "goBack": "Go Back",
+      "backToHome": "Back to Home"
+    },
+    "notFound": {
+      "title": "Page Not Found",
+      "description": "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.",
+      "goBack": "Go Back",
+      "backToHome": "Back to Home"
+    }
+  },
+  "components": {
+    "folderSelector": {
+      "loading": "Loading folders...",
+      "error": "Error loading folders",
+      "selectFolder": "Select a folder"
+    }
+  },
+  "sidebar": {
+    "upload": "Upload",
+    "files": "Files",
+    "systemStatus": "System Status",
+    "settings": "Settings",
+    "security": "Security",
+    "uploadChannels": "Upload Channels",
+    "pageConfig": "Page Config",
+    "others": "Others"
+  },
+  "settings": {
+    "status": {
+      "title": "System Status",
+      "description": "View system statistics and maintenance operations",
+      "overview": {
+        "totalFiles": "Total Files",
+        "lastUpdated": "Index Updated"
+      },
+      "charts": {
+        "channelDistribution": "Channel Distribution",
+        "fileStatus": "File Status",
+        "uploadTrend": "Upload Trend"
+      },
+      "fileStates": {
+        "normal": "Normal",
+        "blocked": "Blocked"
+      },
+      "maintenance": {
+        "title": "System Maintenance",
+        "rebuild": "Rebuild Index",
+        "rebuilding": "Rebuilding..."
+      },
+      "timeAgo": {
+        "daysAgo": "{n} days ago",
+        "hoursAgo": "{n} hours ago",
+        "minutesAgo": "{n} minutes ago",
+        "justNow": "Just now"
+      },
+      "messages": {
+        "loadFailed": "Failed to load system status",
+        "rebuildSuccess": "Index rebuilt successfully",
+        "rebuildFailed": "Failed to rebuild index",
+        "noData": "No data"
+      }
+    },
+    "upload": {
+      "title": "Upload Channel Configuration",
+      "description": "Configure Telegram, R2, S3, Discord, HuggingFace, WebDAV and other upload channels",
+      "actions": {
+        "refreshQuota": "Refresh Quota",
+        "addChannel": "Add Channel",
+        "edit": "Edit",
+        "delete": "Delete"
+      },
+      "loadBalance": "Load Balance",
+      "channels": {
+        "telegram": "Telegram",
+        "cfr2": "Cloudflare R2",
+        "s3": "S3",
+        "discord": "Discord",
+        "huggingface": "HuggingFace",
+        "webdav": "WebDAV"
+      },
+      "dialog": {
+        "add": {
+          "title": "Add Channel",
+          "description": "Configure a new upload channel"
+        },
+        "edit": {
+          "title": "Edit Channel",
+          "description": "Modify channel configuration"
+        },
+        "delete": {
+          "title": "Delete Channel",
+          "description": "Are you sure you want to delete this channel? This action cannot be undone."
+        }
+      },
+      "fields": {
+        "channelType": "Channel Type",
+        "channelName": "Channel Name",
+        "botToken": "Bot Token",
+        "chatId": "Chat ID",
+        "proxyUrl": "Proxy URL",
+        "proxyPlaceholder": "Optional, for proxy access",
+        "publicUrl": "Public URL",
+        "publicUrlPlaceholder": "R2 public access URL",
+        "endpoint": "Endpoint",
+        "endpointPlaceholder": "https://s3.region.amazonaws.com",
+        "cdnDomain": "CDN Domain",
+        "cdnPlaceholder": "Optional, for acceleration",
+        "bucketName": "Bucket Name",
+        "bucketPlaceholder": "my-bucket",
+        "region": "Region",
+        "regionPlaceholder": "us-east-1",
+        "accessKeyId": "Access Key ID",
+        "accessKeyPlaceholder": "Enter Access Key",
+        "secretAccessKey": "Secret Access Key",
+        "secretKeyPlaceholder": "Enter Secret Key",
+        "pathStyle": "Path Style",
+        "channelId": "Channel ID",
+        "channelIdPlaceholder": "Enter Channel ID",
+        "isNitro": "Nitro Member",
+        "repo": "Repository",
+        "repoPlaceholder": "username/repository",
+        "token": "Access Token",
+        "tokenPlaceholder": "Enter Access Token",
+        "isPrivate": "Private Repository",
+        "baseUrl": "Base URL",
+        "baseUrlPlaceholder": "https://webdav.example.com",
+        "username": "Username",
+        "usernamePlaceholder": "Enter username",
+        "password": "Password",
+        "passwordPlaceholder": "Enter password",
+        "publicAccessUrl": "Public Access URL",
+        "publicAccessPlaceholder": "Optional, for file access",
+        "createDirectory": "Auto Create Directory",
+        "namePlaceholder": "Enter channel name",
+        "botTokenPlaceholder": "Enter Bot Token",
+        "chatIdPlaceholder": "Enter Chat ID"
+      },
+      "hints": {
+        "cfr2EnvOnly": "R2 channel is configured via environment variables, no manual addition needed",
+        "required": "Required"
+      },
+      "badges": {
+        "env": "ENV",
+        "nitro": "Nitro"
+      },
+      "messages": {
+        "saved": "Settings saved",
+        "nameRequired": "Please enter channel name",
+        "cannotDeleteFixed": "Environment variable channels cannot be deleted",
+        "quotaRefreshed": "Quota statistics refreshed"
+      }
+    },
+    "security": {
+      "title": "Security Settings",
+      "description": "Authentication, review, and session policy configuration",
+      "sections": {
+        "auth": {
+          "title": "Authentication Management",
+          "password": "Login Password",
+          "passwordPlaceholder": "Leave empty to keep unchanged",
+          "confirmPassword": "Confirm Password",
+          "clearPassword": "Clear Password",
+          "cancelClear": "Cancel Clear"
+        },
+        "referer": {
+          "title": "Referer Hotlink Protection",
+          "enable": "Enable Hotlink Protection",
+          "allowedDomains": "Allowed Domains (comma-separated)",
+          "domainsPlaceholder": "example.com, file.example.com",
+          "allowEmpty": "Allow Empty Referer"
+        },
+        "whitelist": {
+          "title": "Whitelist Mode",
+          "enable": "Enable Whitelist Mode",
+          "description": "Only allow access to files marked as whitelist",
+          "cacheWarning": "After changing whitelist mode, cached files may take up to 30 days to expire automatically. It is recommended to clear the cache immediately to ensure access control takes effect.",
+          "purgeCache": "Clear All File Cache"
+        },
+        "session": {
+          "title": "Session Policy",
+          "secure": "Secure Mode (HTTPS Only)",
+          "secureDescription": "Only transmit cookies via HTTPS",
+          "maxAge": "Session Max Age (days)"
+        },
+        "token": {
+          "title": "API Token Management",
+          "create": "Create Token",
+          "table": {
+            "name": "Name",
+            "token": "Token",
+            "permissions": "Permissions",
+            "status": "Status",
+            "createdAt": "Created At",
+            "actions": "Actions"
+          },
+          "permissions": {
+            "upload": "Upload",
+            "delete": "Delete",
+            "list": "List",
+            "manage": "Manage"
+          },
+          "status": {
+            "active": "Active",
+            "expired": "Expired"
+          },
+          "dialog": {
+            "create": {
+              "title": "Create API Token",
+              "description": "Create an API token for programmatic access"
+            },
+            "result": {
+              "title": "Token Created Successfully",
+              "warning": "⚠️ Please save this token. You won't be able to see the full value again after closing.",
+              "fullToken": "Full Token",
+              "saved": "Saved"
+            },
+            "edit": {
+              "title": "Edit API Token",
+              "description": "Modify token permissions and expiration settings"
+            },
+            "delete": {
+              "title": "Delete Token",
+              "description": "Are you sure you want to delete this token? This action cannot be undone."
+            }
+          },
+          "fields": {
+            "name": "Token Name",
+            "namePlaceholder": "My API Token",
+            "permissions": "Permissions",
+            "neverExpire": "Never Expire",
+            "expiration": "Expiration",
+            "autoDelete": "Auto Delete After Expiry",
+            "units": {
+              "day": "Day",
+              "month": "Month",
+              "year": "Year"
+            }
+          },
+          "empty": "No API Tokens"
+        }
+      },
+      "messages": {
+        "saved": "Saved successfully",
+        "passwordMismatch": "Password confirmation does not match",
+        "sessionMaxAgeInvalid": "Session max age must be greater than 0",
+        "passwordChanged": "Password changed, please log in again",
+        "nameAndPermissionsRequired": "Please enter name and select permissions",
+        "permissionsRequired": "Please select at least one permission",
+        "tokenCreated": "Token created successfully",
+        "tokenCreateFailed": "Failed to create token",
+        "tokenUpdated": "Token updated successfully",
+        "tokenUpdateFailed": "Failed to update token",
+        "tokenDeleted": "Token deleted successfully",
+        "tokenDeleteFailed": "Failed to delete token",
+        "tokenCopied": "Token copied",
+        "copyFailed": "Copy failed",
+        "loadFailed": "Failed to load settings",
+        "loadTokensFailed": "Failed to load token list",
+        "cachePurged": "Cache cleared, {count} files removed",
+        "cachePurgeFailed": "Failed to clear cache"
+      }
+    },
+    "others": {
+      "title": "Other Settings",
+      "description": "Telemetry, Random Image API, Cloudflare, WebDAV, etc.",
+      "sections": {
+        "telemetry": {
+          "title": "Remote Telemetry",
+          "hint": "Helpful for troubleshooting, recommended to enable",
+          "enable": "Enable Telemetry",
+          "description": "Send anonymous usage data to improve the product"
+        },
+        "randomImageApi": {
+          "title": "Random Image API",
+          "hint": "Please refer to documentation for API usage",
+          "enable": "Enable Random Image API",
+          "allowedDir": "Allowed Directory",
+          "allowedDirPlaceholder": "Leave empty for all directories"
+        },
+        "cloudflare": {
+          "title": "Cloudflare API Token",
+          "hint": "Once configured, backend blocking and deletion operations will not be limited by CDN cache. Recommended to set up, please refer to documentation",
+          "zoneId": "Zone ID",
+          "email": "Email",
+          "apiKey": "API Key"
+        },
+        "webdav": {
+          "title": "WebDAV Service",
+          "hint": "Once enabled, you can access and manage images via WebDAV protocol",
+          "enable": "Enable WebDAV",
+          "username": "Username",
+          "password": "Password",
+          "uploadChannel": "Upload Channel",
+          "uploadChannelPlaceholder": "e.g.: cfr2, s3",
+          "channelName": "Channel Name"
+        },
+        "publicBrowse": {
+          "title": "Public Browse",
+          "hint": "Once enabled, visitors can browse images in the specified directory via /browse path (read-only, cannot delete/move)",
+          "enable": "Enable Public Browse Page",
+          "description": "Allow visitors to browse file list",
+          "allowedDir": "Allowed Directory for Browsing",
+          "allowedDirPlaceholder": "Leave empty for all directories"
+        }
+      },
+      "actions": {
+        "save": "Save Settings"
+      },
+      "messages": {
+        "loadFailed": "Failed to load settings",
+        "saved": "Saved successfully",
+        "saveFailed": "Failed to save"
+      }
+    },
+    "page": {
+      "title": "Page Configuration",
+      "description": "Site name, theme, logo, etc.",
+      "comingSoon": "Page configuration feature coming soon",
+      "hint": "Will support customization of site name, logo, theme color, etc."
+    }
   }
 }

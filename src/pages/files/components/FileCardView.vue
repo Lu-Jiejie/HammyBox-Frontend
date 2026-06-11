@@ -5,12 +5,16 @@ import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/shadcn/button'
 import { Checkbox } from '@/components/shadcn/checkbox'
 import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuTrigger,
+} from '@/components/shadcn/context-menu'
+import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/shadcn/dropdown-menu'
+import FileMenuItems from './FileMenuItems.vue'
 
 interface CombinedItem {
   name: string
@@ -58,112 +62,107 @@ function getPreviewUrl(file: CombinedItem): string {
 
 <template>
   <div v-auto-animate class="gap-4 grid grid-cols-2 lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 xl:grid-cols-6">
-    <div
-      v-for="item in items"
-      :key="item.name"
-      class="group p-3 border rounded-lg flex flex-col gap-2 cursor-pointer transition-shadow relative hover:shadow-md"
-      @click="item.isFolder ? emit('navigateFolder', item.name) : emit('showDetail', { name: item.name, metadata: item.metadata })"
-    >
-      <!-- Selection checkbox for files -->
-      <div v-if="!item.isFolder" class="left-2 top-2 absolute z-10" @click.stop>
-        <Checkbox
-          :checked="selectedFiles.includes(item.name)"
-          @update:checked="emit('toggleSelection', item.name)"
-        />
-      </div>
-
-      <!-- Preview -->
-      <div class="rounded bg-muted flex aspect-square items-center justify-center overflow-hidden">
-        <img
-          v-if="!item.isFolder && isImage(item)"
-          :src="getPreviewUrl(item)"
-          :alt="item.name"
-          class="h-full w-full object-cover"
+    <ContextMenu v-for="item in items" :key="item.name">
+      <ContextMenuTrigger as-child>
+        <div
+          class="group p-3 border rounded-lg flex flex-col gap-2 cursor-pointer transition-shadow relative hover:shadow-md"
+          @dblclick="item.isFolder ? emit('navigateFolder', item.name) : emit('showDetail', { name: item.name, metadata: item.metadata })"
         >
-        <div
-          v-else-if="item.isFolder"
-          class="i-lucide-folder text-muted-foreground"
-          style="width: 48px; height: 48px;"
-        />
-        <div
-          v-else
-          class="i-lucide-file text-muted-foreground"
-          style="width: 48px; height: 48px;"
-        />
-      </div>
+          <!-- Selection checkbox for files -->
+          <div v-if="!item.isFolder" class="left-2 top-2 absolute z-10" @click.stop>
+            <Checkbox
+              :checked="selectedFiles.includes(item.name)"
+              @update:checked="emit('toggleSelection', item.name)"
+            />
+          </div>
 
-      <!-- Info -->
-      <div class="flex-1 min-w-0">
-        <p class="text-sm font-medium truncate">
-          {{ item.isFolder ? (item.displayName || item.name) : (item.metadata?.FileName || item.name) }}
-        </p>
-        <p v-if="!item.isFolder" class="text-xs text-muted-foreground">
-          {{ formatFileSize(item.metadata?.FileSizeBytes) }}
-        </p>
-      </div>
+          <!-- Preview -->
+          <div class="rounded bg-muted flex aspect-square items-center justify-center overflow-hidden">
+            <img
+              v-if="!item.isFolder && isImage(item)"
+              :src="getPreviewUrl(item)"
+              :alt="item.name"
+              class="h-full w-full object-cover"
+            >
+            <div
+              v-else-if="item.isFolder"
+              class="i-lucide-folder text-muted-foreground"
+              style="width: 48px; height: 48px;"
+            />
+            <div
+              v-else
+              class="i-lucide-file text-muted-foreground"
+              style="width: 48px; height: 48px;"
+            />
+          </div>
 
-      <!-- Actions -->
-      <div v-if="!item.isFolder" class="opacity-0 transition-opacity group-hover:opacity-100" @click.stop>
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="sm" class="p-0 h-7 w-7" type="button">
-              <div class="i-lucide-more-horizontal" style="width: 16px; height: 16px;" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem @click.prevent="emit('showDetail', { name: item.name, metadata: item.metadata })">
-              <div class="i-lucide-info mr-2" style="width: 14px; height: 14px;" />
-              详情
-            </DropdownMenuItem>
-            <DropdownMenuItem @click.prevent="emit('copyUrl', item.name)">
-              <div class="i-lucide-copy mr-2" style="width: 14px; height: 14px;" />
-              {{ t('files.menubar.copyUrl') }}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem @click.prevent="emit('rename', item.name, false)">
-              <div class="i-lucide-pencil mr-2" style="width: 14px; height: 14px;" />
-              重命名
-            </DropdownMenuItem>
-            <DropdownMenuItem @click.prevent="emit('editTags', item.name)">
-              <div class="i-lucide-tags mr-2" style="width: 14px; height: 14px;" />
-              编辑标签
-            </DropdownMenuItem>
-            <DropdownMenuItem @click.prevent="emit('move', item.name, false)">
-              <div class="i-lucide-folder-input mr-2" style="width: 14px; height: 14px;" />
-              移动
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem class="text-destructive" @click.prevent="emit('delete', item.name, false)">
-              <div class="i-lucide-trash-2 mr-2" style="width: 14px; height: 14px;" />
-              {{ t('files.delete') }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-      <div v-else class="opacity-0 transition-opacity group-hover:opacity-100" @click.stop>
-        <DropdownMenu>
-          <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="sm" class="p-0 h-7 w-7" type="button">
-              <div class="i-lucide-more-horizontal" style="width: 16px; height: 16px;" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem @click.prevent="emit('rename', item.name, true)">
-              <div class="i-lucide-pencil mr-2" style="width: 14px; height: 14px;" />
-              重命名
-            </DropdownMenuItem>
-            <DropdownMenuItem @click.prevent="emit('move', item.name, true)">
-              <div class="i-lucide-folder-input mr-2" style="width: 14px; height: 14px;" />
-              移动
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <DropdownMenuItem class="text-destructive" @click.prevent="emit('delete', item.name, true)">
-              <div class="i-lucide-trash-2 mr-2" style="width: 14px; height: 14px;" />
-              {{ t('files.delete') }}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
-      </div>
-    </div>
+          <!-- Info -->
+          <div class="flex-1 min-w-0">
+            <p class="text-sm font-medium truncate">
+              {{ item.isFolder ? (item.displayName || item.name) : (item.metadata?.FileName || item.name) }}
+            </p>
+            <p v-if="!item.isFolder" class="text-xs text-muted-foreground">
+              {{ formatFileSize(item.metadata?.FileSizeBytes) }}
+            </p>
+          </div>
+
+          <!-- Actions -->
+          <div v-if="!item.isFolder" class="opacity-0 transition-opacity group-hover:opacity-100" @click.stop>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="ghost" size="sm" class="p-0 h-7 w-7" type="button">
+                  <div class="i-lucide-more-horizontal" style="width: 16px; height: 16px;" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <FileMenuItems
+                  :item="item"
+                  as="dropdown"
+                  @copy-url="emit('copyUrl', $event)"
+                  @delete="emit('delete', $event, item.isFolder)"
+                  @show-detail="emit('showDetail', $event)"
+                  @rename="emit('rename', $event, item.isFolder)"
+                  @edit-tags="emit('editTags', $event)"
+                  @move="emit('move', $event, item.isFolder)"
+                />
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+          <div v-else class="opacity-0 transition-opacity group-hover:opacity-100" @click.stop>
+            <DropdownMenu>
+              <DropdownMenuTrigger as-child>
+                <Button variant="ghost" size="sm" class="p-0 h-7 w-7" type="button">
+                  <div class="i-lucide-more-horizontal" style="width: 16px; height: 16px;" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <FileMenuItems
+                  :item="item"
+                  as="dropdown"
+                  @copy-url="emit('copyUrl', $event)"
+                  @delete="emit('delete', $event, item.isFolder)"
+                  @show-detail="emit('showDetail', $event)"
+                  @rename="emit('rename', $event, item.isFolder)"
+                  @edit-tags="emit('editTags', $event)"
+                  @move="emit('move', $event, item.isFolder)"
+                />
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <FileMenuItems
+          :item="item"
+          as="context"
+          @copy-url="emit('copyUrl', $event)"
+          @delete="emit('delete', $event, item.isFolder)"
+          @show-detail="emit('showDetail', $event)"
+          @rename="emit('rename', $event, item.isFolder)"
+          @edit-tags="emit('editTags', $event)"
+          @move="emit('move', $event, item.isFolder)"
+        />
+      </ContextMenuContent>
+    </ContextMenu>
   </div>
 </template>

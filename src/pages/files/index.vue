@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { FileItem } from '@/api/files'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
-import { useClipboard } from '@vueuse/core'
+import Fuse from 'fuse.js'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useRoute, useRouter } from 'vue-router'
@@ -9,22 +9,15 @@ import { toast } from 'vue-sonner'
 import { getFileList } from '@/api/files'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import FolderTreeSelector from '@/components/FolderTreeSelector.vue'
+import InputDialog from '@/components/InputDialog.vue'
 import { Button } from '@/components/shadcn/button'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/shadcn/dialog'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/shadcn/dropdown-menu'
-import { Input } from '@/components/shadcn/input'
+import Input from '@/components/shadcn/input/Input.vue'
 import {
   Menubar,
   MenubarContent,
@@ -38,10 +31,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/shadcn/popover'
-import TagBadge from '@/components/TagBadge.vue'
 import { useAppStore } from '@/stores'
+import EditTagsDialog from './components/EditTagsDialog.vue'
 import FileCardView from './components/FileCardView.vue'
-import FileIcon from './components/FileIcon.vue'
+import FileDetailDialog from './components/FileDetailDialog.vue'
 import FileListView from './components/FileListView.vue'
 import { useFileDialogs } from './composables/useFileDialogs'
 import { useFileOperations } from './composables/useFileOperations'
@@ -58,16 +51,13 @@ const queryClient = useQueryClient()
 const route = useRoute()
 const router = useRouter()
 const store = useAppStore()
-const { copy } = useClipboard()
-
-const builtInTags = ['whitelist', 'blocked', 'nsfw', 'shared']
 
 const fileOperations = useFileOperations(queryClient, t, toast)
 const dialogs = useFileDialogs()
 
 // View mode - persisted in app store
 const viewMode = computed({
-  get: () => store.fileViewMode || 'card',
+  get: () => store.fileViewMode || 'list',
   set: (value: 'card' | 'list') => {
     store.fileViewMode = value
   },
@@ -75,7 +65,7 @@ const viewMode = computed({
 
 // Pagination
 const currentPage = ref(1)
-const pageSize = ref(50)
+const pageSize = ref(25)
 
 // Directory navigation
 const currentDir = ref((route.query.dir as string) || '')
@@ -109,17 +99,13 @@ function showFileDetail(file: FileItem) {
   showDetailPanel.value = true
 }
 
-const sortedTags = computed(() => {
-  if (!detailFile.value?.metadata?.Tags)
-    return []
-  const tags = detailFile.value.metadata.Tags
-  const builtin = tags.filter(tag => builtInTags.includes(tag))
-  const custom = tags.filter(tag => !builtInTags.includes(tag))
-  return [...builtin, ...custom]
-})
-
 // Image load mode
-const imageLoadMode = ref<'none' | 'lite' | 'full'>('full')
+const imageLoadMode = computed({
+  get: () => store.imageLoadMode || 'full',
+  set: (value: 'none' | 'lite' | 'full') => {
+    store.imageLoadMode = value
+  },
+})
 
 // Build query params
 const queryParams = computed(() => ({
@@ -144,7 +130,7 @@ const { data: fileListData, isLoading, isFetching, refetch } = useQuery({
 
 // Computed data
 const directories = computed(() => {
-  console.log(fileListData.value)
+  // console.log(fileListData.value)
   const folders = fileListData.value?.folders || []
   return folders.map((folderPath) => {
     const cleanPath = folderPath.endsWith('/') ? folderPath.slice(0, -1) : folderPath
@@ -165,18 +151,46 @@ const totalPages = computed(() => Math.ceil(totalCount.value / pageSize.value))
 const allItems = computed<CombinedItem[]>(() => {
   let items: CombinedItem[] = [
     ...directories.value.map(dir => ({ ...dir, isFolder: true as const })),
-    ...files.value.map(file => ({ ...file, isFolder: false as const })),
+    ...files.value.map((file) => {
+      // Build searchable text for tags (include display labels)
+      const tagsSearchText = (file.metadata?.Tags || []).map((tag) => {
+        if (tag === 'blocked')
+          return `blocked ${t('pages.files.detail.tags.blocked') || '黑名单'}`
+        if (tag === 'whitelist')
+          return `whitelist ${t('pages.files.detail.tags.whitelist') || '白名单'}`
+        return tag
+      }).join(' ')
+
+      return {
+        ...file,
+        isFolder: false as const,
+        _searchChannelType: file.metadata?.Channel || '',
+        _searchChannelName: file.metadata?.ChannelName || '',
+        _searchTags: tagsSearchText,
+      }
+    }),
   ]
 
-  // Frontend filter
+  // Frontend filter with Fuse.js
   if (filterQuery.value) {
-    const query = filterQuery.value.toLowerCase()
-    items = items.filter((item) => {
-      const fileName = item.isFolder
-        ? (item.displayName || item.name).toLowerCase()
-        : (item.metadata?.FileName || item.name).toLowerCase()
-      return fileName.includes(query)
+    const fuse = new Fuse(items, {
+      keys: [
+        { name: 'name', weight: 0.2 },
+        { name: 'displayName', weight: 0.2 },
+        { name: 'metadata.FileName', weight: 0.3 },
+        { name: 'metadata.Tags', weight: 0.1 },
+        { name: '_searchTags', weight: 0.15 },
+        { name: '_searchChannelType', weight: 0.1 },
+        { name: '_searchChannelName', weight: 0.15 },
+      ],
+      threshold: 0.4,
+      ignoreLocation: true,
+      useExtendedSearch: true,
     })
+
+    const searchTerms = filterQuery.value.trim().split(/\s+/).filter(Boolean)
+    const fuseQuery = searchTerms.map(term => `'${term}`).join(' ')
+    items = fuse.search(fuseQuery).map(result => result.item)
   }
 
   // Collator for proper sorting (numbers, letters, Chinese)
@@ -266,7 +280,7 @@ const breadcrumbs = computed(() => {
 // File operations
 function handleRefresh() {
   refetch()
-  toast.success(t('files.refreshed'))
+  toast.success(t('pages.files.toolbar.refreshed'))
 }
 
 async function handleDelete(fileName: string, isFolder: boolean) {
@@ -283,7 +297,7 @@ async function confirmDelete() {
     showDeleteDialog.value = false
   }
   catch (error: any) {
-    toast.error(error?.response?.data?.error || t('files.deleteFailed'))
+    toast.error(error?.response?.data?.error || t('pages.files.actions.deleteFailed'))
   }
 }
 
@@ -305,12 +319,8 @@ async function confirmBatchDelete() {
     showDeleteDialog.value = false
   }
   catch (error: any) {
-    toast.error(error?.response?.data?.error || t('files.batchDeleteFailed'))
+    toast.error(error?.response?.data?.error || t('pages.files.actions.batchDeleteFailed'))
   }
-}
-
-function clearFilter() {
-  filterQuery.value = ''
 }
 
 async function handleGlobalSearch() {
@@ -326,11 +336,11 @@ async function handleGlobalSearch() {
     })
     // TODO: 显示全局搜索结果（可以用另一个对话框或跳转到搜索结果页）
     console.log('Global search results:', response.data)
-    toast.success(t('files.globalSearch.resultsCount', { count: response.data.files?.length || 0 }))
+    toast.success(t('pages.files.globalSearch.resultsCount', { count: response.data.files?.length || 0 }))
     showGlobalSearchDialog.value = false
   }
   catch (error: any) {
-    toast.error(error?.response?.data?.error || t('files.globalSearch.failed'))
+    toast.error(error?.response?.data?.error || t('pages.files.globalSearch.failed'))
   }
 }
 
@@ -358,8 +368,14 @@ function buildFileUrl(fileName: string): string {
 
 async function copyUrl(fileName: string) {
   const url = buildFileUrl(fileName)
-  await copy(url)
-  toast.success(t('files.copySuccess'))
+  try {
+    await navigator.clipboard.writeText(url)
+    toast.success(t('pages.files.actions.copySuccess'))
+  }
+  catch (error) {
+    console.error('[copyUrl] Error:', error)
+    toast.error('复制失败')
+  }
 }
 
 function formatFileSize(bytes?: number): string {
@@ -404,7 +420,7 @@ async function confirmCreateFolder() {
     dialogs.newFolderName.value = ''
   }
   catch (error: any) {
-    toast.error(error?.response?.data?.error || t('files.createFolderFailed'))
+    toast.error(error?.response?.data?.error || t('pages.files.folder.createFailed'))
   }
 }
 
@@ -432,81 +448,19 @@ async function confirmRename() {
 
 function handleEditTags(fileName: string) {
   const file = files.value.find(f => f.name === fileName)
-  dialogs.editTagsTarget.value = fileName
-  dialogs.editingTags.value = file?.metadata?.Tags ? [...file.metadata.Tags] : []
-  dialogs.showEditTagsDialog.value = true
-}
-
-const availableTagsForEdit = computed(() => {
-  const file = files.value.find(f => f.name === dialogs.editTagsTarget.value)
-  const fileTags = file?.metadata?.Tags || []
-  const allTags = new Set([...builtInTags, ...store.userTags, ...fileTags])
-  return Array.from(allTags).sort((a, b) => {
-    const aIndex = builtInTags.indexOf(a)
-    const bIndex = builtInTags.indexOf(b)
-    if (aIndex !== -1 && bIndex !== -1)
-      return aIndex - bIndex
-    if (aIndex !== -1)
-      return -1
-    if (bIndex !== -1)
-      return 1
-    return a.localeCompare(b)
-  })
-})
-
-function toggleEditTag(tag: string) {
-  const index = dialogs.editingTags.value.indexOf(tag)
-  if (index > -1) {
-    dialogs.editingTags.value.splice(index, 1)
-  }
-  else {
-    if (tag === 'blocked' && dialogs.editingTags.value.includes('whitelist')) {
-      dialogs.editingTags.value.splice(dialogs.editingTags.value.indexOf('whitelist'), 1)
-    }
-    else if (tag === 'whitelist' && dialogs.editingTags.value.includes('blocked')) {
-      dialogs.editingTags.value.splice(dialogs.editingTags.value.indexOf('blocked'), 1)
-    }
-    dialogs.editingTags.value.push(tag)
+  if (file) {
+    dialogs.editTagsTarget.value = fileName
+    dialogs.editTagsFile.value = file
+    dialogs.showEditTagsDialog.value = true
   }
 }
 
-function removeEditTag(tag: string) {
-  const index = dialogs.editingTags.value.indexOf(tag)
-  if (index > -1) {
-    dialogs.editingTags.value.splice(index, 1)
-  }
-}
-
-function addNewTagToEdit() {
-  const tag = dialogs.newTagInput.value.trim().toLowerCase()
-  if (!tag || dialogs.editingTags.value.includes(tag))
-    return
-
-  if (!builtInTags.includes(tag) && !store.userTags.includes(tag)) {
-    store.userTags.push(tag)
-  }
-
-  dialogs.editingTags.value.push(tag)
-  dialogs.newTagInput.value = ''
-}
-
-function removeUserTag(tag: string) {
-  const index = store.userTags.indexOf(tag)
-  if (index > -1) {
-    store.userTags.splice(index, 1)
-  }
-  const selectedIndex = dialogs.editingTags.value.indexOf(tag)
-  if (selectedIndex > -1) {
-    dialogs.editingTags.value.splice(selectedIndex, 1)
-  }
-}
-
-async function confirmEditTags() {
+async function confirmEditTags(tags: string[]) {
   if (!dialogs.editTagsTarget.value)
     return
 
   try {
-    await fileOperations.handleUpdateTags(dialogs.editTagsTarget.value, dialogs.editingTags.value)
+    await fileOperations.handleUpdateTags(dialogs.editTagsTarget.value, tags)
     dialogs.showEditTagsDialog.value = false
   }
   catch (error: any) {
@@ -541,7 +495,7 @@ async function confirmMove() {
     dialogs.showMoveDialog.value = false
   }
   catch (error: any) {
-    toast.error(error?.response?.data?.error || '移动失败')
+    toast.error(error?.response?.data?.error || t('pages.files.actions.moveFailed'))
   }
 }
 
@@ -580,6 +534,9 @@ interface CombinedItem {
   isFolder: boolean
   metadata?: FileItem['metadata']
   fileCount?: number
+  _searchChannelType?: string
+  _searchChannelName?: string
+  _searchTags?: string
 }
 </script>
 
@@ -588,10 +545,10 @@ interface CombinedItem {
     <!-- Header -->
     <div class="mb-4">
       <h1 class="text-3xl font-bold mb-2">
-        {{ t('files.title') }}
+        {{ t('pages.files.title') }}
       </h1>
       <p class="text-muted-foreground">
-        {{ t('files.description') }}
+        {{ t('pages.files.description') }}
       </p>
     </div>
 
@@ -619,16 +576,11 @@ interface CombinedItem {
           <PopoverTrigger as-child>
             <Button variant="ghost" size="sm" class="px-2 h-7">
               <div class="i-lucide-folder-tree mr-1.5" style="width: 14px; height: 14px;" />
-              跳转
+              {{ t('pages.files.toolbar.browse') }}
             </Button>
           </PopoverTrigger>
           <PopoverContent class="p-3 w-80" align="end">
-            <div class="space-y-2">
-              <div class="text-sm font-medium">
-                选择文件夹
-              </div>
-              <FolderTreeSelector v-model="folderJumpTarget" inline />
-            </div>
+            <FolderTreeSelector v-model="folderJumpTarget" inline />
           </PopoverContent>
         </Popover>
       </div>
@@ -639,21 +591,14 @@ interface CombinedItem {
           <div class="i-lucide-search text-muted-foreground/60 left-3 top-1/2 absolute -translate-y-1/2" style="width: 15px; height: 15px;" />
           <Input
             v-model="filterQuery"
-            :placeholder="t('files.filterPlaceholder')"
+            :placeholder="t('pages.files.toolbar.filterPlaceholder')"
             class="pl-9 pr-9 border-muted-foreground/20 bg-background/50 focus-visible:border-muted-foreground/40"
           />
-          <button
-            v-if="filterQuery"
-            class="text-muted-foreground/60 transition-colors right-3 top-1/2 absolute hover:text-foreground -translate-y-1/2"
-            @click="clearFilter"
-          >
-            <div class="i-lucide-x" style="width: 15px; height: 15px;" />
-          </button>
         </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="icon" class="text-muted-foreground h-8 w-8 hover:text-foreground">
+            <Button variant="ghost" size="icon" class="h-8 w-8 hover:text-foreground">
               <div v-if="sortBy === 'date'" :class="sortOrder === 'asc' ? 'i-lucide-arrow-down-0-1' : 'i-lucide-arrow-down-1-0'" style="width: 16px; height: 16px;" />
               <div v-else :class="sortOrder === 'asc' ? 'i-lucide-arrow-down-a-z' : 'i-lucide-arrow-down-z-a'" style="width: 16px; height: 16px;" />
             </Button>
@@ -662,19 +607,19 @@ interface CombinedItem {
             <DropdownMenuItem @click="toggleSort('date')">
               <div v-if="sortBy === 'date'" :class="sortOrder === 'asc' ? 'i-lucide-arrow-up-1-0' : 'i-lucide-arrow-down-1-0'" class="mr-2" style="width: 14px; height: 14px;" />
               <div v-else class="i-lucide-calendar mr-2" style="width: 14px; height: 14px;" />
-              {{ t('files.sortByDate') }}
+              {{ t('pages.files.sort.byDate') }}
             </DropdownMenuItem>
             <DropdownMenuItem @click="toggleSort('name')">
               <div v-if="sortBy === 'name'" :class="sortOrder === 'asc' ? 'i-lucide-arrow-up-a-z' : 'i-lucide-arrow-down-z-a'" class="mr-2" style="width: 14px; height: 14px;" />
               <div v-else class="i-lucide-text mr-2" style="width: 14px; height: 14px;" />
-              {{ t('files.sortByName') }}
+              {{ t('pages.files.sort.byName') }}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
         <DropdownMenu>
           <DropdownMenuTrigger as-child>
-            <Button variant="ghost" size="icon" class="text-muted-foreground h-8 w-8 relative hover:text-foreground">
+            <Button variant="ghost" size="icon" class="h-8 w-8 relative hover:text-foreground">
               <div class="i-lucide-filter" style="width: 16px; height: 16px;" />
               <div v-if="hasSearchOrFilter" class="rounded-full bg-primary h-1.5 w-1.5 right-1 top-1 absolute" />
             </Button>
@@ -682,10 +627,10 @@ interface CombinedItem {
           <DropdownMenuContent align="end" class="w-56">
             <div class="p-2">
               <div class="text-xs text-muted-foreground font-medium mb-2">
-                {{ t('files.filterOptions') }}
+                {{ t('pages.files.filter.options') }}
               </div>
               <Button v-if="hasSearchOrFilter" variant="ghost" size="sm" class="w-full" @click="clearFilters">
-                {{ t('files.clearFilters') }}
+                {{ t('pages.files.filter.clear') }}
               </Button>
             </div>
           </DropdownMenuContent>
@@ -697,63 +642,57 @@ interface CombinedItem {
         <Menubar class="p-0 border-0 bg-transparent h-8 shadow-none">
           <MenubarMenu>
             <MenubarTrigger class="px-2 py-0 h-8">
-              {{ t('files.menubar.selection') }}
+              {{ t('pages.files.select.title') }}
             </MenubarTrigger>
             <MenubarContent>
               <MenubarItem @click="toggleSelectAll">
                 <div :class="isSelectAllPage ? 'i-lucide-check-square' : 'i-lucide-square'" class="mr-2" style="width: 14px; height: 14px;" />
-                {{ isSelectAllPage ? t('files.menubar.deselectAll') : t('files.menubar.selectAll') }}
+                {{ isSelectAllPage ? t('pages.files.select.deselectAll') : t('pages.files.select.selectAll') }}
               </MenubarItem>
               <MenubarItem v-if="selectedCount > 0" @click="selectedFiles = []">
                 <div class="i-lucide-x mr-2" style="width: 14px; height: 14px;" />
-                {{ t('files.menubar.clearSelection') }}
+                {{ t('pages.files.select.clear') }}
               </MenubarItem>
               <MenubarSeparator />
               <MenubarItem :disabled="selectedCount === 0" @click="copyUrl(selectedFiles[0])">
                 <div class="i-lucide-copy mr-2" style="width: 14px; height: 14px;" />
-                {{ t('files.menubar.copyUrl') }}
+                {{ t('pages.files.actions.copyUrl') }}
               </MenubarItem>
               <MenubarItem :disabled="selectedCount === 0" @click="handleBatchMove">
                 <div class="i-lucide-folder-input mr-2" style="width: 14px; height: 14px;" />
-                {{ t('files.menubar.moveTo') }}
+                {{ t('pages.files.actions.move') }}
               </MenubarItem>
               <MenubarItem :disabled="selectedCount === 0" @click="handleBatchDelete">
                 <div class="i-lucide-trash-2 text-destructive mr-2" style="width: 14px; height: 14px;" />
-                <span class="text-destructive">{{ t('files.delete') }}</span>
+                <span class="text-destructive">{{ t('common.actions.delete') }}</span>
               </MenubarItem>
             </MenubarContent>
           </MenubarMenu>
 
           <MenubarMenu>
             <MenubarTrigger class="px-2 py-0 h-8">
-              {{ t('files.menubar.view') }}
+              {{ t('pages.files.view.title') }}
             </MenubarTrigger>
             <MenubarContent>
-              <MenubarItem @click="viewMode = viewMode === 'card' ? 'list' : 'card'">
+              <MenubarItem disabled @click="viewMode = viewMode === 'card' ? 'list' : 'card'">
                 <div v-if="viewMode === 'card'" class="i-lucide-list mr-2" style="width: 14px; height: 14px;" />
                 <div v-else class="i-lucide-grid-2x2 mr-2" style="width: 14px; height: 14px;" />
-                {{ viewMode === 'card' ? t('files.listView') : t('files.cardView') }}
-              </MenubarItem>
-              <MenubarSeparator />
-              <MenubarItem @click="foldersFirst = !foldersFirst">
-                <div class="i-lucide-folder-up mr-2" style="width: 14px; height: 14px;" />
-                {{ t('files.menubar.foldersFirst') }}
-                <div v-if="foldersFirst" class="i-lucide-check ml-auto" style="width: 14px; height: 14px;" />
+                {{ viewMode === 'card' ? t('pages.files.view.list') : t('pages.files.view.card') }}
               </MenubarItem>
               <MenubarSeparator />
               <MenubarItem @click="imageLoadMode = 'none'">
                 <div class="i-lucide-image-off mr-2" style="width: 14px; height: 14px;" />
-                {{ t('files.menubar.imageMode.none') }}
+                {{ t('pages.files.view.imageMode.none') }}
                 <div v-if="imageLoadMode === 'none'" class="i-lucide-check ml-auto" style="width: 14px; height: 14px;" />
               </MenubarItem>
               <MenubarItem @click="imageLoadMode = 'lite'">
                 <div class="i-lucide-gauge mr-2" style="width: 14px; height: 14px;" />
-                {{ t('files.menubar.imageMode.lite') }}
+                {{ t('pages.files.view.imageMode.lite') }}
                 <div v-if="imageLoadMode === 'lite'" class="i-lucide-check ml-auto" style="width: 14px; height: 14px;" />
               </MenubarItem>
               <MenubarItem @click="imageLoadMode = 'full'">
                 <div class="i-lucide-images mr-2" style="width: 14px; height: 14px;" />
-                {{ t('files.menubar.imageMode.full') }}
+                {{ t('pages.files.view.imageMode.full') }}
                 <div v-if="imageLoadMode === 'full'" class="i-lucide-check ml-auto" style="width: 14px; height: 14px;" />
               </MenubarItem>
             </MenubarContent>
@@ -761,21 +700,21 @@ interface CombinedItem {
 
           <MenubarMenu>
             <MenubarTrigger class="px-2 py-0 h-8">
-              {{ t('files.menubar.tools') }}
+              {{ t('pages.files.tools.title') }}
             </MenubarTrigger>
             <MenubarContent>
-              <MenubarItem @click="showGlobalSearchDialog = true">
+              <MenubarItem disabled @click="showGlobalSearchDialog = true">
                 <div class="i-lucide-globe mr-2" style="width: 14px; height: 14px;" />
-                {{ t('files.menubar.globalSearch') }}
+                {{ t('pages.files.search.global') }}
               </MenubarItem>
               <MenubarSeparator />
               <MenubarItem @click="handleCreateFolder">
                 <div class="i-lucide-folder-plus mr-2" style="width: 14px; height: 14px;" />
-                {{ t('files.newFolder') }}
+                {{ t('pages.files.folder.new') }}
               </MenubarItem>
               <MenubarItem :disabled="isFetching" @click="handleRefresh">
                 <div class="i-lucide-refresh-cw mr-2" :class="{ 'animate-spin': isFetching }" style="width: 14px; height: 14px;" />
-                {{ t('files.refresh') }}
+                {{ t('pages.files.toolbar.refresh') }}
               </MenubarItem>
             </MenubarContent>
           </MenubarMenu>
@@ -802,10 +741,10 @@ interface CombinedItem {
       <div v-else-if="allItems.length === 0" class="py-12 text-center flex flex-col items-center justify-center">
         <div class="i-lucide-folder-open text-muted-foreground/40 mb-4" style="width: 48px; height: 48px;" />
         <p class="text-lg font-semibold">
-          {{ hasSearchOrFilter ? t('files.noMatchingFiles') : t('files.noFiles') }}
+          {{ hasSearchOrFilter ? t('pages.files.noMatchingFiles') : t('pages.files.emptyState') }}
         </p>
         <p class="text-sm text-muted-foreground/70 mt-2">
-          {{ hasSearchOrFilter ? t('files.adjustSearchHint') : t('files.uploadHint') }}
+          {{ hasSearchOrFilter ? t('pages.files.adjustSearchHint') : t('pages.files.uploadHint') }}
         </p>
       </div>
 
@@ -875,292 +814,75 @@ interface CombinedItem {
     </div>
 
     <!-- Create Folder Dialog -->
-    <Dialog v-model:open="dialogs.showCreateFolderDialog.value">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{{ t('files.newFolder') }}</DialogTitle>
-          <DialogDescription>
-            {{ t('files.newFolderDescription') }}
-          </DialogDescription>
-        </DialogHeader>
-        <div class="py-4 space-y-4">
-          <div class="space-y-2">
-            <label for="folder-name" class="text-sm font-medium">{{ t('files.folderName') }}</label>
-            <Input
-              id="folder-name"
-              v-model="dialogs.newFolderName.value"
-              :placeholder="t('files.folderNamePlaceholder')"
-              @keyup.enter="confirmCreateFolder"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" @click="() => dialogs.showCreateFolderDialog.value = false">
-            {{ t('common.cancel') }}
-          </Button>
-          <Button @click="confirmCreateFolder">
-            {{ t('common.confirm') }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <InputDialog
+      v-model:open="dialogs.showCreateFolderDialog.value"
+      v-model="dialogs.newFolderName.value"
+      :title="t('pages.files.folder.new')"
+      :description="t('pages.files.folder.newDescription')"
+      :label="t('pages.files.folder.name')"
+      :placeholder="t('pages.files.folder.namePlaceholder')"
+      @confirm="confirmCreateFolder"
+    />
 
     <!-- Rename Dialog -->
-    <Dialog v-model:open="dialogs.showRenameDialog.value">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>重命名</DialogTitle>
-        </DialogHeader>
-        <div class="py-4 space-y-4">
-          <div class="space-y-2">
-            <label class="text-sm font-medium">新名称</label>
-            <Input
-              v-model="dialogs.newName.value"
-              placeholder="输入新名称..."
-              @keyup.enter="confirmRename"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" @click="() => dialogs.showRenameDialog.value = false">
-            {{ t('common.cancel') }}
-          </Button>
-          <Button @click="confirmRename">
-            {{ t('common.confirm') }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <InputDialog
+      v-model:open="dialogs.showRenameDialog.value"
+      v-model="dialogs.newName.value"
+      title="重命名"
+      label="新名称"
+      placeholder="输入新名称..."
+      @confirm="confirmRename"
+    />
 
     <!-- Edit Tags Dialog -->
-    <Dialog v-model:open="dialogs.showEditTagsDialog.value">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>编辑标签</DialogTitle>
-        </DialogHeader>
-        <div class="py-4 space-y-4">
-          <div v-if="dialogs.editingTags.value.length > 0" class="p-3 border rounded-lg bg-muted/30">
-            <div class="flex flex-wrap gap-2">
-              <TagBadge
-                v-for="tag in dialogs.editingTags.value"
-                :key="tag"
-                :tag="tag"
-                :color="store.getTagColor(tag)"
-                show-delete
-                @delete="removeEditTag(tag)"
-              />
-            </div>
-          </div>
-          <div v-else class="p-3 text-center border rounded-lg bg-muted/30">
-            <span class="text-sm text-muted-foreground">未选择标签</span>
-          </div>
-
-          <div class="flex gap-2">
-            <Input
-              v-model="dialogs.newTagInput.value"
-              placeholder="添加新标签"
-              @keyup.enter="addNewTagToEdit"
-            />
-            <Button variant="outline" size="icon" @click="addNewTagToEdit">
-              <div class="i-lucide-plus" />
-            </Button>
-          </div>
-
-          <div class="space-y-2">
-            <label class="text-xs text-muted-foreground">备选标签</label>
-            <div class="p-3 border rounded-lg bg-background min-h-[80px]">
-              <div class="flex flex-wrap gap-2">
-                <TagBadge
-                  v-for="tag in availableTagsForEdit.filter(t => !dialogs.editingTags.value.includes(t))"
-                  :key="tag"
-                  :tag="tag"
-                  :color="store.getTagColor(tag)"
-                  :show-delete="!builtInTags.includes(tag)"
-                  delete-icon="trash"
-                  clickable
-                  @click="toggleEditTag(tag)"
-                  @delete="removeUserTag(tag)"
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" @click="() => dialogs.showEditTagsDialog.value = false">
-            {{ t('common.cancel') }}
-          </Button>
-          <Button @click="confirmEditTags">
-            {{ t('common.confirm') }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <EditTagsDialog
+      v-model:open="dialogs.showEditTagsDialog.value"
+      :file="dialogs.editTagsFile.value"
+      @confirm="confirmEditTags"
+    />
 
     <!-- Move Dialog -->
-    <Dialog v-model:open="dialogs.showMoveDialog.value">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>移动到</DialogTitle>
-          <DialogDescription>
-            选择目标文件夹
-          </DialogDescription>
-        </DialogHeader>
-        <div class="py-4 space-y-4">
-          <div class="space-y-2">
-            <label class="text-sm font-medium">目标路径</label>
-            <FolderTreeSelector v-model="dialogs.moveDestination.value" />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" @click="() => dialogs.showMoveDialog.value = false">
-            {{ t('common.cancel') }}
-          </Button>
-          <Button @click="confirmMove">
-            {{ t('common.confirm') }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <ConfirmDialog
+      v-model:open="dialogs.showMoveDialog.value"
+      :title="t('pages.files.move.title')"
+      :description="t('pages.files.move.description')"
+      @confirm="confirmMove"
+    >
+      <div class="space-y-2">
+        <label class="text-sm font-medium">{{ t('pages.files.move.targetPath') }}</label>
+        <FolderTreeSelector v-model="dialogs.moveDestination.value" />
+      </div>
+    </ConfirmDialog>
 
     <!-- Delete Confirmation Dialog -->
     <ConfirmDialog
       v-model:open="showDeleteDialog"
-      title="确认删除"
+      :title="t('pages.files.actions.confirmDeletion')"
       @confirm="selectedCount > 0 ? confirmBatchDelete() : confirmDelete()"
     >
-      <span v-if="deleteTarget?.isFolder">
-        确定要删除文件夹 "<strong>{{ deleteTarget.name }}</strong>" 及其所有内容吗？此操作不可恢复。
-      </span>
-      <span v-else-if="selectedCount > 0">
-        确定要删除选中的 <strong>{{ selectedCount }}</strong> 个文件吗？此操作不可恢复。
-      </span>
-      <span v-else>
-        确定要删除文件 "<strong>{{ deleteTarget?.name }}</strong>" 吗？此操作不可恢复。
-      </span>
+      <span v-if="deleteTarget?.isFolder" v-html="t('pages.files.actions.deleteFolderConfirm', { name: deleteTarget.name })" />
+      <span v-else-if="selectedCount > 0" v-html="t('pages.files.actions.deleteFilesConfirm', { count: selectedCount })" />
+      <span v-else v-html="t('pages.files.actions.deleteFileConfirm', { name: deleteTarget?.name })" />
     </ConfirmDialog>
 
     <!-- Global Search Dialog -->
-    <Dialog v-model:open="showGlobalSearchDialog">
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{{ t('files.newFolder') }}</DialogTitle>
-          <DialogDescription>
-            {{ t('files.newFolderDescription') }}
-          </DialogDescription>
-        </DialogHeader>
-        <div class="py-4 space-y-4">
-          <div class="space-y-2">
-            <label for="folder-name" class="text-sm font-medium">{{ t('files.folderName') }}</label>
-            <Input
-              id="folder-name"
-              v-model="dialogs.newFolderName.value"
-              :placeholder="t('files.folderNamePlaceholder')"
-              @keyup.enter="confirmCreateFolder"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" @click="() => dialogs.showCreateFolderDialog.value = false">
-            {{ t('common.cancel') }}
-          </Button>
-          <Button @click="confirmCreateFolder">
-            {{ t('common.confirm') }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-
-    <!-- Global Search Dialog -->
-    <Dialog v-model:open="showGlobalSearchDialog">
-      <DialogContent class="max-w-md w-[calc(100vw-2rem)] sm:w-full">
-        <DialogHeader>
-          <DialogTitle>{{ t('files.globalSearch.title') }}</DialogTitle>
-          <DialogDescription>
-            {{ t('files.globalSearch.description') }}
-          </DialogDescription>
-        </DialogHeader>
-        <div class="py-4 space-y-4">
-          <div class="space-y-2">
-            <label for="global-search" class="text-sm font-medium">{{ t('files.globalSearch.keyword') }}</label>
-            <Input
-              id="global-search"
-              v-model="globalSearchQuery"
-              :placeholder="t('files.globalSearch.placeholder')"
-              @keyup.enter="handleGlobalSearch"
-            />
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" @click="showGlobalSearchDialog = false">
-            {{ t('common.cancel') }}
-          </Button>
-          <Button @click="handleGlobalSearch">
-            {{ t('files.globalSearch.search') }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+    <InputDialog
+      v-model:open="showGlobalSearchDialog"
+      v-model="globalSearchQuery"
+      :title="t('pages.files.search.title')"
+      :description="t('pages.files.search.description')"
+      :label="t('pages.files.search.keyword')"
+      :placeholder="t('pages.files.search.placeholder')"
+      @confirm="handleGlobalSearch"
+    />
 
     <!-- Detail Panel Dialog -->
-    <Dialog v-model:open="showDetailPanel">
-      <DialogContent class="max-w-md w-[calc(100vw-2rem)] sm:w-full">
-        <DialogHeader>
-          <DialogTitle>{{ t('files.fileDetail') }}</DialogTitle>
-        </DialogHeader>
-        <div v-if="detailFile" class="py-4 flex flex-col gap-4">
-          <div class="p-6 border rounded-lg bg-muted/20 flex items-center justify-center">
-            <FileIcon :item="{ name: detailFile.name, isFolder: false, metadata: detailFile.metadata }" :preview-url="buildFileUrl(detailFile.name)" :show-preview="true" :size="80" />
-          </div>
-
-          <div class="space-y-3">
-            <div>
-              <div class="text-xs text-muted-foreground font-medium mb-1.5">
-                {{ t('files.fileName') }}
-              </div>
-              <div class="text-sm break-all">
-                {{ detailFile.metadata?.FileName || detailFile.name }}
-              </div>
-            </div>
-            <div>
-              <div class="text-xs text-muted-foreground font-medium mb-1.5">
-                {{ t('files.size') }}
-              </div>
-              <div class="text-sm">
-                {{ formatFileSize(detailFile.metadata?.FileSizeBytes) }}
-              </div>
-            </div>
-            <div v-if="sortedTags.length > 0">
-              <div class="text-xs text-muted-foreground font-medium mb-1.5">
-                {{ t('files.tags') }}
-              </div>
-              <div class="flex flex-wrap gap-2">
-                <TagBadge
-                  v-for="tag in sortedTags"
-                  :key="tag"
-                  :tag="tag"
-                  :color="store.getTagColor(tag)"
-                />
-              </div>
-            </div>
-            <div v-if="detailFile.metadata?.TimeStamp">
-              <div class="text-xs text-muted-foreground font-medium mb-1.5">
-                {{ t('files.uploadTime') }}
-              </div>
-              <div class="text-sm">
-                {{ formatDate(detailFile.metadata.TimeStamp) }}
-              </div>
-            </div>
-            <div v-if="detailFile.metadata?.ChannelName || detailFile.metadata?.Channel">
-              <div class="text-xs text-muted-foreground font-medium mb-1.5">
-                {{ t('files.channel') }}
-              </div>
-              <div class="text-sm">
-                {{ detailFile.metadata?.ChannelName || detailFile.metadata?.Channel }}
-              </div>
-            </div>
-          </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+    <FileDetailDialog
+      v-model:open="showDetailPanel"
+      :file="detailFile"
+      :build-file-url="buildFileUrl"
+      :format-file-size="formatFileSize"
+      :format-date="formatDate"
+    />
   </div>
 </template>
