@@ -64,10 +64,7 @@ function getFilePreviewUrl(file: File): string {
 
 // 构建完整的文件 URL
 function buildFileUrl(src: string): string {
-  const cleanSrc = src.startsWith('/file/') ? src.replace('/file/', '') : src
-  // 对文件名进行 URL 编码，但保留路径分隔符 /
-  const encodedSrc = cleanSrc.split('/').map(part => encodeURIComponent(part)).join('/')
-  return `${window.location.protocol}//${window.location.host}/api/file/${encodedSrc}`
+  return `${window.location.protocol}//${window.location.host}${src}`
 }
 
 // 复制不同格式的链接
