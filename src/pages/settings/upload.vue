@@ -73,7 +73,7 @@ const settings = ref<UploadSettings>({
   webdav: { loadBalance: { enabled: false }, channels: [] },
 })
 
-const quotaStats = ref<Record<string, { usedMB: number, count: number }>>({})
+const quotaStats = ref<Record<string, { usedMB: number, fileCount: number }>>({})
 
 const channels = [
   { value: 'telegram', label: t('settings.upload.channels.telegram'), icon: 'i-logos-telegram' },
@@ -112,9 +112,37 @@ function getQuotaPercentage(channel: BaseChannel) {
 
 function getQuotaText(channel: BaseChannel) {
   const usedMB = quotaStats.value[channel.name]?.usedMB || 0
-  const usedGB = (usedMB / 1024).toFixed(2)
-  const limitGB = channel.quota?.limitGB || 10
-  return `${usedGB} / ${limitGB} GB`
+
+  // 格式化已使用大小
+  let usedText: string
+  if (usedMB < 1) {
+    usedText = `${(usedMB * 1024).toFixed(0)} KB`
+  }
+  else if (usedMB < 1024) {
+    usedText = `${usedMB.toFixed(2)} MB`
+  }
+  else {
+    usedText = `${(usedMB / 1024).toFixed(2)} GB`
+  }
+
+  // 如果没有启用 quota，只显示已使用大小
+  if (!channel.quota?.enabled) {
+    return usedText
+  }
+
+  // 启用了 quota，显示 已使用 / 上限
+  const limitGB = channel.quota.limitGB || 10
+  const limitMB = limitGB * 1024
+
+  let limitText: string
+  if (limitMB < 1024) {
+    limitText = `${limitMB.toFixed(0)} MB`
+  }
+  else {
+    limitText = `${limitGB} GB`
+  }
+
+  return `${usedText} / ${limitText}`
 }
 
 function openAddDialog() {
@@ -127,6 +155,12 @@ function openEditDialog(type: keyof UploadSettings, index: number) {
   editChannelType.value = type
   editChannelIndex.value = index
   editChannel.value = JSON.parse(JSON.stringify(settings.value[type].channels[index]))
+
+  // 确保 quota 对象存在（兼容旧数据）
+  if (['cfr2', 's3', 'webdav'].includes(type) && !editChannel.value.quota) {
+    editChannel.value.quota = { enabled: false, limitGB: 10, threshold: 95 }
+  }
+
   showEditDialog.value = true
 }
 
@@ -212,8 +246,8 @@ async function loadSettings() {
 async function loadQuotaStats() {
   try {
     const { data } = await getQuotaStats()
-    if (data.success && data.channelStats) {
-      quotaStats.value = data.channelStats
+    if (data.success && data.quotaStats) {
+      quotaStats.value = data.quotaStats
     }
   }
   catch (error) {
@@ -235,8 +269,8 @@ async function handleRefreshQuota() {
   quotaLoading.value = true
   try {
     const { data } = await recalculateQuota()
-    if (data.success && data.channelStats) {
-      quotaStats.value = data.channelStats
+    if (data.success && data.quotaStats) {
+      quotaStats.value = data.quotaStats
       toast.success(t('settings.upload.messages.quotaRefreshed'))
     }
   }
@@ -254,7 +288,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="mx-auto p-6 max-w-6xl space-y-6">
+  <div class="mx-auto p-6 max-w-5xl space-y-6">
     <div>
       <h1 class="text-2xl font-semibold">
         {{ t('settings.upload.title') }}
@@ -368,8 +402,9 @@ onMounted(() => {
                     </template>
                   </div>
 
-                  <div v-if="channel.quota?.enabled" class="mt-3 pt-3 border-t space-y-2">
-                    <Progress :model-value="getQuotaPercentage(channel)" class="h-1.5" />
+                  <!-- 容量显示：启用 quota 时显示进度条，否则只显示已使用大小 -->
+                  <div v-if="channel.quota?.enabled || quotaStats[channel.name]" class="mt-3 pt-3 border-t space-y-2">
+                    <Progress v-if="channel.quota?.enabled" :model-value="getQuotaPercentage(channel)" class="h-1.5" />
                     <span class="text-xs text-muted-foreground">{{ getQuotaText(channel) }}</span>
                   </div>
 
@@ -437,6 +472,30 @@ onMounted(() => {
               <div class="text-sm text-muted-foreground p-3 rounded-md bg-muted/50">
                 {{ t('settings.upload.hints.cfr2EnvOnly') }}
               </div>
+
+              <div class="pt-2 space-y-3">
+                <div class="flex gap-2 items-center">
+                  <Switch v-model="newChannel.quota.enabled" />
+                  <Label>{{ t('settings.upload.fields.enableQuota') }}</Label>
+                </div>
+
+                <div v-if="newChannel.quota?.enabled" class="pl-8 space-y-3">
+                  <div class="space-y-2">
+                    <Label>{{ t('settings.upload.fields.quotaLimit') }}</Label>
+                    <div class="flex gap-2 items-center">
+                      <Input v-model.number="newChannel.quota.limitGB" type="number" min="1" class="flex-1" />
+                      <span class="text-sm text-muted-foreground">GB</span>
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <Label>{{ t('settings.upload.fields.quotaThreshold') }}</Label>
+                    <div class="flex gap-2 items-center">
+                      <Input v-model.number="newChannel.quota.threshold" type="number" min="1" max="100" class="flex-1" />
+                      <span class="text-sm text-muted-foreground">%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </template>
 
             <template v-else-if="addChannelType === 's3'">
@@ -467,6 +526,30 @@ onMounted(() => {
               <div class="flex gap-2 items-center">
                 <Switch v-model="newChannel.pathStyle" />
                 <Label>{{ t('settings.upload.fields.pathStyle') }}</Label>
+              </div>
+
+              <div class="pt-2 space-y-3">
+                <div class="flex gap-2 items-center">
+                  <Switch v-model="newChannel.quota.enabled" />
+                  <Label>{{ t('settings.upload.fields.enableQuota') }}</Label>
+                </div>
+
+                <div v-if="newChannel.quota?.enabled" class="pl-8 space-y-3">
+                  <div class="space-y-2">
+                    <Label>{{ t('settings.upload.fields.quotaLimit') }}</Label>
+                    <div class="flex gap-2 items-center">
+                      <Input v-model.number="newChannel.quota.limitGB" type="number" min="1" class="flex-1" />
+                      <span class="text-sm text-muted-foreground">GB</span>
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <Label>{{ t('settings.upload.fields.quotaThreshold') }}</Label>
+                    <div class="flex gap-2 items-center">
+                      <Input v-model.number="newChannel.quota.threshold" type="number" min="1" max="100" class="flex-1" />
+                      <span class="text-sm text-muted-foreground">%</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </template>
 
@@ -525,6 +608,30 @@ onMounted(() => {
                 <Switch v-model="newChannel.createDirectory" />
                 <Label>{{ t('settings.upload.fields.createDirectory') }}</Label>
               </div>
+
+              <div class="pt-2 space-y-3">
+                <div class="flex gap-2 items-center">
+                  <Switch v-model="newChannel.quota.enabled" />
+                  <Label>{{ t('settings.upload.fields.enableQuota') }}</Label>
+                </div>
+
+                <div v-if="newChannel.quota?.enabled" class="pl-8 space-y-3">
+                  <div class="space-y-2">
+                    <Label>{{ t('settings.upload.fields.quotaLimit') }}</Label>
+                    <div class="flex gap-2 items-center">
+                      <Input v-model.number="newChannel.quota.limitGB" type="number" min="1" class="flex-1" />
+                      <span class="text-sm text-muted-foreground">GB</span>
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <Label>{{ t('settings.upload.fields.quotaThreshold') }}</Label>
+                    <div class="flex gap-2 items-center">
+                      <Input v-model.number="newChannel.quota.threshold" type="number" min="1" max="100" class="flex-1" />
+                      <span class="text-sm text-muted-foreground">%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </template>
           </div>
 
@@ -572,6 +679,30 @@ onMounted(() => {
                 <Label>{{ t('settings.upload.fields.publicUrl') }}</Label>
                 <Input v-model="editChannel.publicUrl" :placeholder="t('settings.upload.fields.publicUrlPlaceholder')" />
               </div>
+
+              <div class="pt-2 space-y-3">
+                <div class="flex gap-2 items-center">
+                  <Switch v-model="editChannel.quota.enabled" />
+                  <Label>{{ t('settings.upload.fields.enableQuota') }}</Label>
+                </div>
+
+                <div v-if="editChannel.quota?.enabled" class="pl-8 space-y-3">
+                  <div class="space-y-2">
+                    <Label>{{ t('settings.upload.fields.quotaLimit') }}</Label>
+                    <div class="flex gap-2 items-center">
+                      <Input v-model.number="editChannel.quota.limitGB" type="number" min="1" class="flex-1" />
+                      <span class="text-sm text-muted-foreground">GB</span>
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <Label>{{ t('settings.upload.fields.quotaThreshold') }}</Label>
+                    <div class="flex gap-2 items-center">
+                      <Input v-model.number="editChannel.quota.threshold" type="number" min="1" max="100" class="flex-1" />
+                      <span class="text-sm text-muted-foreground">%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </template>
 
             <template v-else-if="editChannelType === 's3'">
@@ -602,6 +733,30 @@ onMounted(() => {
               <div class="flex gap-2 items-center">
                 <Switch v-model="editChannel.pathStyle" :disabled="editChannel.fixed" />
                 <Label>{{ t('settings.upload.fields.pathStyle') }}</Label>
+              </div>
+
+              <div class="pt-2 space-y-3">
+                <div class="flex gap-2 items-center">
+                  <Switch v-model="editChannel.quota.enabled" />
+                  <Label>{{ t('settings.upload.fields.enableQuota') }}</Label>
+                </div>
+
+                <div v-if="editChannel.quota?.enabled" class="pl-8 space-y-3">
+                  <div class="space-y-2">
+                    <Label>{{ t('settings.upload.fields.quotaLimit') }}</Label>
+                    <div class="flex gap-2 items-center">
+                      <Input v-model.number="editChannel.quota.limitGB" type="number" min="1" class="flex-1" />
+                      <span class="text-sm text-muted-foreground">GB</span>
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <Label>{{ t('settings.upload.fields.quotaThreshold') }}</Label>
+                    <div class="flex gap-2 items-center">
+                      <Input v-model.number="editChannel.quota.threshold" type="number" min="1" max="100" class="flex-1" />
+                      <span class="text-sm text-muted-foreground">%</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </template>
 
@@ -659,6 +814,30 @@ onMounted(() => {
               <div class="flex gap-2 items-center">
                 <Switch v-model="editChannel.createDirectory" />
                 <Label>{{ t('settings.upload.fields.createDirectory') }}</Label>
+              </div>
+
+              <div class="pt-2 space-y-3">
+                <div class="flex gap-2 items-center">
+                  <Switch v-model="editChannel.quota.enabled" />
+                  <Label>{{ t('settings.upload.fields.enableQuota') }}</Label>
+                </div>
+
+                <div v-if="editChannel.quota?.enabled" class="pl-8 space-y-3">
+                  <div class="space-y-2">
+                    <Label>{{ t('settings.upload.fields.quotaLimit') }}</Label>
+                    <div class="flex gap-2 items-center">
+                      <Input v-model.number="editChannel.quota.limitGB" type="number" min="1" class="flex-1" />
+                      <span class="text-sm text-muted-foreground">GB</span>
+                    </div>
+                  </div>
+                  <div class="space-y-2">
+                    <Label>{{ t('settings.upload.fields.quotaThreshold') }}</Label>
+                    <div class="flex gap-2 items-center">
+                      <Input v-model.number="editChannel.quota.threshold" type="number" min="1" max="100" class="flex-1" />
+                      <span class="text-sm text-muted-foreground">%</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </template>
           </div>

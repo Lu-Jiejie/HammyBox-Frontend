@@ -161,13 +161,13 @@ const dropzone = useDropzoneUpload<UploadResponse, string>({
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       console.log(`[FileDropzone] 尝试 ${attempt + 1}/${maxRetries}`)
       try {
-        const result = await uploadWithRouting<UploadResponse>(
+        const { data: result, processedSize } = await uploadWithRouting<UploadResponse>(
           file,
           uploadParams,
           store.compressConfig,
         )
         console.log(`[FileDropzone] 上传成功`)
-        return { status: 'success' as const, result }
+        return { status: 'success' as const, result, processedSize }
       }
       catch (error: any) {
         console.log(`[FileDropzone] 上传失败，开始分析错误...`, error)
@@ -411,7 +411,10 @@ onBeforeUnmount(() => {
                     {{ file.fileName }}
                   </p>
                   <p class="text-xs text-muted-foreground">
-                    {{ (file.file.size / (1024 * 1024)).toFixed(2) }} MB
+                    {{ ((file.processedSize || file.file.size) / (1024 * 1024)).toFixed(2) }} MB
+                    <span v-if="file.processedSize && file.processedSize < file.file.size" class="text-green-600">
+                      ({{ t('pages.upload.compressed') }})
+                    </span>
                   </p>
                 </div>
 

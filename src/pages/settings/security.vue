@@ -313,7 +313,7 @@ loadTokens()
 </script>
 
 <template>
-  <div class="mx-auto p-6 max-w-6xl space-y-8">
+  <div class="mx-auto p-6 max-w-5xl space-y-8">
     <div>
       <h1 class="text-2xl font-semibold">
         {{ t('settings.security.title') }}

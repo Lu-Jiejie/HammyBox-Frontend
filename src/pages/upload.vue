@@ -18,7 +18,6 @@ definePage({
 const { t } = useI18n()
 const store = useAppStore()
 const showSettingsDialog = ref(false)
-const showConfigPanel = ref(false)
 
 const {
   uploadChannel,
@@ -78,14 +77,11 @@ const sortedUploadTags = computed(() => {
       </p>
     </div>
 
-    <!-- 配置信息展示区 - 可折叠 -->
+    <!-- 配置信息展示区 - 始终展开 -->
     <div class="mb-4 border rounded-lg bg-card/50 overflow-hidden backdrop-blur-sm">
-      <button
-        class="group px-4 py-3 text-left flex w-full transition-colors items-center justify-between hover:bg-accent/30"
-        @click="showConfigPanel = !showConfigPanel"
-      >
+      <div class="px-4 py-3 border-b bg-muted/20 flex w-full items-center justify-between">
         <div class="flex flex-1 gap-2 min-w-0 items-center">
-          <div class="i-lucide-layers text-muted-foreground shrink-0 transition-colors group-hover:text-foreground" style="width: 15px; height: 15px;" />
+          <div class="i-lucide-layers text-muted-foreground shrink-0" style="width: 15px; height: 15px;" />
           <span class="text-sm font-medium">{{ t('pages.upload.preferences.currentConfiguration') }}</span>
           <div class="text-xs text-muted-foreground/70 gap-2 min-w-0 hidden items-center sm:flex">
             <span class="truncate">{{ channelDisplayName }}</span>
@@ -93,160 +89,144 @@ const sortedUploadTags = computed(() => {
             <code class="font-mono px-1.5 py-0.5 rounded bg-muted/50 truncate">{{ uploadFolder || '/' }}</code>
           </div>
         </div>
-        <div class="flex shrink-0 gap-1.5 items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            class="h-7 w-7 hover:bg-accent/50"
-            @click.stop="showSettingsDialog = true"
-          >
-            <div class="i-lucide-settings-2" style="width: 14px; height: 14px;" />
-          </Button>
-          <div
-            class="i-lucide-chevron-down text-muted-foreground shrink-0 transition-transform"
-            :class="{ 'rotate-180': showConfigPanel }"
-            style="width: 14px; height: 14px;"
-          />
-        </div>
-      </button>
+        <Button
+          variant="ghost"
+          size="icon"
+          class="h-7 w-7 hover:bg-accent/50"
+          @click="showSettingsDialog = true"
+        >
+          <div class="i-lucide-settings-2" style="width: 14px; height: 14px;" />
+        </Button>
+      </div>
 
-      <Transition
-        enter-active-class="transition-all duration-250 ease-[cubic-bezier(0.4,0,0.2,1)]"
-        enter-from-class="max-h-0 opacity-0"
-        enter-to-class="max-h-[1000px] opacity-100"
-        leave-active-class="transition-all duration-250 ease-[cubic-bezier(0.4,0,0.2,1)]"
-        leave-from-class="max-h-[1000px] opacity-100"
-        leave-to-class="max-h-0 opacity-0"
-      >
-        <div v-show="showConfigPanel" class="border-t bg-muted/20 overflow-hidden">
-          <div class="p-4 gap-x-8 gap-y-4 grid grid-cols-1 lg:grid-cols-3 sm:grid-cols-2">
-            <!-- 渠道类型 -->
-            <div class="space-y-2">
-              <div class="flex gap-2 items-center">
-                <div class="i-lucide-cloud text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.channel.type') }}</span>
-              </div>
-              <div class="text-sm text-foreground font-medium">
-                {{ channelDisplayName }}
-              </div>
+      <div class="bg-muted/20">
+        <div class="p-4 gap-x-8 gap-y-4 grid grid-cols-1 lg:grid-cols-3 sm:grid-cols-2">
+          <!-- 渠道类型 -->
+          <div class="space-y-2">
+            <div class="flex gap-2 items-center">
+              <div class="i-lucide-cloud text-muted-foreground/60" style="width: 12px; height: 12px;" />
+              <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.channel.type') }}</span>
             </div>
-
-            <!-- 渠道名称 -->
-            <div class="space-y-2">
-              <div class="flex gap-2 items-center">
-                <div class="i-lucide-tag text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.channel.name') }}</span>
-              </div>
-              <div class="text-sm" :class="uploadChannelName ? 'font-medium text-foreground' : 'text-muted-foreground/60 italic'">
-                {{ channelNameDisplay }}
-              </div>
+            <div class="text-sm text-foreground font-medium">
+              {{ channelDisplayName }}
             </div>
+          </div>
 
-            <!-- 上传目录 -->
-            <div class="space-y-2">
-              <div class="flex gap-2 items-center">
-                <div class="i-lucide-folder text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.channel.directory') }}</span>
-              </div>
-              <code class="text-sm text-foreground font-medium font-mono block">
-                {{ uploadFolder || '/' }}
-              </code>
+          <!-- 渠道名称 -->
+          <div class="space-y-2">
+            <div class="flex gap-2 items-center">
+              <div class="i-lucide-tag text-muted-foreground/60" style="width: 12px; height: 12px;" />
+              <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.channel.name') }}</span>
             </div>
-
-            <!-- 命名规则 -->
-            <div class="space-y-2">
-              <div class="flex gap-2 items-center">
-                <div class="i-lucide-file-text text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.naming.title') }}</span>
-              </div>
-              <div class="text-sm text-foreground font-medium">
-                {{ namingDisplayName }}
-              </div>
+            <div class="text-sm" :class="uploadChannelName ? 'font-medium text-foreground' : 'text-muted-foreground/60 italic'">
+              {{ channelNameDisplay }}
             </div>
+          </div>
 
-            <!-- 转换为 WebP -->
-            <div class="space-y-2">
-              <div class="flex gap-2 items-center">
-                <div class="i-lucide-image text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.preprocessing.convertToWebp') }}</span>
-              </div>
+          <!-- 上传目录 -->
+          <div class="space-y-2">
+            <div class="flex gap-2 items-center">
+              <div class="i-lucide-folder text-muted-foreground/60" style="width: 12px; height: 12px;" />
+              <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.channel.directory') }}</span>
+            </div>
+            <code class="text-sm text-foreground font-medium font-mono block">
+              {{ uploadFolder || '/' }}
+            </code>
+          </div>
+
+          <!-- 命名规则 -->
+          <div class="space-y-2">
+            <div class="flex gap-2 items-center">
+              <div class="i-lucide-file-text text-muted-foreground/60" style="width: 12px; height: 12px;" />
+              <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.naming.title') }}</span>
+            </div>
+            <div class="text-sm text-foreground font-medium">
+              {{ namingDisplayName }}
+            </div>
+          </div>
+
+          <!-- 转换为 WebP -->
+          <div class="space-y-2">
+            <div class="flex gap-2 items-center">
+              <div class="i-lucide-image text-muted-foreground/60" style="width: 12px; height: 12px;" />
+              <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.preprocessing.convertToWebp') }}</span>
+            </div>
+            <div class="flex gap-2 items-center">
+              <div
+                class="rounded-full h-1.5 w-1.5"
+                :class="compressConfig.convertToWebp ? 'bg-green-500' : 'bg-muted-foreground/30'"
+              />
+              <span class="text-sm font-medium" :class="compressConfig.convertToWebp ? 'text-foreground' : 'text-muted-foreground/60'">
+                {{ compressConfig.convertToWebp ? t('pages.upload.preferences.enabled') : t('pages.upload.preferences.disabled') }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 客户端压缩 -->
+          <div class="space-y-2" :class="compressConfig.customerCompress ? 'sm:col-span-2 lg:col-span-3' : ''">
+            <div class="flex gap-2 items-center">
+              <div class="i-lucide-package text-muted-foreground/60" style="width: 12px; height: 12px;" />
+              <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">
+                {{ t('pages.upload.preferences.preprocessing.compress') }}
+              </span>
+            </div>
+            <div class="flex flex-wrap gap-3 items-center">
               <div class="flex gap-2 items-center">
                 <div
                   class="rounded-full h-1.5 w-1.5"
-                  :class="compressConfig.convertToWebp ? 'bg-green-500' : 'bg-muted-foreground/30'"
+                  :class="compressConfig.customerCompress ? 'bg-green-500' : 'bg-muted-foreground/30'"
                 />
-                <span class="text-sm font-medium" :class="compressConfig.convertToWebp ? 'text-foreground' : 'text-muted-foreground/60'">
-                  {{ compressConfig.convertToWebp ? t('pages.upload.preferences.enabled') : t('pages.upload.preferences.disabled') }}
+                <span class="text-sm font-medium" :class="compressConfig.customerCompress ? 'text-foreground' : 'text-muted-foreground/60'">
+                  {{ compressConfig.customerCompress ? t('pages.upload.preferences.enabled') : t('pages.upload.preferences.disabled') }}
                 </span>
               </div>
-            </div>
-
-            <!-- 客户端压缩 -->
-            <div class="space-y-2" :class="compressConfig.customerCompress ? 'sm:col-span-2 lg:col-span-3' : ''">
-              <div class="flex gap-2 items-center">
-                <div class="i-lucide-package text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">
-                  {{ t('pages.upload.preferences.preprocessing.compress') }}
+              <template v-if="compressConfig.customerCompress">
+                <span class="text-muted-foreground/30">·</span>
+                <span class="text-xs text-muted-foreground/70">
+                  {{ t('pages.upload.preferences.preprocessing.compressThreshold') }}: <span class="text-foreground font-semibold">{{ compressConfig.compressBar }} MB</span>
                 </span>
-              </div>
-              <div class="flex flex-wrap gap-3 items-center">
-                <div class="flex gap-2 items-center">
-                  <div
-                    class="rounded-full h-1.5 w-1.5"
-                    :class="compressConfig.customerCompress ? 'bg-green-500' : 'bg-muted-foreground/30'"
-                  />
-                  <span class="text-sm font-medium" :class="compressConfig.customerCompress ? 'text-foreground' : 'text-muted-foreground/60'">
-                    {{ compressConfig.customerCompress ? t('pages.upload.preferences.enabled') : t('pages.upload.preferences.disabled') }}
-                  </span>
-                </div>
-                <template v-if="compressConfig.customerCompress">
-                  <span class="text-muted-foreground/30">·</span>
-                  <span class="text-xs text-muted-foreground/70">
-                    {{ t('pages.upload.preferences.preprocessing.compressThreshold') }}: <span class="text-foreground font-semibold">{{ compressConfig.compressBar }} MB</span>
-                  </span>
-                  <span class="text-muted-foreground/30">·</span>
-                  <span class="text-xs text-muted-foreground/70">
-                    {{ t('pages.upload.preferences.preprocessing.expectedSize') }}: <span class="text-foreground font-semibold">{{ compressConfig.compressQuality }} MB</span>
-                  </span>
-                </template>
-              </div>
-            </div>
-
-            <!-- 服务端压缩 (仅 Telegram) -->
-            <div v-if="uploadChannel === 'telegram'" class="space-y-2">
-              <div class="flex gap-2 items-center">
-                <div class="i-lucide-server text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.serverCompress.enable') }}</span>
-              </div>
-              <div class="flex gap-2 items-center">
-                <div
-                  class="rounded-full h-1.5 w-1.5"
-                  :class="compressConfig.serverCompress ? 'bg-green-500' : 'bg-muted-foreground/30'"
-                />
-                <span class="text-sm font-medium" :class="compressConfig.serverCompress ? 'text-foreground' : 'text-muted-foreground/60'">
-                  {{ compressConfig.serverCompress ? t('pages.upload.preferences.enabled') : t('pages.upload.preferences.disabled') }}
+                <span class="text-muted-foreground/30">·</span>
+                <span class="text-xs text-muted-foreground/70">
+                  {{ t('pages.upload.preferences.preprocessing.expectedSize') }}: <span class="text-foreground font-semibold">{{ compressConfig.compressQuality }} MB</span>
                 </span>
-              </div>
+              </template>
             </div>
+          </div>
 
-            <!-- 标签 -->
-            <div v-if="sortedUploadTags.length > 0" class="space-y-2 lg:col-span-3 sm:col-span-2">
-              <div class="flex gap-2 items-center">
-                <div class="i-lucide-tags text-muted-foreground/60" style="width: 12px; height: 12px;" />
-                <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.tags.title') }}</span>
-              </div>
-              <div class="flex flex-wrap gap-1.5">
-                <TagBadge
-                  v-for="tag in sortedUploadTags"
-                  :key="tag"
-                  :tag="tag"
-                  :color="store.getTagColor(tag)"
-                />
-              </div>
+          <!-- 服务端压缩 (仅 Telegram) -->
+          <div v-if="uploadChannel === 'telegram'" class="space-y-2">
+            <div class="flex gap-2 items-center">
+              <div class="i-lucide-server text-muted-foreground/60" style="width: 12px; height: 12px;" />
+              <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.serverCompress.enable') }}</span>
+            </div>
+            <div class="flex gap-2 items-center">
+              <div
+                class="rounded-full h-1.5 w-1.5"
+                :class="compressConfig.serverCompress ? 'bg-green-500' : 'bg-muted-foreground/30'"
+              />
+              <span class="text-sm font-medium" :class="compressConfig.serverCompress ? 'text-foreground' : 'text-muted-foreground/60'">
+                {{ compressConfig.serverCompress ? t('pages.upload.preferences.enabled') : t('pages.upload.preferences.disabled') }}
+              </span>
+            </div>
+          </div>
+
+          <!-- 标签 -->
+          <div v-if="sortedUploadTags.length > 0" class="space-y-2 lg:col-span-3 sm:col-span-2">
+            <div class="flex gap-2 items-center">
+              <div class="i-lucide-tags text-muted-foreground/60" style="width: 12px; height: 12px;" />
+              <span class="text-xs text-muted-foreground/80 tracking-wide font-medium uppercase">{{ t('pages.upload.preferences.tags.title') }}</span>
+            </div>
+            <div class="flex flex-wrap gap-1.5">
+              <TagBadge
+                v-for="tag in sortedUploadTags"
+                :key="tag"
+                :tag="tag"
+                :color="store.getTagColor(tag)"
+              />
             </div>
           </div>
         </div>
-      </Transition>
+      </div>
     </div>
 
     <FileDropzone />

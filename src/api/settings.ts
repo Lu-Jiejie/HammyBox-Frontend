@@ -73,7 +73,10 @@ export interface UploadSettings {
 
 export interface QuotaStatsResponse {
   success: boolean
-  channelStats?: Record<string, { usedMB: number, count: number }>
+  quotaStats?: Record<string, { usedMB: number, fileCount: number }>
+  totalSizeMB?: number
+  totalCount?: number
+  lastUpdated?: number
   error?: string
 }
 

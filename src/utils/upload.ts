@@ -327,35 +327,43 @@ async function uploadHuggingFaceDirect<T = any>(
 /**
  * 智能路由上传函数
  * 根据渠道类型和文件大小选择最优上传方式
+ * 返回上传结果和实际上传的文件大小
  */
 export async function uploadWithRouting<T = any>(
   file: File,
   params: Record<string, any>,
   compressConfig: CompressConfig,
   onProgress?: (percent: number) => void,
-): Promise<T> {
+): Promise<{ data: T, processedSize: number }> {
   // Step 1: 预处理文件（压缩/转换）
   const processedFile = await processFile(file, compressConfig)
+  const processedSize = processedFile.size
 
   // Step 2: 根据渠道和文件大小选择上传方式
   const channel = params.uploadChannel
   const fileSizeMB = processedFile.size / (1024 * 1024)
 
+  let result: T
+
   // Discord 有 10MB 限制，超过 9MB 需要分块
   if (channel === 'discord' && fileSizeMB > 9) {
-    return uploadInChunks<T>(processedFile, params, onProgress)
+    result = await uploadInChunks<T>(processedFile, params, onProgress)
   }
-
   // HuggingFace 大文件（>=20MB）使用直连 S3
-  if (channel === 'huggingface' && fileSizeMB >= 20) {
-    return uploadHuggingFaceDirect<T>(processedFile, params)
+  else if (channel === 'huggingface' && fileSizeMB >= 20) {
+    result = await uploadHuggingFaceDirect<T>(processedFile, params)
   }
-
   // 其他渠道，大于 20MB 的文件使用分块上传
-  if (fileSizeMB > 20) {
-    return uploadInChunks<T>(processedFile, params, onProgress)
+  else if (fileSizeMB > 20) {
+    result = await uploadInChunks<T>(processedFile, params, onProgress)
+  }
+  // 默认使用单文件上传
+  else {
+    result = await uploadSingle<T>(processedFile, params)
   }
 
-  // 默认使用单文件上传
-  return uploadSingle<T>(processedFile, params)
+  return {
+    data: result,
+    processedSize,
+  }
 }

@@ -46,6 +46,7 @@
       "title": "文件上传",
       "dragText": "点击或拖拽文件到此处上传",
       "selectFiles": "选择文件",
+      "compressed": "已压缩",
       "status": {
         "pending": "等待上传",
         "uploading": "上传中",
@@ -379,7 +380,10 @@
         "createDirectory": "自动创建目录",
         "namePlaceholder": "输入渠道名称",
         "botTokenPlaceholder": "输入 Bot Token",
-        "chatIdPlaceholder": "输入 Chat ID"
+        "chatIdPlaceholder": "输入 Chat ID",
+        "enableQuota": "启用容量限制",
+        "quotaLimit": "容量上限",
+        "quotaThreshold": "告警阈值"
       },
       "hints": {
         "cfr2EnvOnly": "R2 渠道通过环境变量配置，无需手动添加",

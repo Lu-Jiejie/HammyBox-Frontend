@@ -15,9 +15,9 @@ function getUniqueId(): string {
 }
 
 export type DropzoneResult<TUploadRes, TUploadError>
-  = | { status: "pending" }
+  = | { status: "pending", processedSize?: number }
     | { status: "error", error: TUploadError }
-    | { status: "success", result: TUploadRes }
+    | { status: "success", result: TUploadRes, processedSize?: number }
 
 export interface FileStatus<TUploadRes = unknown, TUploadError = unknown> {
   id: string
@@ -28,6 +28,7 @@ export interface FileStatus<TUploadRes = unknown, TUploadError = unknown> {
   result?: TUploadRes
   error?: TUploadError
   shapedError?: string
+  processedSize?: number
 }
 
 export type DropZoneErrorCode
@@ -238,7 +239,7 @@ export function useDropzoneUpload<TUploadRes, TUploadError = string>(
     if (index !== -1 && currentFile) {
       fileStatuses.value = [
         ...fileStatuses.value.slice(0, index),
-        { ...currentFile, status: "success" as const, result: result.result },
+        { ...currentFile, status: "success" as const, result: result.result, processedSize: result.processedSize },
         ...fileStatuses.value.slice(index + 1),
       ] as FileStatus<TUploadRes, TUploadError>[]
 

@@ -46,6 +46,7 @@
       "title": "File Upload",
       "dragText": "Click or drag files here to upload",
       "selectFiles": "Select files",
+      "compressed": "compressed",
       "status": {
         "pending": "Pending",
         "uploading": "Uploading",
@@ -379,7 +380,10 @@
         "createDirectory": "Auto Create Directory",
         "namePlaceholder": "Enter channel name",
         "botTokenPlaceholder": "Enter Bot Token",
-        "chatIdPlaceholder": "Enter Chat ID"
+        "chatIdPlaceholder": "Enter Chat ID",
+        "enableQuota": "Enable Quota Limit",
+        "quotaLimit": "Quota Limit",
+        "quotaThreshold": "Alert Threshold"
       },
       "hints": {
         "cfr2EnvOnly": "R2 channel is configured via environment variables, no manual addition needed",
