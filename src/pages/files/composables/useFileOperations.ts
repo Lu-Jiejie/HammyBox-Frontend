@@ -1,5 +1,5 @@
 import type { QueryClient } from '@tanstack/vue-query'
-import { batchDelete, batchMove, createFolder, deleteFile, moveFile, renameFile, updateFileTags } from '@/api/files'
+import { batchDelete, batchMove, createFolder, deleteFile, moveFile, renameFile, renameFolder, updateFileTags } from '@/api/files'
 
 export function useFileOperations(queryClient: QueryClient, t: (key: string) => string, toast: any) {
   async function handleDelete(fileName: string, isFolder: boolean) {
@@ -25,7 +25,12 @@ export function useFileOperations(queryClient: QueryClient, t: (key: string) => 
   }
 
   async function handleRename(oldPath: string, newPath: string, isFolder: boolean) {
-    await renameFile(oldPath, newPath)
+    if (isFolder) {
+      await renameFolder(oldPath, newPath)
+    }
+    else {
+      await renameFile(oldPath, newPath)
+    }
     toast.success(t('pages.files.actions.renameSuccess'))
     queryClient.invalidateQueries({ queryKey: ['fileList'] })
     if (isFolder) {

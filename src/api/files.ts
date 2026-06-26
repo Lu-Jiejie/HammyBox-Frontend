@@ -119,6 +119,11 @@ export function renameFile(fileId: string, newFileId: string) {
   return axios.post(`/manage/rename/${path}`, { newFileId })
 }
 
+// 重命名文件夹
+export function renameFolder(oldPath: string, newPath: string) {
+  return axios.patch('/manage/folders', { oldPath, newPath })
+}
+
 // 修改文件元数据
 export function updateFileMetadata(fileId: string, metadata: { FileName?: string, FileType?: string }) {
   const path = fileId.replace(/\//g, ',')
