@@ -3,6 +3,27 @@ import { computed, reactive, ref } from 'vue'
 import { LocalStorageKey } from '@/types'
 import axios from '@/utils/axios'
 
+export interface UploadPresetConfig {
+  uploadChannel: string
+  uploadChannelName: string
+  uploadFolder: string
+  uploadNameType: string
+  uploadTags: string[]
+  compressConfig: {
+    customerCompress: boolean
+    compressQuality: number
+    compressBar: number
+    serverCompress: boolean
+    convertToWebp: boolean
+  }
+}
+
+export interface UploadPreset {
+  id: string
+  name: string
+  config: UploadPresetConfig
+}
+
 export const useAppStore = defineStore('app', () => {
   /* ─── 1. State (响应式状态) ─── */
   const userConfig = ref<any>(null)
@@ -36,10 +57,10 @@ export const useAppStore = defineStore('app', () => {
   function getTagColor(tagName: string): string {
     // 内置标签的颜色
     const builtInColors: Record<string, string> = {
-      'blocked': 'red',
-      'whitelist': 'green',
-      'nsfw': 'orange',
-      'shared': 'purple',
+      blocked: 'red',
+      whitelist: 'green',
+      nsfw: 'orange',
+      shared: 'purple',
     }
 
     if (builtInColors[tagName]) {
@@ -61,10 +82,10 @@ export const useAppStore = defineStore('app', () => {
   // 获取标签显示名称
   function getTagDisplayName(tagName: string, locale: string): string {
     const displayNames: Record<string, Record<string, string>> = {
-      'blocked': { 'zh-CN': '黑名单', 'en-US': 'BLOCKED' },
-      'whitelist': { 'zh-CN': '白名单', 'en-US': 'WHITELIST' },
-      'nsfw': { 'zh-CN': '敏感内容', 'en-US': 'NSFW' },
-      'shared': { 'zh-CN': '共享', 'en-US': 'SHARED' },
+      blocked: { 'zh-CN': '黑名单', 'en-US': 'BLOCKED' },
+      whitelist: { 'zh-CN': '白名单', 'en-US': 'WHITELIST' },
+      nsfw: { 'zh-CN': '敏感内容', 'en-US': 'NSFW' },
+      shared: { 'zh-CN': '共享', 'en-US': 'SHARED' },
     }
 
     return displayNames[tagName]?.[locale] || tagName
@@ -87,6 +108,49 @@ export const useAppStore = defineStore('app', () => {
   // 文件视图模式偏好
   const fileViewMode = ref<'card' | 'list'>('list')
   const imageLoadMode = ref<'none' | 'lite' | 'full'>('full')
+
+  // 上传预设组
+  const uploadPresets = ref<UploadPreset[]>([])
+
+  function savePreset(name: string) {
+    const preset: UploadPreset = {
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+      name,
+      config: {
+        uploadChannel: uploadChannel.value,
+        uploadChannelName: uploadChannelName.value,
+        uploadFolder: uploadFolder.value,
+        uploadNameType: uploadNameType.value,
+        uploadTags: [...uploadTags.value],
+        compressConfig: { ...compressConfig },
+      },
+    }
+    uploadPresets.value.push(preset)
+  }
+
+  function deletePreset(id: string) {
+    const idx = uploadPresets.value.findIndex(p => p.id === id)
+    if (idx !== -1)
+      uploadPresets.value.splice(idx, 1)
+  }
+
+  function applyPreset(id: string) {
+    const preset = uploadPresets.value.find(p => p.id === id)
+    if (!preset)
+      return
+    uploadChannel.value = preset.config.uploadChannel
+    uploadChannelName.value = preset.config.uploadChannelName
+    uploadFolder.value = preset.config.uploadFolder
+    uploadNameType.value = preset.config.uploadNameType
+    uploadTags.value = [...preset.config.uploadTags]
+    Object.assign(compressConfig, preset.config.compressConfig)
+  }
+
+  function renamePreset(id: string, name: string) {
+    const preset = uploadPresets.value.find(p => p.id === id)
+    if (preset)
+      preset.name = name
+  }
 
   /* ─── 2. Getters (计算属性) ─── */
   const credentials = computed(() => loggedIn.value ? '__session__' : null)
@@ -128,6 +192,7 @@ export const useAppStore = defineStore('app', () => {
     cusDarkMode,
     fileViewMode,
     imageLoadMode,
+    uploadPresets,
     credentials,
 
     // 导出操作方法
@@ -135,6 +200,10 @@ export const useAppStore = defineStore('app', () => {
     fetchUserConfig,
     getTagColor,
     getTagDisplayName,
+    savePreset,
+    deletePreset,
+    applyPreset,
+    renamePreset,
   }
 }, {
   /* ─── 5. 高级持久化白名单配置 ─── */
@@ -158,6 +227,7 @@ export const useAppStore = defineStore('app', () => {
       'cusDarkMode',
       'fileViewMode',
       'imageLoadMode',
+      'uploadPresets',
     ],
   },
 })

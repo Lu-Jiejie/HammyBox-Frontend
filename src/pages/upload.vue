@@ -6,6 +6,7 @@ import { Button } from '@/components/shadcn/button'
 import TagBadge from '@/components/TagBadge.vue'
 import { useAppStore } from '@/stores'
 import FileDropzone from './components/FileDropzone.vue'
+import UploadPresets from './components/UploadPresets.vue'
 import UploadSettingsDialog from './components/UploadSettingsDialog.vue'
 
 definePage({
@@ -78,7 +79,7 @@ const sortedUploadTags = computed(() => {
     </div>
 
     <!-- 配置信息展示区 - 始终展开 -->
-    <div class="mb-4 border rounded-lg bg-card/50 overflow-hidden backdrop-blur-sm">
+    <div class="mb-5 border rounded-lg bg-card/50 overflow-hidden backdrop-blur-sm">
       <div class="px-4 py-3 border-b bg-muted/20 flex w-full items-center justify-between">
         <div class="flex flex-1 gap-2 min-w-0 items-center">
           <div class="i-lucide-layers text-muted-foreground shrink-0" style="width: 15px; height: 15px;" />
@@ -228,6 +229,8 @@ const sortedUploadTags = computed(() => {
         </div>
       </div>
     </div>
+
+    <UploadPresets />
 
     <FileDropzone />
 
