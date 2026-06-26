@@ -99,12 +99,12 @@
           "title": "Upload Path"
         },
         "naming": {
-          "title": "File Naming",
-          "rule": "Naming Rule",
-          "default": "Default Name",
-          "index": "Indexed Name",
-          "origin": "Original Filename",
-          "short": "Short Link"
+          "title": "Storage Path Format",
+          "rule": "Path Format",
+          "default": "Full Path (timestamp + original name)",
+          "index": "Short Path (timestamp only)",
+          "origin": "Original Path (filename only)",
+          "short": "Random Short Path"
         },
         "preprocessing": {
           "title": "Client Preprocessing",

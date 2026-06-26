@@ -99,12 +99,12 @@
           "title": "上传路径"
         },
         "naming": {
-          "title": "文件命名",
-          "rule": "命名规则",
-          "default": "默认命名",
-          "index": "索引命名",
-          "origin": "原始文件名",
-          "short": "短链接"
+          "title": "存储路径格式",
+          "rule": "路径格式",
+          "default": "完整路径（时间戳+原名）",
+          "index": "简短路径（纯时间戳）",
+          "origin": "原始路径（纯文件名）",
+          "short": "随机短路径"
         },
         "preprocessing": {
           "title": "客户端预处理",

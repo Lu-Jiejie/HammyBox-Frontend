@@ -179,12 +179,12 @@ const channels = [
   { value: 'webdav', label: 'WebDAV', icon: 'i-streamline-color-database-server-1' },
 ]
 
-// 静态配置：文件命名方式
+// 静态配置：存储路径格式
 const namingTypes = [
-  { value: 'default', label: t('pages.upload.preferences.naming.default'), description: '时间戳+随机数_原文件名' },
-  { value: 'index', label: t('pages.upload.preferences.naming.index'), description: '时间戳+随机数.扩展名' },
-  { value: 'origin', label: t('pages.upload.preferences.naming.origin'), description: '保留原文件名' },
-  { value: 'short', label: t('pages.upload.preferences.naming.short'), description: '8位随机短链' },
+  { value: 'default', label: t('pages.upload.preferences.naming.default'), description: '时间戳前缀 + 原始文件名' },
+  { value: 'index', label: t('pages.upload.preferences.naming.index'), description: '纯时间戳作为文件名' },
+  { value: 'origin', label: t('pages.upload.preferences.naming.origin'), description: '保留原始文件名' },
+  { value: 'short', label: t('pages.upload.preferences.naming.short'), description: '随机短字符串路径' },
 ]
 
 // uploadFolder 的特殊处理：移除前导斜杠（后端使用空字符串表示根目录）
