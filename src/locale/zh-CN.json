@@ -273,6 +273,12 @@
     "others": "其他设置"
   },
   "settings": {
+    "common": {
+      "refresh": "刷新",
+      "refreshing": "刷新中...",
+      "lastSync": "上次同步",
+      "neverSynced": "尚未同步"
+    },
     "status": {
       "title": "系统状态",
       "description": "查看系统统计信息和维护操作",
@@ -397,7 +403,9 @@
         "saved": "设置已保存",
         "nameRequired": "请输入渠道名称",
         "cannotDeleteFixed": "环境变量渠道无法删除",
-        "quotaRefreshed": "容量统计已刷新"
+        "quotaRefreshed": "容量统计已刷新",
+        "refreshed": "设置已从云端刷新",
+        "refreshFailed": "刷新失败"
       }
     },
     "security": {
@@ -507,7 +515,9 @@
         "loadFailed": "加载设置失败",
         "loadTokensFailed": "加载 Token 列表失败",
         "cachePurged": "缓存已清理，共清理 {count} 个文件",
-        "cachePurgeFailed": "缓存清理失败"
+        "cachePurgeFailed": "缓存清理失败",
+        "refreshed": "设置已从云端刷新",
+        "refreshFailed": "刷新失败"
       }
     },
     "others": {
@@ -559,7 +569,9 @@
       "messages": {
         "loadFailed": "加载设置失败",
         "saved": "保存成功",
-        "saveFailed": "保存失败"
+        "saveFailed": "保存失败",
+        "refreshed": "设置已从云端刷新",
+        "refreshFailed": "刷新失败"
       }
     },
     "page": {

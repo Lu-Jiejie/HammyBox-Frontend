@@ -227,3 +227,22 @@ export function getSystemStatus() {
 export function rebuildIndex() {
   return axios.post('/manage/list?action=rebuild')
 }
+
+/* ── 页面配置（sysConfig/page）── */
+
+/**
+ * 读取页面配置（GET /api/manage/sysConfig/page）
+ * 返回 { config: [{ id, value }, ...] }，value 为原始字符串。
+ */
+export function getPageConfig() {
+  return axios.get<{ config: Array<{ id: string, value: string }> }>('/manage/sysConfig/page')
+}
+
+/**
+ * 保存页面配置（POST /api/manage/sysConfig/page）
+ * 后端整体原样覆盖保存 config 数组，不检查内容。
+ * 注意：调用前必须先 getPageConfig() 取当前完整配置并合并，否则会清掉其他项。
+ */
+export function savePageConfig(config: Array<{ id: string, value: string }>) {
+  return axios.post('/manage/sysConfig/page', { config })
+}

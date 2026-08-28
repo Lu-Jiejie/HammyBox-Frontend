@@ -273,6 +273,12 @@
     "others": "Others"
   },
   "settings": {
+    "common": {
+      "refresh": "Refresh",
+      "refreshing": "Refreshing...",
+      "lastSync": "Last synced",
+      "neverSynced": "Not synced yet"
+    },
     "status": {
       "title": "System Status",
       "description": "View system statistics and maintenance operations",
@@ -397,7 +403,9 @@
         "saved": "Settings saved",
         "nameRequired": "Please enter channel name",
         "cannotDeleteFixed": "Environment variable channels cannot be deleted",
-        "quotaRefreshed": "Quota statistics refreshed"
+        "quotaRefreshed": "Quota statistics refreshed",
+        "refreshed": "Settings refreshed from cloud",
+        "refreshFailed": "Refresh failed"
       }
     },
     "security": {
@@ -507,7 +515,9 @@
         "loadFailed": "Failed to load settings",
         "loadTokensFailed": "Failed to load token list",
         "cachePurged": "Cache cleared, {count} files removed",
-        "cachePurgeFailed": "Failed to clear cache"
+        "cachePurgeFailed": "Failed to clear cache",
+        "refreshed": "Settings refreshed from cloud",
+        "refreshFailed": "Refresh failed"
       }
     },
     "others": {
@@ -559,7 +569,9 @@
       "messages": {
         "loadFailed": "Failed to load settings",
         "saved": "Saved successfully",
-        "saveFailed": "Failed to save"
+        "saveFailed": "Failed to save",
+        "refreshed": "Settings refreshed from cloud",
+        "refreshFailed": "Refresh failed"
       }
     },
     "page": {

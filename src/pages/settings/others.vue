@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { OtherSettings } from '@/api/settings'
+import { storeToRefs } from 'pinia'
 import { ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
@@ -10,8 +11,12 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/component
 import { Input } from '@/components/shadcn/input'
 import { Label } from '@/components/shadcn/label'
 import { Switch } from '@/components/shadcn/switch'
+import { useAppStore } from '@/stores'
+import { formatSyncTime } from '@/utils/syncTime'
 
 const { t } = useI18n()
+const store = useAppStore()
+const { settingsSyncTimes } = storeToRefs(store)
 
 definePage({
   meta: {
@@ -21,6 +26,7 @@ definePage({
 })
 
 const loading = ref(true)
+const refreshing = ref(false)
 const settings = ref<OtherSettings>({
   telemetry: { enabled: true, fixed: false },
   randomImageAPI: { enabled: false, allowedDir: '', fixed: false },
@@ -39,6 +45,7 @@ async function loadSettings() {
   try {
     const res = await getOtherSettings()
     settings.value = res.data
+    store.markSettingsSynced('others')
   }
   catch {
     toast.error(t('settings.others.messages.loadFailed'))
@@ -48,9 +55,27 @@ async function loadSettings() {
   }
 }
 
+// 手动从云端刷新（不展示全屏 loading，仅按钮转圈）
+async function handleRefresh() {
+  refreshing.value = true
+  try {
+    const res = await getOtherSettings()
+    settings.value = res.data
+    store.markSettingsSynced('others')
+    toast.success(t('settings.others.messages.refreshed'))
+  }
+  catch {
+    toast.error(t('settings.others.messages.refreshFailed'))
+  }
+  finally {
+    refreshing.value = false
+  }
+}
+
 async function handleSave() {
   try {
     await saveOtherSettings(settings.value)
+    store.markSettingsSynced('others')
     toast.success(t('settings.others.messages.saved'))
     await loadSettings()
   }
@@ -64,13 +89,27 @@ loadSettings()
 
 <template>
   <div class="mx-auto p-6 max-w-5xl space-y-6">
-    <div>
-      <h1 class="text-2xl font-semibold">
-        {{ t('settings.others.title') }}
-      </h1>
-      <p class="text-sm text-muted-foreground">
-        {{ t('settings.others.description') }}
-      </p>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div class="min-w-0">
+        <h1 class="text-2xl font-semibold">
+          {{ t('settings.others.title') }}
+        </h1>
+        <p class="text-sm text-muted-foreground">
+          {{ t('settings.others.description') }}
+        </p>
+      </div>
+      <div class="flex shrink-0 flex-wrap gap-x-3 gap-y-1 items-center sm:flex-col sm:gap-y-1.5 sm:items-end">
+        <Button size="sm" variant="outline" :disabled="refreshing" @click="handleRefresh">
+          <div :class="refreshing ? 'i-lucide-loader-circle animate-spin' : 'i-lucide-refresh-cw'" style="width: 14px; height: 14px;" />
+          {{ refreshing ? t('settings.common.refreshing') : t('settings.common.refresh') }}
+        </Button>
+        <span v-if="settingsSyncTimes.others" class="text-[11px] text-muted-foreground/60 tabular-nums">
+          {{ t('settings.common.lastSync') }}: {{ formatSyncTime(settingsSyncTimes.others) }}
+        </span>
+        <span v-else class="text-[11px] text-muted-foreground/40">
+          {{ t('settings.common.neverSynced') }}
+        </span>
+      </div>
     </div>
 
     <div v-if="loading" class="flex min-h-[400px] items-center justify-center">

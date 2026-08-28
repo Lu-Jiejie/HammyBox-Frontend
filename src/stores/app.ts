@@ -1,6 +1,10 @@
 import { defineStore } from 'pinia'
 import { reactive, ref } from 'vue'
+import { getPageConfig, savePageConfig } from '@/api/settings'
 import { LocalStorageKey } from '@/types'
+
+/** page 配置中保存上传预设列表的 config id */
+const PRESETS_CONFIG_ID = 'uploadPresets'
 
 export interface UploadPresetConfig {
   uploadChannel: string
@@ -144,6 +148,71 @@ export const useAppStore = defineStore('app', () => {
       preset.name = name
   }
 
+  /* ─── 上传预设云端同步（复用 page 配置接口，不新增后端接口）─── */
+
+  // 上次与云端同步的时间（本地持久化显示用）
+  const lastSyncTime = ref<string>('')
+
+  // 各设置页最近一次与云端同步（成功加载/保存）的时间
+  const settingsSyncTimes = reactive<Record<string, string>>({})
+
+  /**
+   * 记录某设置页的同步时间（成功从云端加载或保存后调用）
+   * @param page 设置页标识（upload/security/others/page）
+   */
+  function markSettingsSynced(page: string): void {
+    settingsSyncTimes[page] = new Date().toISOString()
+  }
+
+  /**
+   * 读取云端 page 配置中的 uploadPresets 项，覆盖本地预设列表。
+   * 返回是否找到云端预设。
+   */
+  async function fetchPresetsFromCloud(): Promise<boolean> {
+    try {
+      const { data } = await getPageConfig()
+      const presetsItem = data?.config?.find(item => item.id === PRESETS_CONFIG_ID)
+      if (!presetsItem) {
+        return false
+      }
+      const parsed = JSON.parse(presetsItem.value)
+      if (Array.isArray(parsed)) {
+        uploadPresets.value = parsed as UploadPreset[]
+        lastSyncTime.value = new Date().toISOString()
+        return true
+      }
+      return false
+    }
+    catch {
+      throw new Error('获取云端预设失败')
+    }
+  }
+
+  /**
+   * 将本地预设列表同步到云端。
+   * page 配置是整体覆盖的，因此先 GET 全量配置，替换/新增 uploadPresets 项后整体 POST，
+   * 避免清掉 page 配置中的其他项。
+   */
+  async function syncPresetsToCloud(): Promise<void> {
+    let existing: Array<{ id: string, value: string }> = []
+    try {
+      const { data } = await getPageConfig()
+      existing = data?.config || []
+    }
+    catch {
+      // 读取失败时视为无既有配置（保持仅上传预设），仍允许保存
+    }
+
+    const merged = existing.filter(item => item.id !== PRESETS_CONFIG_ID)
+    merged.push({
+      id: PRESETS_CONFIG_ID,
+      value: JSON.stringify(uploadPresets.value),
+    })
+
+    await savePageConfig(merged)
+    lastSyncTime.value = new Date().toISOString()
+  }
+
   /* ─── 4. Actions (异步数据请求) ─── */
 
   return {
@@ -162,6 +231,8 @@ export const useAppStore = defineStore('app', () => {
     fileViewMode,
     imageLoadMode,
     uploadPresets,
+    lastSyncTime,
+    settingsSyncTimes,
 
     // 导出操作方法
     getTagColor,
@@ -170,6 +241,9 @@ export const useAppStore = defineStore('app', () => {
     deletePreset,
     applyPreset,
     renamePreset,
+    fetchPresetsFromCloud,
+    syncPresetsToCloud,
+    markSettingsSynced,
   }
 }, {
   /* ─── 5. 高级持久化白名单配置 ─── */
@@ -190,6 +264,8 @@ export const useAppStore = defineStore('app', () => {
       'fileViewMode',
       'imageLoadMode',
       'uploadPresets',
+      'lastSyncTime',
+      'settingsSyncTimes',
     ],
   },
 })

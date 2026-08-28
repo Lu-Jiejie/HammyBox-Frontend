@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
+import { toast } from 'vue-sonner'
 import InputDialog from '@/components/InputDialog.vue'
 import { Button } from '@/components/shadcn/button'
 import {
@@ -18,6 +19,7 @@ const { uploadPresets } = storeToRefs(store)
 
 const showSaveDialog = ref(false)
 const newPresetName = ref('')
+const cloudSyncing = ref(false)
 
 // 自动匹配当前配置对应的预设
 const matchedPreset = computed(() => {
@@ -58,6 +60,39 @@ function handleSavePreset() {
   store.savePreset(name)
   newPresetName.value = ''
   showSaveDialog.value = false
+  // 保存后立即同步到云端（fire-and-forget，失败不阻塞）
+  syncingPresetToCloud()
+}
+
+async function syncingPresetToCloud() {
+  cloudSyncing.value = true
+  try {
+    await store.syncPresetsToCloud()
+    toast.success('预设已同步到云端')
+  }
+  catch {
+    toast.error('预设已保存到本地，但同步到云端失败')
+  }
+  finally {
+    cloudSyncing.value = false
+  }
+}
+
+async function handleFetchFromCloud() {
+  cloudSyncing.value = true
+  try {
+    const found = await store.fetchPresetsFromCloud()
+    if (found)
+      toast.success('已从云端刷新预设')
+    else
+      toast.info('云端暂无预设')
+  }
+  catch {
+    toast.error('从云端获取预设失败')
+  }
+  finally {
+    cloudSyncing.value = false
+  }
 }
 </script>
 
@@ -108,6 +143,16 @@ function handleSavePreset() {
       </DropdownMenuItem>
 
       <DropdownMenuSeparator />
+
+      <!-- 云端同步操作 -->
+      <DropdownMenuItem
+        class="text-muted-foreground/60 gap-2"
+        :disabled="cloudSyncing"
+        @click="handleFetchFromCloud"
+      >
+        <div :class="cloudSyncing ? 'i-lucide-loader-circle animate-spin opacity-50' : 'i-lucide-refresh-cw opacity-50'" style="width: 14px; height: 14px;" />
+        <span>{{ cloudSyncing ? '同步中...' : '从云端刷新预设' }}</span>
+      </DropdownMenuItem>
 
       <DropdownMenuItem
         class="text-muted-foreground/60 gap-2"

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { BaseChannel, UploadSettings } from '@/api/settings'
+import { storeToRefs } from 'pinia'
 import { onMounted, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { toast } from 'vue-sonner'
@@ -36,6 +37,8 @@ import {
   SelectValue,
 } from '@/components/shadcn/select'
 import { Switch } from '@/components/shadcn/switch'
+import { useAppStore } from '@/stores'
+import { formatSyncTime } from '@/utils/syncTime'
 
 definePage({
   meta: {
@@ -45,9 +48,12 @@ definePage({
 })
 
 const { t } = useI18n()
+const store = useAppStore()
+const { settingsSyncTimes } = storeToRefs(store)
 
 const loading = ref(false)
 const quotaLoading = ref(false)
+const refreshing = ref(false)
 const showAddDialog = ref(false)
 const showEditDialog = ref(false)
 const showDeleteDialog = ref(false)
@@ -234,12 +240,31 @@ async function loadSettings() {
     const { data } = await getUploadSettings()
     settings.value = data
     await loadQuotaStats()
+    store.markSettingsSynced('upload')
   }
   catch (error) {
     toast.error(String(error))
   }
   finally {
     loading.value = false
+  }
+}
+
+// 手动从云端刷新（不展示全屏 loading，仅按钮转圈）
+async function handleRefresh() {
+  refreshing.value = true
+  try {
+    const { data } = await getUploadSettings()
+    settings.value = data
+    await loadQuotaStats()
+    store.markSettingsSynced('upload')
+    toast.success(t('settings.upload.messages.refreshed'))
+  }
+  catch (error) {
+    toast.error(String(error))
+  }
+  finally {
+    refreshing.value = false
   }
 }
 
@@ -258,6 +283,7 @@ async function loadQuotaStats() {
 async function handleSaveSettings() {
   try {
     await saveUploadSettings(settings.value)
+    store.markSettingsSynced('upload')
     toast.success(t('settings.upload.messages.saved'))
   }
   catch (error) {
@@ -289,13 +315,27 @@ onMounted(() => {
 
 <template>
   <div class="mx-auto p-6 max-w-5xl space-y-6">
-    <div>
-      <h1 class="text-2xl font-semibold">
-        {{ t('settings.upload.title') }}
-      </h1>
-      <p class="text-sm text-muted-foreground">
-        {{ t('settings.upload.description') }}
-      </p>
+    <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+      <div class="min-w-0">
+        <h1 class="text-2xl font-semibold">
+          {{ t('settings.upload.title') }}
+        </h1>
+        <p class="text-sm text-muted-foreground">
+          {{ t('settings.upload.description') }}
+        </p>
+      </div>
+      <div class="flex shrink-0 flex-wrap gap-x-3 gap-y-1 items-center sm:flex-col sm:gap-y-1.5 sm:items-end">
+        <Button size="sm" variant="outline" :disabled="refreshing" @click="handleRefresh">
+          <div :class="refreshing ? 'i-lucide-loader-circle animate-spin' : 'i-lucide-refresh-cw'" style="width: 14px; height: 14px;" />
+          {{ refreshing ? t('settings.common.refreshing') : t('settings.common.refresh') }}
+        </Button>
+        <span v-if="settingsSyncTimes.upload" class="text-[11px] text-muted-foreground/60 tabular-nums">
+          {{ t('settings.common.lastSync') }}: {{ formatSyncTime(settingsSyncTimes.upload) }}
+        </span>
+        <span v-else class="text-[11px] text-muted-foreground/40">
+          {{ t('settings.common.neverSynced') }}
+        </span>
+      </div>
     </div>
 
     <div v-if="loading" class="flex min-h-[400px] items-center justify-center">
