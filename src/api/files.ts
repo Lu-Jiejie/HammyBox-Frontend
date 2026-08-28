@@ -1,4 +1,3 @@
-import type { AxiosProgressEvent } from 'axios'
 import axios from '@/utils/axios'
 
 export interface FileItem {
@@ -45,37 +44,9 @@ export interface FileListResponse {
   returnedCount: number
 }
 
-export interface FolderListResponse {
-  success: boolean
-  currentFolder: string
-  folders: FolderItem[]
-  files: FileItem[]
-  totalFolders: number
-  totalFiles: number
-}
-
-export interface QuotaStats {
-  quotaStats: Record<string, { sizeMB: number, count: number }>
-  totalSizeMB: number
-  totalCount: number
-  lastUpdated?: string
-}
-
-// 获取文件列表（旧接口，管理后台使用）
+// 获取文件列表（管理后台/文件管理器使用）
 export function getFileList(params: FileListParams = {}) {
   return axios.get<FileListResponse>('/manage/list', { params })
-}
-
-// 列出文件夹内容（新接口，文件管理器使用）
-export function listFolderContents(folder = '', start = 0, count = 50) {
-  return axios.get<FolderListResponse>('/manage/folders/list', {
-    params: { folder, start, count },
-  })
-}
-
-// 获取容量统计
-export function getQuotaStats() {
-  return axios.get<QuotaStats>('/manage/quota')
 }
 
 // 删除文件或文件夹
@@ -89,12 +60,30 @@ export function deleteFile(fileId: string, isFolder = false) {
   })
 }
 
-// 批量删除
+// 批量删除（单请求；失败文件自动回退为逐文件删除）
 export async function batchDelete(fileIds: string[]) {
-  const results = await Promise.allSettled(
-    fileIds.map(id => deleteFile(id)),
-  )
-  return results
+  try {
+    const { data } = await axios.post<{ success: boolean, deleted: string[], failed: Array<{ path: string, error: string }> }>(
+      '/manage/batch/delete',
+      { paths: fileIds },
+    )
+    // 部分失败时，对失败项回退为逐文件删除
+    const failedResults: PromiseSettledResult<unknown>[] = []
+    for (const item of data.failed || []) {
+      failedResults.push(await deleteFile(item.path).then(
+        value => ({ status: 'fulfilled' as const, value }),
+        reason => ({ status: 'rejected' as const, reason }),
+      ))
+    }
+    return failedResults
+  }
+  catch {
+    // 批量接口不可用（如旧版本后端），回退为逐文件并发删除
+    const results = await Promise.allSettled(
+      fileIds.map(id => deleteFile(id)),
+    )
+    return results
+  }
 }
 
 // 移动文件
@@ -105,12 +94,30 @@ export function moveFile(fileId: string, targetDir: string, isFolder = false) {
   })
 }
 
-// 批量移动
+// 批量移动（单请求；失败文件自动回退为逐文件移动）
 export async function batchMove(fileIds: string[], targetDir: string) {
-  const results = await Promise.allSettled(
-    fileIds.map(id => moveFile(id, targetDir)),
-  )
-  return results
+  try {
+    const { data } = await axios.post<{ success: boolean, processed: Array<{ fileId: string, newFileId: string }>, failed: Array<{ path: string, error: string }> }>(
+      '/manage/batch/move',
+      { paths: fileIds, dist: targetDir },
+    )
+    // 部分失败时，对失败项回退为逐文件移动
+    const failedResults: PromiseSettledResult<unknown>[] = []
+    for (const item of data.failed || []) {
+      failedResults.push(await moveFile(item.path, targetDir).then(
+        value => ({ status: 'fulfilled' as const, value }),
+        reason => ({ status: 'rejected' as const, reason }),
+      ))
+    }
+    return failedResults
+  }
+  catch {
+    // 批量接口不可用（如旧版本后端），回退为逐文件并发移动
+    const results = await Promise.allSettled(
+      fileIds.map(id => moveFile(id, targetDir)),
+    )
+    return results
+  }
 }
 
 // 重命名文件
@@ -124,47 +131,10 @@ export function renameFolder(oldPath: string, newPath: string) {
   return axios.patch('/manage/folders', { oldPath, newPath })
 }
 
-// 修改文件元数据
-export function updateFileMetadata(fileId: string, metadata: { FileName?: string, FileType?: string }) {
-  const path = fileId.replace(/\//g, ',')
-  return axios.patch(`/manage/metadata/${path}`, metadata)
-}
-
-// 获取文件标签
-export function getFileTags(fileId: string) {
-  const path = fileId.replace(/\//g, ',')
-  return axios.get<{ tags: string[] }>(`/manage/tags/${path}`)
-}
-
 // 更新文件标签
 export function updateFileTags(fileId: string, tags: string[]) {
   const path = fileId.replace(/\//g, ',')
   return axios.post(`/manage/tags/${path}`, { tags })
-}
-
-// 批量标签操作
-export function batchTagOperation(fileIds: string[], action: 'set' | 'add' | 'remove', tags: string[]) {
-  return axios.post('/manage/tags/batch', {
-    fileIds,
-    action,
-    tags,
-  })
-}
-
-// 标签自动补全
-export function getTagSuggestions(prefix: string, limit = 20) {
-  return axios.get<{ tags: string[] }>('/manage/tags/autocomplete', {
-    params: { prefix, limit },
-  })
-}
-
-// 下载文件
-export function downloadFile(fileId: string, onProgress?: (progress: AxiosProgressEvent) => void) {
-  const cleanFileId = fileId.startsWith('/file/') ? fileId.replace('/file/', '') : fileId
-  return axios.get(`/file/${cleanFileId}`, {
-    responseType: 'blob',
-    onDownloadProgress: onProgress,
-  })
 }
 
 // 创建文件夹
@@ -172,17 +142,7 @@ export function createFolder(path: string, createParents = false) {
   return axios.post('/manage/folders', { path, createParents })
 }
 
-// 删除文件夹
-export function deleteFolder(path: string, recursive = false) {
-  return axios.delete('/manage/folders', { data: { path, recursive } })
-}
-
 // 获取文件夹树
 export function getFolderTree(format: 'tree' | 'flat' = 'tree') {
   return axios.get('/manage/folders/tree', { params: { format } })
-}
-
-// 列出文件夹内容
-export function listFolder(folder = '', start = 0, count = 50) {
-  return axios.get('/manage/folders/list', { params: { folder, start, count } })
 }
