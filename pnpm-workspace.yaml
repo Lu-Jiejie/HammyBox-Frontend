@@ -1,6 +1,7 @@
 allowBuilds:
   esbuild: true
-  maplibre-gl: set this to true or false
+  # @unovis（图表库）的传递依赖；postinstall 仅打印提示，无需执行
+  maplibre-gl: false
   simple-git-hooks: true
   vue-demi: true
 minimumReleaseAgeExclude:
