@@ -6,6 +6,9 @@ import { LocalStorageKey } from '@/types'
 /** page 配置中保存上传预设列表的 config id */
 const PRESETS_CONFIG_ID = 'uploadPresets'
 
+/** page 配置中保存用户自定义标签库的 config id */
+const USER_TAGS_CONFIG_ID = 'userTags'
+
 export interface UploadPresetConfig {
   uploadChannel: string
   uploadChannelName: string
@@ -213,6 +216,51 @@ export const useAppStore = defineStore('app', () => {
     lastSyncTime.value = new Date().toISOString()
   }
 
+  /**
+   * 从云端加载用户自定义标签库，覆盖本地 userTags。
+   * 返回是否找到云端标签。
+   */
+  async function fetchUserTagsFromCloud(): Promise<boolean> {
+    try {
+      const { data } = await getPageConfig()
+      const item = data?.config?.find(item => item.id === USER_TAGS_CONFIG_ID)
+      if (!item) {
+        return false
+      }
+      const parsed = JSON.parse(item.value)
+      if (Array.isArray(parsed)) {
+        userTags.value = parsed as string[]
+        return true
+      }
+      return false
+    }
+    catch {
+      throw new Error('获取云端标签失败')
+    }
+  }
+
+  /**
+   * 将本地 userTags 同步到云端（先 GET 合并，避免清掉其他 page 配置项）。
+   */
+  async function syncUserTagsToCloud(): Promise<void> {
+    let existing: Array<{ id: string, value: string }> = []
+    try {
+      const { data } = await getPageConfig()
+      existing = data?.config || []
+    }
+    catch {
+      // 读取失败时视为无既有配置，仍允许保存
+    }
+
+    const merged = existing.filter(item => item.id !== USER_TAGS_CONFIG_ID)
+    merged.push({
+      id: USER_TAGS_CONFIG_ID,
+      value: JSON.stringify(userTags.value),
+    })
+
+    await savePageConfig(merged)
+  }
+
   /* ─── 4. Actions (异步数据请求) ─── */
 
   return {
@@ -243,6 +291,8 @@ export const useAppStore = defineStore('app', () => {
     renamePreset,
     fetchPresetsFromCloud,
     syncPresetsToCloud,
+    fetchUserTagsFromCloud,
+    syncUserTagsToCloud,
     markSettingsSynced,
   }
 }, {

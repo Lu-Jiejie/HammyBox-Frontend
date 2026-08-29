@@ -34,7 +34,7 @@ interface Emits {
   (e: 'update:open', value: boolean): void
 }
 
-defineProps<Props>()
+const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
@@ -90,6 +90,8 @@ function addNewTag() {
 
   userTags.value.push(tag)
   newTagInput.value = ''
+  // 同步到云端（fire-and-forget，失败不阻塞）
+  void store.syncUserTagsToCloud().catch(() => {})
 }
 
 function removeUserTag(tag: string) {
@@ -102,6 +104,8 @@ function removeUserTag(tag: string) {
   if (selectedIndex > -1) {
     uploadTags.value.splice(selectedIndex, 1)
   }
+  // 同步到云端（fire-and-forget，失败不阻塞）
+  void store.syncUserTagsToCloud().catch(() => {})
 }
 
 function toggleTag(tagName: string) {
@@ -191,6 +195,13 @@ const namingTypes = [
 watch(uploadFolder, (newValue) => {
   if (newValue && newValue.startsWith('/')) {
     uploadFolder.value = newValue.slice(1)
+  }
+})
+
+// 打开对话框时从云端拉取共享标签库（与公开页/其他端保持一致）
+watch(() => props.open, (isOpen) => {
+  if (isOpen) {
+    void store.fetchUserTagsFromCloud().catch(() => {})
   }
 })
 </script>

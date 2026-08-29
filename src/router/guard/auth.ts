@@ -11,6 +11,12 @@ export function setupAuthGuard(router: Router) {
     const isAuthPage = authPaths.includes(to.path)
     const isFromAuthPage = authPaths.includes(from.path)
 
+    // 访客图库（公开浏览）无需登录，直接放行
+    const isPublicBrowse = to.path === '/browse' || to.path.startsWith('/browse/')
+    if (isPublicBrowse) {
+      return true
+    }
+
     // 如果用户已登录但访问登录页，重定向到之前的页面或首页
     if (store.loggedIn && isAuthPage) {
       // 检查 from 路由是否有效（有路径、不同于目标路径、不是登录页）

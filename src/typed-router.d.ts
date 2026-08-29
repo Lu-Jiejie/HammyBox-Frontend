@@ -52,6 +52,13 @@ declare module 'vue-router/auto-routes' {
       Record<never, never>,
       | never
     >,
+    '/browse/[...path]': RouteRecordInfo<
+      '/browse/[...path]',
+      '/browse/:path(.*)',
+      { path: ParamValue<true> },
+      { path: ParamValue<false> },
+      | never
+    >,
     '/files/': RouteRecordInfo<
       '/files/',
       '/files',
@@ -151,6 +158,14 @@ declare module 'vue-router/auto-routes' {
         | never
       pathParamNames:
         | never
+    }
+    'src/pages/browse/[...path].vue': {
+      routes:
+        | '/browse/[...path]'
+      views:
+        | never
+      pathParamNames:
+        | 'path'
     }
     'src/pages/files/index.vue': {
       routes:

@@ -248,6 +248,47 @@
       "goBack": "返回",
       "backToHome": "返回首页"
     },
+    "browse": {
+      "title": "公开分享",
+      "refresh": "刷新",
+      "refreshing": "刷新中...",
+      "searchPlaceholder": "搜索文件名...",
+      "allTypes": "全部类型",
+      "typeImage": "图片",
+      "typeVideo": "视频",
+      "typeAudio": "音频",
+      "typeOther": "其他",
+      "video": "视频",
+      "permanent": "永久有效",
+      "expired": "已到期",
+      "expiresInHours": "{hours} 小时后到期",
+      "expiresInDays": "{days} 天后到期（{date}）",
+      "notFoundTitle": "公开页不存在",
+      "notFoundDescription": "该公开页不存在、尚未发布，或已被管理员移除。",
+      "expiredTitle": "该公开页已到期",
+      "expiredDescription": "此公开分享的访问期限已过，请联系分享者获取新的链接。",
+      "networkError": "加载失败，请检查网络后重试",
+      "retry": "重试",
+      "empty": "这里空空如也",
+      "copySuccess": "链接已复制",
+      "copyFailed": "复制失败",
+      "loadMore": "加载更多",
+      "loadingMore": "加载中...",
+      "doubleClickHint": "双击打开",
+      "copyLink": "复制链接",
+      "colName": "文件名",
+      "colSize": "大小",
+      "colDate": "时间",
+      "view": {
+        "grid": "网格视图",
+        "list": "列表视图"
+      },
+      "sort": {
+        "title": "排序",
+        "byDate": "按日期排序",
+        "byName": "按名称排序"
+      }
+    },
     "notFound": {
       "title": "页面未找到",
       "description": "您访问的页面可能已被删除、更改名称或暂时不可用。",
@@ -554,16 +595,34 @@
           "uploadChannelPlaceholder": "例如: cfr2, s3",
           "channelName": "渠道名称"
         },
-        "publicBrowse": {
-          "title": "公开浏览",
-          "hint": "启用后，访客可通过 /browse 路径浏览指定目录的图片（只读，无法删除/移动）",
-          "enable": "启用公开浏览页面",
-          "description": "允许访客浏览文件列表",
-          "allowedDir": "允许浏览的目录",
-          "allowedDirPlaceholder": "留空表示全部目录"
+        "publicPages": {
+          "title": "公开页",
+          "hint": "基于标签（tag）驱动的公开分享页，给文件打上归集用标签即可自动收录",
+          "description": "给文件打上下方任一公开页配置的标签，文件会自动出现在对应 /browse/{slug} 页面。未登录用户可查看、预览和下载。",
+          "empty": "还没有公开页，点击下方按钮创建一个",
+          "create": "新建公开页",
+          "edit": "编辑公开页",
+          "slug": "访问路径",
+          "slugPlaceholder": "例如 photo",
+          "tags": "收录标签",
+          "tagsHint": "文件必须包含全部所选标签才会被收录",
+          "noSelectedTags": "尚未选择标签",
+          "inputPlaceholder": "输入新标签后回车",
+          "availableTags": "备选标签（内置 + 自定义）",
+          "name": "页面标题",
+          "namePlaceholder": "例如 摄影作品集",
+          "descriptionLabel": "页面描述",
+          "descriptionPlaceholder": "展示在公开页顶部的说明文字",
+          "forever": "永久有效",
+          "expireAt": "到期时间",
+          "permanent": "永久",
+          "expired": "已到期",
+          "expiresIn": "{days} 天后到期（{date}）"
         }
       },
       "actions": {
+        "cancel": "取消",
+        "delete": "删除",
         "save": "保存设置"
       },
       "messages": {
@@ -571,7 +630,20 @@
         "saved": "保存成功",
         "saveFailed": "保存失败",
         "refreshed": "设置已从云端刷新",
-        "refreshFailed": "刷新失败"
+        "refreshFailed": "刷新失败",
+        "browseUrlCopied": "公开页链接已复制",
+        "copyFailed": "复制失败",
+        "loadPubFailed": "加载公开页列表失败",
+        "pubSaved": "公开页已保存",
+        "pubSaveFailed": "保存公开页失败",
+        "pubDeleted": "公开页已删除",
+        "confirmDeletePubTitle": "删除公开页",
+        "confirmDeletePub": "确定删除公开页「{name}」吗？",
+        "pubSlugRequired": "请填写访问路径",
+        "pubSlugInvalid": "访问路径只能包含字母、数字、中划线和下划线",
+        "pubTagsRequired": "请至少填写一个收录标签",
+        "pubExpireInvalid": "到期时间无效",
+        "userTagsSyncFailed": "标签已更新，但同步到云端失败"
       }
     },
     "page": {

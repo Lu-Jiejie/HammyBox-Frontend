@@ -248,6 +248,47 @@
       "goBack": "Go Back",
       "backToHome": "Back to Home"
     },
+    "browse": {
+      "title": "Public Share",
+      "refresh": "Refresh",
+      "refreshing": "Refreshing...",
+      "searchPlaceholder": "Search file names...",
+      "allTypes": "All types",
+      "typeImage": "Images",
+      "typeVideo": "Videos",
+      "typeAudio": "Audio",
+      "typeOther": "Other",
+      "video": "Video",
+      "permanent": "Valid forever",
+      "expired": "Expired",
+      "expiresInHours": "Expires in {hours} hours",
+      "expiresInDays": "Expires in {days} days ({date})",
+      "notFoundTitle": "Public page not found",
+      "notFoundDescription": "This public page does not exist, has not been published, or has been removed by the administrator.",
+      "expiredTitle": "This public page has expired",
+      "expiredDescription": "The access period for this public share has ended. Please contact the sharer for a new link.",
+      "networkError": "Failed to load, please check your network and retry",
+      "retry": "Retry",
+      "empty": "Nothing here yet",
+      "copySuccess": "Link copied",
+      "copyFailed": "Copy failed",
+      "loadMore": "Load more",
+      "loadingMore": "Loading...",
+      "doubleClickHint": "Double-click to open",
+      "copyLink": "Copy link",
+      "colName": "Name",
+      "colSize": "Size",
+      "colDate": "Date",
+      "view": {
+        "grid": "Grid view",
+        "list": "List view"
+      },
+      "sort": {
+        "title": "Sort",
+        "byDate": "Sort by date",
+        "byName": "Sort by name"
+      }
+    },
     "notFound": {
       "title": "Page Not Found",
       "description": "The page you are looking for might have been removed, had its name changed, or is temporarily unavailable.",
@@ -554,16 +595,34 @@
           "uploadChannelPlaceholder": "e.g.: cfr2, s3",
           "channelName": "Channel Name"
         },
-        "publicBrowse": {
-          "title": "Public Browse",
-          "hint": "Once enabled, visitors can browse images in the specified directory via /browse path (read-only, cannot delete/move)",
-          "enable": "Enable Public Browse Page",
-          "description": "Allow visitors to browse file list",
-          "allowedDir": "Allowed Directory for Browsing",
-          "allowedDirPlaceholder": "Leave empty for all directories"
+        "publicPages": {
+          "title": "Public Pages",
+          "hint": "Tag-driven public share pages: tag files and they appear on the matching /browse/{slug} page automatically",
+          "description": "Files tagged with any tag configured below appear automatically on that public page. Guests can view, preview and download them.",
+          "empty": "No public pages yet. Create one below.",
+          "create": "New Public Page",
+          "edit": "Edit Public Page",
+          "slug": "URL Path",
+          "slugPlaceholder": "e.g. photo",
+          "tags": "Include Tags",
+          "tagsHint": "A file must match ALL tags to be included",
+          "noSelectedTags": "No tags selected yet",
+          "inputPlaceholder": "Type a new tag and press Enter",
+          "availableTags": "Available tags (built-in + custom)",
+          "name": "Page Title",
+          "namePlaceholder": "e.g. Photography Gallery",
+          "descriptionLabel": "Page Description",
+          "descriptionPlaceholder": "Text shown at the top of the public page",
+          "forever": "Valid forever",
+          "expireAt": "Expiration Time",
+          "permanent": "Forever",
+          "expired": "Expired",
+          "expiresIn": "Expires in {days} days ({date})"
         }
       },
       "actions": {
+        "cancel": "Cancel",
+        "delete": "Delete",
         "save": "Save Settings"
       },
       "messages": {
@@ -571,7 +630,20 @@
         "saved": "Saved successfully",
         "saveFailed": "Failed to save",
         "refreshed": "Settings refreshed from cloud",
-        "refreshFailed": "Refresh failed"
+        "refreshFailed": "Refresh failed",
+        "browseUrlCopied": "Public page link copied",
+        "copyFailed": "Copy failed",
+        "loadPubFailed": "Failed to load public pages",
+        "pubSaved": "Public page saved",
+        "pubSaveFailed": "Failed to save public page",
+        "pubDeleted": "Public page deleted",
+        "confirmDeletePubTitle": "Delete Public Page",
+        "confirmDeletePub": "Delete public page \"{name}\"?",
+        "pubSlugRequired": "Please enter the URL path",
+        "pubSlugInvalid": "URL path may only contain letters, numbers, dashes and underscores",
+        "pubTagsRequired": "Please enter at least one include tag",
+        "pubExpireInvalid": "Invalid expiration time",
+        "userTagsSyncFailed": "Tags updated locally, but failed to sync to cloud"
       }
     },
     "page": {

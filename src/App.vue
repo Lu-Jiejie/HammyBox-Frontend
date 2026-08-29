@@ -7,7 +7,23 @@ import Header from '@/layout/Header.vue'
 
 const route = useRoute()
 
+// 不需要应用外壳（header + sidebar）的页面路径前缀
+function isBarePath(path: string): boolean {
+  return (
+    path === '/login'
+    || path === '/blocked'
+    || path === '/browse'
+    || path.startsWith('/browse/')
+  )
+}
+
 const currentLayout = computed(() => {
+  // 首次挂载时 route 还是初始路由（START_LOCATION，meta 未填充）。
+  // 此时用浏览器当前 URL 判断布局，避免 /browse/* 这类 layout:false 页面
+  // 刷新时首帧先渲染出带侧边栏的 AppShell（一闪而过）。
+  if (route.matched.length === 0) {
+    return isBarePath(window.location.pathname) ? Header : AppShell
+  }
   // 登录页、blocked、404 等不需要布局的页面
   if (route.path === '/login' || route.path === '/blocked' || route.meta.layout === false) {
     return Header
