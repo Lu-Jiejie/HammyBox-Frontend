@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FileItem } from '@/api/files'
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import {
   Dialog,
@@ -70,7 +70,7 @@ const shouldShowPreviewInDetail = computed(() => {
             v-if="shouldShowPreviewInDetail"
             :src="buildFileUrl(file.name)"
             :alt="file.name"
-            class="w-full h-auto rounded"
+            class="rounded h-auto w-full"
           >
           <FileIcon
             v-else
@@ -98,7 +98,7 @@ const shouldShowPreviewInDetail = computed(() => {
               :href="buildFileUrl(file.name)"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-sm break-all text-primary hover:underline"
+              class="text-sm text-primary break-all hover:underline"
             >
               {{ buildFileUrl(file.name) }}
             </a>
@@ -129,7 +129,7 @@ const shouldShowPreviewInDetail = computed(() => {
           </div>
           <div v-if="sortedTags.length > 0">
             <div class="text-xs text-muted-foreground font-medium mb-1.5">
-              {{ t('pages.files.detail.tags') }}
+              {{ t('pages.files.detail.tagsLabel') }}
             </div>
             <div class="flex flex-wrap gap-2">
               <TagBadge

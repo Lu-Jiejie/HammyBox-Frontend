@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import type { AccessStatusFilter, FileTypeFilter } from './components/FileFilterPanel.vue'
 import type { FileItem } from '@/api/files'
 import { useQuery, useQueryClient } from '@tanstack/vue-query'
 import Fuse from 'fuse.js'
@@ -35,6 +36,7 @@ import { useAppStore } from '@/stores'
 import EditTagsDialog from './components/EditTagsDialog.vue'
 import FileCardView from './components/FileCardView.vue'
 import FileDetailDialog from './components/FileDetailDialog.vue'
+import FileFilterPanel from './components/FileFilterPanel.vue'
 import FileListView from './components/FileListView.vue'
 import { useFileDialogs } from './composables/useFileDialogs'
 import { useFileOperations } from './composables/useFileOperations'
@@ -79,12 +81,18 @@ const foldersFirst = ref(true)
 const filterQuery = ref('')
 const globalSearchQuery = ref('')
 const showGlobalSearchDialog = ref(false)
+// 前端筛选（仅过滤当前已加载页面的数据，不产生额外请求）
 const filters = ref<{
-  channel?: string
-  channelName?: string
-  fileType?: string
-  accessStatus?: string
-}>({})
+  fileType: FileTypeFilter
+  accessStatus: AccessStatusFilter
+  channels: string[]
+  tags: string[]
+}>({
+  fileType: 'all',
+  accessStatus: 'all',
+  channels: [],
+  tags: [],
+})
 
 // Detail panel
 const showDetailPanel = ref(false)
@@ -107,15 +115,11 @@ const imageLoadMode = computed({
   },
 })
 
-// Build query params
+// Build query params（筛选在纯前端完成，不传给后端，避免额外请求）
 const queryParams = computed(() => ({
   folder: currentDir.value,
   start: (currentPage.value - 1) * pageSize.value,
   count: pageSize.value,
-  channel: filters.value.channel || undefined,
-  channelName: filters.value.channelName || undefined,
-  fileType: filters.value.fileType || undefined,
-  accessStatus: filters.value.accessStatus || undefined,
 }))
 
 // Fetch file list
@@ -147,6 +151,26 @@ const files = computed(() => fileListData.value?.files || [])
 const totalCount = computed(() => fileListData.value?.totalCount || 0)
 const totalPages = computed(() => Math.ceil(totalCount.value / pageSize.value))
 
+// 渠道筛选选项（从当前已加载文件聚合，零额外请求）
+const channelOptions = computed(() => {
+  const set = new Set<string>()
+  files.value.forEach((f) => {
+    const ch = f.metadata?.Channel
+    if (ch)
+      set.add(ch)
+  })
+  return [...set].sort()
+})
+
+// 标签筛选选项（内置 + 用户自定义 + 当前已加载文件实际标签，零额外请求）
+const tagOptions = computed(() => {
+  const builtIn = ['whitelist', 'blocked', 'nsfw', 'shared']
+  const set = new Set<string>(builtIn)
+  store.userTags.forEach(tag => set.add(tag))
+  files.value.forEach(f => (f.metadata?.Tags || []).forEach(tag => set.add(tag)))
+  return [...set]
+})
+
 // Combined and sorted items with filter
 const allItems = computed<CombinedItem[]>(() => {
   let items: CombinedItem[] = [
@@ -170,6 +194,54 @@ const allItems = computed<CombinedItem[]>(() => {
       }
     }),
   ]
+
+  // 前端筛选（仅过滤当前已加载页面数据）
+  if (filters.value.fileType !== 'all' || filters.value.accessStatus !== 'all' || filters.value.channels.length > 0 || filters.value.tags.length > 0) {
+    items = items.filter((item) => {
+      // 文件夹不参与类型/渠道/标签筛选（保持始终可见）
+      if (item.isFolder)
+        return true
+
+      const metadata = item.metadata || {}
+
+      // 文件类型筛选（基于 MIME，与后端 fileType 语义一致）
+      if (filters.value.fileType !== 'all') {
+        const mime = metadata.MimeType || metadata.FileType || ''
+        const match = filters.value.fileType === 'image'
+          ? mime.startsWith('image/')
+          : filters.value.fileType === 'video'
+            ? mime.startsWith('video/')
+            : filters.value.fileType === 'audio'
+              ? mime.startsWith('audio/')
+              : !mime.startsWith('image/') && !mime.startsWith('video/') && !mime.startsWith('audio/')
+        if (!match)
+          return false
+      }
+
+      // 访问状态筛选（与后端 accessStatus 规则一致：blocked 标签 → 已屏蔽）
+      if (filters.value.accessStatus !== 'all') {
+        const isBlocked = (metadata.Tags || []).includes('blocked')
+        if (filters.value.accessStatus === 'blocked' && !isBlocked)
+          return false
+        if (filters.value.accessStatus === 'normal' && isBlocked)
+          return false
+      }
+
+      // 渠道筛选（多选，OR）
+      if (filters.value.channels.length > 0 && !filters.value.channels.includes(metadata.Channel || ''))
+        return false
+
+      // 标签筛选（多选，AND：必须包含全部所选标签）
+      if (filters.value.tags.length > 0) {
+        const fileTags = (metadata.Tags || []).map(tag => tag.toLowerCase())
+        const hasAll = filters.value.tags.every(tag => fileTags.includes(tag.toLowerCase()))
+        if (!hasAll)
+          return false
+      }
+
+      return true
+    })
+  }
 
   // Frontend filter with Fuse.js
   if (filterQuery.value) {
@@ -245,10 +317,10 @@ const allItems = computed<CombinedItem[]>(() => {
 const hasSearchOrFilter = computed(() => {
   return !!(
     filterQuery.value
-    || filters.value.channel
-    || filters.value.channelName
-    || filters.value.fileType
-    || filters.value.accessStatus
+    || filters.value.fileType !== 'all'
+    || filters.value.accessStatus !== 'all'
+    || filters.value.channels.length > 0
+    || filters.value.tags.length > 0
   )
 })
 
@@ -345,7 +417,13 @@ async function handleGlobalSearch() {
 }
 
 function clearFilters() {
-  filters.value = {}
+  filters.value = {
+    fileType: 'all',
+    accessStatus: 'all',
+    channels: [],
+    tags: [],
+  }
+  filterQuery.value = ''
   currentPage.value = 1
 }
 
@@ -624,15 +702,16 @@ interface CombinedItem {
               <div v-if="hasSearchOrFilter" class="rounded-full bg-primary h-1.5 w-1.5 right-1 top-1 absolute" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" class="w-56">
-            <div class="p-2">
-              <div class="text-xs text-muted-foreground font-medium mb-2">
-                {{ t('pages.files.filter.options') }}
-              </div>
-              <Button v-if="hasSearchOrFilter" variant="ghost" size="sm" class="w-full" @click="clearFilters">
-                {{ t('pages.files.filter.clear') }}
-              </Button>
-            </div>
+          <DropdownMenuContent align="end" class="max-h-[min(70vh,480px)] w-72 overflow-y-auto">
+            <FileFilterPanel
+              v-model:file-type="filters.fileType"
+              v-model:access-status="filters.accessStatus"
+              v-model:channels="filters.channels"
+              v-model:tags="filters.tags"
+              :channel-options="channelOptions"
+              :tag-options="tagOptions"
+              @clear="clearFilters"
+            />
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

@@ -14,8 +14,6 @@ import {
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/shadcn/dropdown-menu'
 import TagBadge from '@/components/TagBadge.vue'
@@ -88,7 +86,7 @@ function getPriorityTag(tags?: string[]): string | undefined {
             class="px-4 py-3 border-b gap-2 hidden transition-colors items-center hover:bg-muted/30 md:grid lg:grid-cols-[28px_28px_minmax(150px,2fr)_90px_minmax(80px,1fr)_40px] md:grid-cols-[28px_28px_minmax(120px,1fr)_90px_40px] xl:grid-cols-[28px_28px_minmax(150px,2fr)_90px_minmax(80px,1fr)_140px_90px_40px]"
             @dblclick="item.isFolder ? emit('navigateFolder', item.name) : emit('showDetail', { name: item.name, metadata: item.metadata })"
           >
-            <div>
+            <div @dblclick.stop>
               <Checkbox
                 v-if="!item.isFolder"
                 :model-value="selectedFiles.includes(item.name)"
@@ -188,7 +186,7 @@ function getPriorityTag(tags?: string[]): string | undefined {
             class="px-3 py-3 border-b gap-3 grid grid-cols-[28px_28px_1fr_40px] transition-colors items-center hover:bg-muted/30 md:hidden"
             @dblclick="item.isFolder ? emit('navigateFolder', item.name) : emit('showDetail', { name: item.name, metadata: item.metadata })"
           >
-            <div class="flex items-center">
+            <div class="flex items-center" @dblclick.stop>
               <Checkbox
                 v-if="!item.isFolder"
                 :model-value="selectedFiles.includes(item.name)"

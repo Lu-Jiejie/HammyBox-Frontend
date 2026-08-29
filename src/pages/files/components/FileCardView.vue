@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import type { FileItem } from '@/api/files'
 import { vAutoAnimate } from '@formkit/auto-animate/vue'
-import { useI18n } from 'vue-i18n'
 import { Button } from '@/components/shadcn/button'
 import { Checkbox } from '@/components/shadcn/checkbox'
 import {
@@ -46,8 +45,6 @@ interface Emits {
 const props = defineProps<Props>()
 const emit = defineEmits<Emits>()
 
-const { t } = useI18n()
-
 function isImage(file: CombinedItem): boolean {
   return file.metadata?.MimeType?.startsWith('image/') || file.metadata?.FileType?.startsWith('image/') || false
 }
@@ -69,7 +66,7 @@ function getPreviewUrl(file: CombinedItem): string {
           @dblclick="item.isFolder ? emit('navigateFolder', item.name) : emit('showDetail', { name: item.name, metadata: item.metadata })"
         >
           <!-- Selection checkbox for files -->
-          <div v-if="!item.isFolder" class="left-2 top-2 absolute z-10" @click.stop>
+          <div v-if="!item.isFolder" class="left-2 top-2 absolute z-10" @click.stop @dblclick.stop>
             <Checkbox
               :checked="selectedFiles.includes(item.name)"
               @update:checked="emit('toggleSelection', item.name)"

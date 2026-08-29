@@ -158,7 +158,29 @@
       "filter": {
         "title": "筛选",
         "options": "筛选选项",
-        "clear": "清空筛选"
+        "clear": "清空筛选",
+        "fileType": {
+          "title": "文件类型",
+          "all": "全部",
+          "image": "图片",
+          "video": "视频",
+          "audio": "音频",
+          "other": "其他"
+        },
+        "access": {
+          "title": "访问状态",
+          "all": "全部",
+          "normal": "正常",
+          "blocked": "已屏蔽"
+        },
+        "channel": {
+          "title": "渠道",
+          "empty": "当前页无渠道信息"
+        },
+        "tags": {
+          "title": "标签（需全部包含）",
+          "empty": "当前页无标签"
+        }
       },
       "sort": {
         "title": "排序",

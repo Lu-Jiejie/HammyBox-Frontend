@@ -30,7 +30,7 @@ definePage({
 })
 
 const { t } = useI18n()
-const route = useRoute()
+const route = useRoute<'/browse/[...path]'>()
 
 /* ─── slug 解析（/browse/photo → 'photo'，仅支持单段 slug） ─── */
 

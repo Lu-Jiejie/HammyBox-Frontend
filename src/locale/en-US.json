@@ -158,7 +158,29 @@
       "filter": {
         "title": "Filter",
         "options": "Filter Options",
-        "clear": "Clear Filters"
+        "clear": "Clear Filters",
+        "fileType": {
+          "title": "File Type",
+          "all": "All",
+          "image": "Image",
+          "video": "Video",
+          "audio": "Audio",
+          "other": "Other"
+        },
+        "access": {
+          "title": "Access Status",
+          "all": "All",
+          "normal": "Normal",
+          "blocked": "Blocked"
+        },
+        "channel": {
+          "title": "Channel",
+          "empty": "No channel info on this page"
+        },
+        "tags": {
+          "title": "Tags (must include all)",
+          "empty": "No tags on this page"
+        }
       },
       "sort": {
         "title": "Sort",
