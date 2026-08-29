@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { reactive, ref } from 'vue'
 import { getPageConfig, savePageConfig } from '@/api/settings'
 import { LocalStorageKey } from '@/types'
+import { DEFAULT_NAME_TEMPLATE } from '@/utils/nameTemplate'
 
 /** page 配置中保存上传预设列表的 config id */
 const PRESETS_CONFIG_ID = 'uploadPresets'
@@ -9,11 +10,22 @@ const PRESETS_CONFIG_ID = 'uploadPresets'
 /** page 配置中保存用户自定义标签库的 config id */
 const USER_TAGS_CONFIG_ID = 'userTags'
 
+/** page 配置中保存用户自定义命名模板的 config id */
+const NAMING_TEMPLATES_CONFIG_ID = 'namingTemplates'
+
+/** 用户保存的文件命名模板 */
+export interface NamingTemplate {
+  id: string
+  name: string
+  template: string
+}
+
 export interface UploadPresetConfig {
   uploadChannel: string
   uploadChannelName: string
   uploadFolder: string
   uploadNameType: string
+  uploadNameTemplate: string
   uploadTags: string[]
   compressConfig: {
     customerCompress: boolean
@@ -52,6 +64,12 @@ export const useAppStore = defineStore('app', () => {
 
   // 用户自定义的标签列表（持久化）
   const userTags = ref<string[]>([])
+
+  // 当前选中的文件命名模板（custom 模式下的模板内容，持久化）
+  const uploadNameTemplate = ref(DEFAULT_NAME_TEMPLATE)
+
+  // 用户保存的命名模板列表（持久化 + 云端同步）
+  const namingTemplates = ref<NamingTemplate[]>([])
 
   // 根据字符串生成唯一颜色
   function getTagColor(tagName: string): string {
@@ -120,6 +138,7 @@ export const useAppStore = defineStore('app', () => {
         uploadChannelName: uploadChannelName.value,
         uploadFolder: uploadFolder.value,
         uploadNameType: uploadNameType.value,
+        uploadNameTemplate: uploadNameTemplate.value,
         uploadTags: [...uploadTags.value],
         compressConfig: { ...compressConfig },
       },
@@ -141,6 +160,7 @@ export const useAppStore = defineStore('app', () => {
     uploadChannelName.value = preset.config.uploadChannelName
     uploadFolder.value = preset.config.uploadFolder
     uploadNameType.value = preset.config.uploadNameType
+    uploadNameTemplate.value = preset.config.uploadNameTemplate || DEFAULT_NAME_TEMPLATE
     uploadTags.value = [...preset.config.uploadTags]
     Object.assign(compressConfig, preset.config.compressConfig)
   }
@@ -159,12 +179,24 @@ export const useAppStore = defineStore('app', () => {
   // 各设置页最近一次与云端同步（成功加载/保存）的时间
   const settingsSyncTimes = reactive<Record<string, string>>({})
 
+  // 各设置页最近一次成功加载的配置快照（本地持久化，用于首次进入自动加载、之后手动刷新）
+  const settingsCache = ref<Record<string, unknown>>({})
+
   /**
    * 记录某设置页的同步时间（成功从云端加载或保存后调用）
    * @param page 设置页标识（upload/security/others/page）
    */
   function markSettingsSynced(page: string): void {
     settingsSyncTimes[page] = new Date().toISOString()
+  }
+
+  /**
+   * 缓存某设置页的配置快照（深拷贝，避免与页面内 settings 共享引用）
+   * @param page 设置页标识（upload/security/others/page）
+   * @param data 设置数据
+   */
+  function cacheSettings(page: string, data: unknown): void {
+    settingsCache.value[page] = JSON.parse(JSON.stringify(data))
   }
 
   /**
@@ -261,6 +293,51 @@ export const useAppStore = defineStore('app', () => {
     await savePageConfig(merged)
   }
 
+  /**
+   * 从云端加载用户自定义命名模板，覆盖本地 namingTemplates。
+   * 返回是否找到云端模板。
+   */
+  async function fetchNamingTemplatesFromCloud(): Promise<boolean> {
+    try {
+      const { data } = await getPageConfig()
+      const item = data?.config?.find(item => item.id === NAMING_TEMPLATES_CONFIG_ID)
+      if (!item) {
+        return false
+      }
+      const parsed = JSON.parse(item.value)
+      if (Array.isArray(parsed)) {
+        namingTemplates.value = parsed as NamingTemplate[]
+        return true
+      }
+      return false
+    }
+    catch {
+      throw new Error('获取云端命名模板失败')
+    }
+  }
+
+  /**
+   * 将本地 namingTemplates 同步到云端（先 GET 合并，避免清掉其他 page 配置项）。
+   */
+  async function syncNamingTemplatesToCloud(): Promise<void> {
+    let existing: Array<{ id: string, value: string }> = []
+    try {
+      const { data } = await getPageConfig()
+      existing = data?.config || []
+    }
+    catch {
+      // 读取失败时视为无既有配置，仍允许保存
+    }
+
+    const merged = existing.filter(item => item.id !== NAMING_TEMPLATES_CONFIG_ID)
+    merged.push({
+      id: NAMING_TEMPLATES_CONFIG_ID,
+      value: JSON.stringify(namingTemplates.value),
+    })
+
+    await savePageConfig(merged)
+  }
+
   /* ─── 4. Actions (异步数据请求) ─── */
 
   return {
@@ -273,6 +350,8 @@ export const useAppStore = defineStore('app', () => {
     uploadNameType,
     uploadTags,
     userTags,
+    uploadNameTemplate,
+    namingTemplates,
     customUrlSettings,
     adminUrlSettings,
     useDarkMode,
@@ -281,6 +360,7 @@ export const useAppStore = defineStore('app', () => {
     uploadPresets,
     lastSyncTime,
     settingsSyncTimes,
+    settingsCache,
 
     // 导出操作方法
     getTagColor,
@@ -293,7 +373,10 @@ export const useAppStore = defineStore('app', () => {
     syncPresetsToCloud,
     fetchUserTagsFromCloud,
     syncUserTagsToCloud,
+    fetchNamingTemplatesFromCloud,
+    syncNamingTemplatesToCloud,
     markSettingsSynced,
+    cacheSettings,
   }
 }, {
   /* ─── 5. 高级持久化白名单配置 ─── */
@@ -306,6 +389,8 @@ export const useAppStore = defineStore('app', () => {
       'uploadChannelName',
       'uploadFolder',
       'uploadNameType',
+      'uploadNameTemplate',
+      'namingTemplates',
       'uploadTags',
       'userTags',
       'customUrlSettings',
@@ -316,6 +401,7 @@ export const useAppStore = defineStore('app', () => {
       'uploadPresets',
       'lastSyncTime',
       'settingsSyncTimes',
+      'settingsCache',
     ],
   },
 })

@@ -36,6 +36,7 @@ const {
   uploadChannelName,
   uploadFolder,
   uploadNameType,
+  uploadNameTemplate,
   uploadTags,
 } = storeToRefs(store)
 
@@ -147,6 +148,11 @@ const dropzone = useDropzoneUpload<UploadResponse, string>({
       uploadChannel: uploadChannel.value || 'telegram',
       uploadNameType: uploadNameType.value || 'default',
       uploadFolder: uploadFolder.value || '',
+    }
+
+    // 自定义命名模板：仅当选择 custom 时传递模板内容
+    if (uploadNameType.value === 'custom') {
+      uploadParams.uploadNameTemplate = uploadNameTemplate.value || ''
     }
 
     if (uploadChannelName.value)
@@ -270,6 +276,11 @@ async function retryFile(fileId: string) {
       uploadChannel: uploadChannel.value || 'telegram',
       uploadNameType: uploadNameType.value || 'default',
       uploadFolder: uploadFolder.value || '',
+    }
+
+    // 自定义命名模板：仅当选择 custom 时传递模板内容
+    if (uploadNameType.value === 'custom') {
+      uploadParams.uploadNameTemplate = uploadNameTemplate.value || ''
     }
 
     if (uploadChannelName.value)

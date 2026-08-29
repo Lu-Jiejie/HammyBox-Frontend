@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { computed, ref } from 'vue'
 import { useI18n } from 'vue-i18n'
+import { toast } from 'vue-sonner'
 import { Button } from '@/components/shadcn/button'
 import TagBadge from '@/components/TagBadge.vue'
 import { useAppStore } from '@/stores'
@@ -19,6 +20,30 @@ definePage({
 const { t } = useI18n()
 const store = useAppStore()
 const showSettingsDialog = ref(false)
+const syncingCloud = ref(false)
+
+// 一键从云端同步上传设置（预设 + 标签 + 命名模板），仿照设置页的刷新行为
+async function handleRefreshFromCloud() {
+  syncingCloud.value = true
+  try {
+    const results = await Promise.allSettled([
+      store.fetchPresetsFromCloud(),
+      store.fetchUserTagsFromCloud(),
+      store.fetchNamingTemplatesFromCloud(),
+    ])
+    const synced = results.filter(r => r.status === 'fulfilled' && r.value === true).length
+    if (synced > 0)
+      toast.success(t('pages.upload.messages.cloudSynced'))
+    else
+      toast.info(t('pages.upload.messages.cloudEmpty'))
+  }
+  catch {
+    toast.error(t('pages.upload.messages.cloudSyncFailed'))
+  }
+  finally {
+    syncingCloud.value = false
+  }
+}
 
 const {
   uploadChannel,
@@ -48,6 +73,7 @@ const namingDisplayName = computed(() => {
     index: t('pages.upload.preferences.naming.index'),
     origin: t('pages.upload.preferences.naming.origin'),
     short: t('pages.upload.preferences.naming.short'),
+    custom: t('pages.upload.preferences.naming.custom'),
   }
   return namingMap[uploadNameType.value] || uploadNameType.value
 })
@@ -90,14 +116,26 @@ const sortedUploadTags = computed(() => {
             <code class="font-mono px-1.5 py-0.5 rounded bg-muted/50 truncate">{{ uploadFolder || '/' }}</code>
           </div>
         </div>
-        <Button
-          variant="ghost"
-          size="icon"
-          class="h-7 w-7 hover:bg-accent/50"
-          @click="showSettingsDialog = true"
-        >
-          <div class="i-lucide-settings-2" style="width: 14px; height: 14px;" />
-        </Button>
+        <div class="flex shrink-0 gap-1.5 items-center">
+          <Button
+            variant="ghost"
+            size="sm"
+            class="text-muted-foreground/70 px-2 gap-1.5 h-7 hover:text-foreground hover:bg-accent/50"
+            :disabled="syncingCloud"
+            @click="handleRefreshFromCloud"
+          >
+            <div :class="syncingCloud ? 'i-lucide-loader-circle animate-spin' : 'i-lucide-refresh-cw'" style="width: 14px; height: 14px;" />
+            <span class="text-xs">{{ syncingCloud ? t('pages.upload.messages.cloudSyncing') : t('pages.upload.preferences.refreshFromCloud') }}</span>
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            class="h-7 w-7 hover:bg-accent/50"
+            @click="showSettingsDialog = true"
+          >
+            <div class="i-lucide-settings-2" style="width: 14px; height: 14px;" />
+          </Button>
+        </div>
       </div>
 
       <div class="bg-muted/20">

@@ -250,6 +250,7 @@ async function loadSettings() {
     originalPassword.value = ''
     refererDomainsInput.value = res.data.access.refererCheck.allowedDomains.join(', ')
     store.markSettingsSynced('security')
+    store.cacheSettings('security', settings.value)
   }
   catch {
     toast.error(t('settings.security.messages.loadFailed'))
@@ -268,6 +269,7 @@ async function handleRefresh() {
     originalPassword.value = ''
     refererDomainsInput.value = res.data.access.refererCheck.allowedDomains.join(', ')
     store.markSettingsSynced('security')
+    store.cacheSettings('security', settings.value)
     toast.success(t('settings.security.messages.refreshed'))
   }
   catch {
@@ -334,7 +336,17 @@ async function handleSave() {
   }
 }
 
-loadSettings()
+// 首次进入（本地无配置缓存）才自动加载，之后由用户手动刷新
+const cachedSecurity = store.settingsCache.security
+if (cachedSecurity) {
+  settings.value = JSON.parse(JSON.stringify(cachedSecurity))
+  originalPassword.value = ''
+  refererDomainsInput.value = settings.value.access.refererCheck.allowedDomains.join(', ')
+  loading.value = false
+}
+else {
+  loadSettings()
+}
 loadTokens()
 </script>
 

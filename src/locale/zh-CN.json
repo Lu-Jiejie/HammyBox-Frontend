@@ -76,7 +76,11 @@
         "uploadSuccess": "上传成功",
         "uploadFailed": "上传失败",
         "copyUrlSuccess": "复制链接成功",
-        "copyAllSuccess": "复制全部链接成功"
+        "copyAllSuccess": "复制全部链接成功",
+        "cloudSyncing": "同步中...",
+        "cloudSynced": "已从云端同步设置",
+        "cloudEmpty": "云端暂无设置",
+        "cloudSyncFailed": "从云端同步失败"
       },
       "preferences": {
         "title": "上传偏好",
@@ -84,6 +88,7 @@
         "currentConfiguration": "当前配置",
         "showConfiguration": "显示配置",
         "hideConfiguration": "收起配置",
+        "refreshFromCloud": "从云端刷新",
         "enabled": "已启用",
         "disabled": "未启用",
         "channel": {
@@ -99,12 +104,26 @@
           "title": "上传路径"
         },
         "naming": {
-          "title": "存储路径格式",
-          "rule": "路径格式",
-          "default": "完整路径（时间戳+原名）",
-          "index": "简短路径（纯时间戳）",
-          "origin": "原始路径（纯文件名）",
-          "short": "随机短路径"
+          "title": "文件命名格式",
+          "rule": "命名格式",
+          "default": "时间戳+文件名",
+          "defaultDesc": "时间戳前缀 + 原始文件名",
+          "index": "纯时间戳",
+          "indexDesc": "纯时间戳作为文件名",
+          "origin": "原始文件名",
+          "originDesc": "保留原始文件名",
+          "short": "短随机路径",
+          "shortDesc": "随机短字符串路径",
+          "custom": "自定义模板",
+          "template": "命名模板",
+          "templateTooltip": "使用占位符生成文件名；可含 / 产生多级目录；下载名与存储名一致",
+          "templatePlaceholder": "如 {YYYY}-{MM}-{DD}-{Timestamp}{Ext}",
+          "preview": "预览",
+          "templateNamePlaceholder": "模板名称",
+          "saveAsTemplate": "保存为模板",
+          "deleteTemplateTitle": "删除命名模板",
+          "deleteTemplateConfirm": "确定删除命名模板「{name}」吗？",
+          "deleteTemplateConfirmText": "删除"
         },
         "preprocessing": {
           "title": "客户端预处理",

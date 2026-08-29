@@ -77,23 +77,6 @@ async function syncingPresetToCloud() {
     cloudSyncing.value = false
   }
 }
-
-async function handleFetchFromCloud() {
-  cloudSyncing.value = true
-  try {
-    const found = await store.fetchPresetsFromCloud()
-    if (found)
-      toast.success('已从云端刷新预设')
-    else
-      toast.info('云端暂无预设')
-  }
-  catch {
-    toast.error('从云端获取预设失败')
-  }
-  finally {
-    cloudSyncing.value = false
-  }
-}
 </script>
 
 <template>
@@ -144,16 +127,7 @@ async function handleFetchFromCloud() {
 
       <DropdownMenuSeparator />
 
-      <!-- 云端同步操作 -->
-      <DropdownMenuItem
-        class="text-muted-foreground/60 gap-2"
-        :disabled="cloudSyncing"
-        @click="handleFetchFromCloud"
-      >
-        <div :class="cloudSyncing ? 'i-lucide-loader-circle animate-spin opacity-50' : 'i-lucide-refresh-cw opacity-50'" style="width: 14px; height: 14px;" />
-        <span>{{ cloudSyncing ? '同步中...' : '从云端刷新预设' }}</span>
-      </DropdownMenuItem>
-
+      <!-- 保存当前配置为预设 -->
       <DropdownMenuItem
         class="text-muted-foreground/60 gap-2"
         @click="showSaveDialog = true"

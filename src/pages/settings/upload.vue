@@ -241,6 +241,7 @@ async function loadSettings() {
     settings.value = data
     await loadQuotaStats()
     store.markSettingsSynced('upload')
+    store.cacheSettings('upload', settings.value)
   }
   catch (error) {
     toast.error(String(error))
@@ -258,6 +259,7 @@ async function handleRefresh() {
     settings.value = data
     await loadQuotaStats()
     store.markSettingsSynced('upload')
+    store.cacheSettings('upload', settings.value)
     toast.success(t('settings.upload.messages.refreshed'))
   }
   catch (error) {
@@ -273,6 +275,7 @@ async function loadQuotaStats() {
     const { data } = await getQuotaStats()
     if (data.success && data.quotaStats) {
       quotaStats.value = data.quotaStats
+      store.cacheSettings('uploadQuota', quotaStats.value)
     }
   }
   catch (error) {
@@ -284,6 +287,7 @@ async function handleSaveSettings() {
   try {
     await saveUploadSettings(settings.value)
     store.markSettingsSynced('upload')
+    store.cacheSettings('upload', settings.value)
     toast.success(t('settings.upload.messages.saved'))
   }
   catch (error) {
@@ -297,6 +301,7 @@ async function handleRefreshQuota() {
     const { data } = await recalculateQuota()
     if (data.success && data.quotaStats) {
       quotaStats.value = data.quotaStats
+      store.cacheSettings('uploadQuota', quotaStats.value)
       toast.success(t('settings.upload.messages.quotaRefreshed'))
     }
   }
@@ -309,7 +314,21 @@ async function handleRefreshQuota() {
 }
 
 onMounted(() => {
-  loadSettings()
+  // 首次进入（本地无配置缓存）才自动加载，之后由用户手动刷新
+  const cachedUpload = store.settingsCache.upload
+  if (cachedUpload) {
+    settings.value = JSON.parse(JSON.stringify(cachedUpload))
+    loading.value = false
+    // quota 统计同样优先使用本地缓存，无缓存时才请求
+    const cachedQuota = store.settingsCache.uploadQuota
+    if (cachedQuota)
+      quotaStats.value = cachedQuota as Record<string, { usedMB: number, fileCount: number }>
+    else
+      void loadQuotaStats()
+  }
+  else {
+    loadSettings()
+  }
 })
 </script>
 

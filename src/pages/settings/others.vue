@@ -66,6 +66,7 @@ async function loadSettings() {
     const res = await getOtherSettings()
     settings.value = res.data
     store.markSettingsSynced('others')
+    store.cacheSettings('others', settings.value)
   }
   catch {
     toast.error(t('settings.others.messages.loadFailed'))
@@ -82,6 +83,7 @@ async function handleRefresh() {
     const res = await getOtherSettings()
     settings.value = res.data
     store.markSettingsSynced('others')
+    store.cacheSettings('others', settings.value)
     toast.success(t('settings.others.messages.refreshed'))
   }
   catch {
@@ -150,6 +152,7 @@ async function loadPubPages() {
       }
     }
     pubPages.value = pages
+    store.cacheSettings('othersPub', pubPages.value)
   }
   catch {
     toast.error(t('settings.others.messages.loadPubFailed'))
@@ -169,6 +172,7 @@ async function persistPubPages(next: Record<string, PublicPageConfig>) {
   }))
   await savePageConfig([...others, ...pubItems])
   pubPages.value = next
+  store.cacheSettings('othersPub', pubPages.value)
 }
 
 // 到期状态显示
@@ -364,8 +368,24 @@ async function removePubUserTag(tag: string) {
   }
 }
 
-loadSettings()
-loadPubPages()
+// 首次进入（本地无配置缓存）才自动加载，之后由用户手动刷新
+const cachedOthers = store.settingsCache.others
+if (cachedOthers) {
+  settings.value = cachedOthers as OtherSettings
+  loading.value = false
+}
+else {
+  loadSettings()
+}
+
+const cachedPub = store.settingsCache.othersPub
+if (cachedPub) {
+  pubPages.value = cachedPub as Record<string, PublicPageConfig>
+  pubLoading.value = false
+}
+else {
+  loadPubPages()
+}
 </script>
 
 <template>

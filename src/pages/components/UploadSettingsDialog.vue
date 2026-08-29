@@ -2,6 +2,7 @@
 import { storeToRefs } from 'pinia'
 import { computed, ref, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import FolderTreeSelector from '@/components/FolderTreeSelector.vue'
 import InfoPopover from '@/components/InfoPopover.vue'
 import { Button } from '@/components/shadcn/button'
@@ -25,6 +26,7 @@ import { Slider } from '@/components/shadcn/slider'
 import { Switch } from '@/components/shadcn/switch'
 import TagBadge from '@/components/TagBadge.vue'
 import { useAppStore } from '@/stores'
+import { expandNameTemplate, NAME_PLACEHOLDERS } from '@/utils/nameTemplate'
 
 interface Props {
   open: boolean
@@ -34,7 +36,7 @@ interface Emits {
   (e: 'update:open', value: boolean): void
 }
 
-const props = defineProps<Props>()
+defineProps<Props>()
 const emit = defineEmits<Emits>()
 
 const { t } = useI18n()
@@ -46,6 +48,8 @@ const {
   uploadChannelName,
   uploadFolder,
   uploadNameType,
+  uploadNameTemplate,
+  namingTemplates,
   uploadTags,
   userTags,
 } = storeToRefs(store)
@@ -183,25 +187,158 @@ const channels = [
   { value: 'webdav', label: 'WebDAV', icon: 'i-streamline-color-database-server-1' },
 ]
 
-// 静态配置：存储路径格式
+// 内置预设对应的模板字符串（选中预设时同步显示在下方输入框）
+const presetTemplateMap: Record<string, string> = {
+  default: '{Timestamp}_{Name}{Ext}',
+  index: '{Timestamp}{Ext}',
+  origin: '{Origin}',
+  short: '{Random:8}{Ext}',
+}
+
+// 静态配置：文件命名格式（内置预设，不含「自定义模板」选项）
 const namingTypes = [
-  { value: 'default', label: t('pages.upload.preferences.naming.default'), description: '时间戳前缀 + 原始文件名' },
-  { value: 'index', label: t('pages.upload.preferences.naming.index'), description: '纯时间戳作为文件名' },
-  { value: 'origin', label: t('pages.upload.preferences.naming.origin'), description: '保留原始文件名' },
-  { value: 'short', label: t('pages.upload.preferences.naming.short'), description: '随机短字符串路径' },
+  { value: 'default', label: t('pages.upload.preferences.naming.default'), description: t('pages.upload.preferences.naming.defaultDesc') },
+  { value: 'index', label: t('pages.upload.preferences.naming.index'), description: t('pages.upload.preferences.naming.indexDesc') },
+  { value: 'origin', label: t('pages.upload.preferences.naming.origin'), description: t('pages.upload.preferences.naming.originDesc') },
+  { value: 'short', label: t('pages.upload.preferences.naming.short'), description: t('pages.upload.preferences.naming.shortDesc') },
 ]
+
+// 下拉选项 = 内置预设 + 用户保存的模板（value 使用 template:{id} 便于区分）
+const namingOptions = computed(() => {
+  const presets = namingTypes.map(type => ({
+    value: type.value,
+    label: type.label,
+    description: type.description,
+    template: presetTemplateMap[type.value],
+  }))
+  const userTemplates = namingTemplates.value.map(tpl => ({
+    value: `template:${tpl.id}`,
+    label: tpl.name,
+    description: tpl.template,
+    template: tpl.template,
+  }))
+  return [...presets, ...userTemplates]
+})
+
+// 当前选中的下拉值（内置预设值或 template:{id}）
+const selectedNamingValue = computed<string>({
+  get() {
+    // 内置预设：直接返回预设值
+    if (presetTemplateMap[uploadNameType.value])
+      return uploadNameType.value
+    // custom：尝试匹配用户保存的模板
+    if (uploadNameType.value === 'custom') {
+      const match = namingTemplates.value.find(tpl => tpl.template === uploadNameTemplate.value)
+      return match ? `template:${match.id}` : 'custom'
+    }
+    return uploadNameType.value
+  },
+  set(value: string) {
+    if (value.startsWith('template:')) {
+      const tpl = namingTemplates.value.find(t => `template:${t.id}` === value)
+      if (tpl) {
+        uploadNameType.value = 'custom'
+        uploadNameTemplate.value = tpl.template
+      }
+    }
+    else if (presetTemplateMap[value]) {
+      uploadNameType.value = value
+      // 选中内置预设时同步显示对应的模板字符串
+      uploadNameTemplate.value = presetTemplateMap[value]
+    }
+  },
+})
+
+// 选中的下拉项文案
+const selectedNamingLabel = computed(() => {
+  const opt = namingOptions.value.find(o => o.value === selectedNamingValue.value)
+  return opt?.label || (uploadNameType.value === 'custom' ? t('pages.upload.preferences.naming.custom') : uploadNameType.value)
+})
+
+// 当前是否选中了某个已保存模板（供命名模板面板显示删除按钮）。
+// 若用户手动修改了模板内容，与已保存模板不再匹配，视为「未选中该模板」，删除按钮隐藏。
+const activeSavedTemplate = computed(() => {
+  if (uploadNameType.value !== 'custom')
+    return null
+  return namingTemplates.value.find(tpl => tpl.template === uploadNameTemplate.value) ?? null
+})
+
+// 占位符快捷插入
+function insertPlaceholder(token: string) {
+  uploadNameTemplate.value += token
+}
+
+// 保存当前模板为具名模板（类似 tag 的自定义管理）
+const newTemplateName = ref('')
+
+function saveCurrentAsTemplate() {
+  const name = newTemplateName.value.trim()
+  if (!name || !uploadNameTemplate.value.trim())
+    return
+  // 表达式相同的模板只保留一个：已存在则覆盖其名称，避免出现重复项
+  const existing = namingTemplates.value.find(tpl => tpl.template === uploadNameTemplate.value)
+  if (existing) {
+    existing.name = name
+  }
+  else {
+    namingTemplates.value.push({
+      id: Date.now().toString(36) + Math.random().toString(36).slice(2, 8),
+      name,
+      template: uploadNameTemplate.value,
+    })
+  }
+  newTemplateName.value = ''
+  // 保存后同步到云端（fire-and-forget，失败不阻塞）
+  void store.syncNamingTemplatesToCloud().catch(() => {})
+}
+
+// 删除模板：先弹确认框，确认后再删除
+const deleteDialogOpen = ref(false)
+const deleteTemplateTarget = ref<{ id: string, name: string } | null>(null)
+
+function requestDeleteTemplate(tpl: { id: string, name: string }) {
+  deleteTemplateTarget.value = tpl
+  deleteDialogOpen.value = true
+}
+
+function confirmDeleteTemplate() {
+  const tpl = deleteTemplateTarget.value
+  if (!tpl)
+    return
+  const idx = namingTemplates.value.findIndex(t => t.id === tpl.id)
+  if (idx > -1)
+    namingTemplates.value.splice(idx, 1)
+  deleteTemplateTarget.value = null
+  // 若当前模板正是被删模板，保留 uploadNameType/uploadNameTemplate 不变（用户可再选）
+  // 同步到云端（fire-and-forget，失败不阻塞）
+  void store.syncNamingTemplatesToCloud().catch(() => {})
+}
+
+// 模板展开实时预览（使用示例文件名；内置预设也展示对应模板的展开结果）
+const namingPreview = computed(() => {
+  return expandNameTemplate(uploadNameTemplate.value, { fileName: 'photo1.png', fileExt: 'png' })
+})
+
+// 手动修改模板输入框时，若当前是内置预设，自动切换到自定义模式
+// （下拉选中预设时由 setter 同步 uploadNameTemplate，不会误触发）
+watch(uploadNameTemplate, (val) => {
+  if (uploadNameType.value !== 'custom' && val !== presetTemplateMap[uploadNameType.value])
+    uploadNameType.value = 'custom'
+})
+
+// 内置预设模式下，模板输入框始终显示对应的模板字符串（含初始状态）
+watch(uploadNameType, (type) => {
+  if (presetTemplateMap[type] && uploadNameTemplate.value !== presetTemplateMap[type])
+    uploadNameTemplate.value = presetTemplateMap[type]
+}, { immediate: true })
+
+// 占位符说明列表（供按钮展示）
+const namePlaceholders = NAME_PLACEHOLDERS
 
 // uploadFolder 的特殊处理：移除前导斜杠（后端使用空字符串表示根目录）
 watch(uploadFolder, (newValue) => {
   if (newValue && newValue.startsWith('/')) {
     uploadFolder.value = newValue.slice(1)
-  }
-})
-
-// 打开对话框时从云端拉取共享标签库（与公开页/其他端保持一致）
-watch(() => props.open, (isOpen) => {
-  if (isOpen) {
-    void store.fetchUserTagsFromCloud().catch(() => {})
   }
 })
 </script>
@@ -271,19 +408,20 @@ watch(() => props.open, (isOpen) => {
         <!-- 文件命名组 -->
         <div class="space-y-2">
           <Label for="namingType">{{ t('pages.upload.preferences.naming.title') }}</Label>
-          <Select v-model="uploadNameType">
+          <Select v-model="selectedNamingValue">
             <SelectTrigger id="namingType">
               <SelectValue :placeholder="t('pages.upload.preferences.naming.title')">
-                {{ namingTypes.find(type => type.value === uploadNameType)?.label }}
+                {{ selectedNamingLabel }}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem
-                v-for="type in namingTypes"
+                v-for="type in namingOptions"
                 :key="type.value"
                 :value="type.value"
+                class="gap-2"
               >
-                <div class="flex flex-col gap-1">
+                <div class="flex flex-col gap-1 min-w-0">
                   <div class="font-medium">
                     {{ type.label }}
                   </div>
@@ -294,6 +432,68 @@ watch(() => props.open, (isOpen) => {
               </SelectItem>
             </SelectContent>
           </Select>
+
+          <!-- 命名模板配置（内置预设与自定义共用：选内置时同步显示对应模板字符串） -->
+          <div class="mt-2 p-3 border rounded-lg bg-muted/20 space-y-3">
+            <div class="flex gap-1.5 items-center justify-between">
+              <div class="flex gap-1.5 min-w-0 items-center">
+                <Label class="text-sm font-medium">
+                  {{ t('pages.upload.preferences.naming.template') }}
+                </Label>
+                <InfoPopover :content="t('pages.upload.preferences.naming.templateTooltip')" />
+              </div>
+              <!-- 当前选中了某个已保存模板时才显示删除按钮；用户手动修改模板后不再匹配，自动隐藏 -->
+              <button
+                v-if="activeSavedTemplate"
+                class="text-muted-foreground/40 p-1 rounded flex shrink-0 transition-colors items-center hover:text-destructive"
+                :aria-label="`${t('pages.upload.preferences.naming.deleteTemplateTitle')}: ${activeSavedTemplate.name}`"
+                @click="requestDeleteTemplate(activeSavedTemplate)"
+              >
+                <div class="i-lucide-trash-2" style="width: 13px; height: 13px;" />
+              </button>
+            </div>
+            <div class="flex gap-2">
+              <Input
+                v-model="uploadNameTemplate"
+                :placeholder="t('pages.upload.preferences.naming.templatePlaceholder')"
+                class="text-xs font-mono flex-1"
+              />
+            </div>
+
+            <!-- 占位符快捷按钮 -->
+            <div class="flex flex-wrap gap-1.5">
+              <Button
+                v-for="ph in namePlaceholders"
+                :key="ph.token"
+                variant="outline"
+                size="sm"
+                class="text-xs font-mono px-2 h-7"
+                @click="insertPlaceholder(ph.token)"
+              >
+                {{ ph.token }}
+              </Button>
+            </div>
+
+            <!-- 实时预览（窄屏下标签与文件名分行展示，文件名可自动断行） -->
+            <div v-if="namingPreview" class="text-xs text-muted-foreground space-y-1">
+              <span>{{ t('pages.upload.preferences.naming.preview') }}:</span>
+              <code class="font-mono px-1.5 py-0.5 rounded bg-muted/60 block break-all">{{ namingPreview }}</code>
+            </div>
+
+            <!-- 保存当前模板为具名模板（按钮高度与输入框统一） -->
+            <div class="pt-1 border-t flex gap-2">
+              <Input
+                v-model="newTemplateName"
+                :placeholder="t('pages.upload.preferences.naming.templateNamePlaceholder')"
+                class="text-xs flex-1"
+                @keyup.enter="saveCurrentAsTemplate"
+              />
+              <Button variant="outline" class="shrink-0 h-9" @click="saveCurrentAsTemplate">
+                <div class="i-lucide-save mr-1.5" style="width: 13px; height: 13px;" />
+                {{ t('pages.upload.preferences.naming.saveAsTemplate') }}
+              </Button>
+            </div>
+          </div>
         </div>
 
         <!-- 分隔线 -->
@@ -442,4 +642,13 @@ watch(() => props.open, (isOpen) => {
       </div>
     </DialogContent>
   </Dialog>
+
+  <!-- 删除命名模板确认框 -->
+  <ConfirmDialog
+    v-model:open="deleteDialogOpen"
+    :title="t('pages.upload.preferences.naming.deleteTemplateTitle')"
+    :description="deleteTemplateTarget ? t('pages.upload.preferences.naming.deleteTemplateConfirm', { name: deleteTemplateTarget.name }) : ''"
+    :confirm-text="t('pages.upload.preferences.naming.deleteTemplateConfirmText')"
+    @confirm="confirmDeleteTemplate"
+  />
 </template>

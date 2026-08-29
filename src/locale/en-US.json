@@ -76,7 +76,11 @@
         "uploadSuccess": "Upload successful",
         "uploadFailed": "Upload failed",
         "copyUrlSuccess": "Link copied",
-        "copyAllSuccess": "All links copied"
+        "copyAllSuccess": "All links copied",
+        "cloudSyncing": "Syncing...",
+        "cloudSynced": "Settings synced from cloud",
+        "cloudEmpty": "No settings on cloud yet",
+        "cloudSyncFailed": "Failed to sync from cloud"
       },
       "preferences": {
         "title": "Upload Preferences",
@@ -84,6 +88,7 @@
         "currentConfiguration": "Current Configuration",
         "showConfiguration": "Show Configuration",
         "hideConfiguration": "Hide Configuration",
+        "refreshFromCloud": "Refresh from cloud",
         "enabled": "Enabled",
         "disabled": "Disabled",
         "channel": {
@@ -99,12 +104,26 @@
           "title": "Upload Path"
         },
         "naming": {
-          "title": "Storage Path Format",
-          "rule": "Path Format",
-          "default": "Full Path (timestamp + original name)",
-          "index": "Short Path (timestamp only)",
-          "origin": "Original Path (filename only)",
-          "short": "Random Short Path"
+          "title": "File Naming Format",
+          "rule": "Naming Format",
+          "default": "Timestamp + filename",
+          "defaultDesc": "Timestamp prefix + original filename",
+          "index": "Timestamp only",
+          "indexDesc": "Pure timestamp as filename",
+          "origin": "Original filename",
+          "originDesc": "Keep the original filename",
+          "short": "Short random path",
+          "shortDesc": "Random short string path",
+          "custom": "Custom template",
+          "template": "Naming template",
+          "templateTooltip": "Generate the filename with placeholders; \"/\" creates sub-directories; download name equals storage name",
+          "templatePlaceholder": "e.g. {YYYY}-{MM}-{DD}-{Timestamp}{Ext}",
+          "preview": "Preview",
+          "templateNamePlaceholder": "Template name",
+          "saveAsTemplate": "Save as template",
+          "deleteTemplateTitle": "Delete Naming Template",
+          "deleteTemplateConfirm": "Delete naming template \"{name}\"?",
+          "deleteTemplateConfirmText": "Delete"
         },
         "preprocessing": {
           "title": "Client Preprocessing",
