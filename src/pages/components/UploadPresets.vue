@@ -51,6 +51,8 @@ function handleApply(preset: { id: string }) {
 
 function handleDelete(preset: { id: string }) {
   store.deletePreset(preset.id)
+  // 删除后同样同步到云端（与保存行为一致，fire-and-forget）
+  syncingPresetToCloud()
 }
 
 function handleSavePreset() {
